@@ -1,0 +1,294 @@
+
+[{
+    "actor": {
+        "name": "Player",
+        "mbox": "mailto:player@example.com",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/accepted",
+        "display": {
+            "en-US": "accepted"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/activity",
+        "definition": {
+            "name": {
+                "en-US": "Object"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has accepted the object. For example, a person accepting an award, or a mission.",
+                "es": "Indica que el actor ha aceptado el objeto. Por ejemplo, una persona aceptando un premio, o una misión."
+            }
+        },
+        "objectType": "Activity"
+    }
+},
+
+
+{
+    "actor": {
+        "mbox": "mailto:player@example.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/accessed",
+        "display": {
+            "en-US": "accessed"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/objects/object1",
+        "definition": {
+            "name": {
+                "en-US": "Object"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has accessed the object. For example, a person accessing a room, or accessing a file.",
+                "es": "Indica que el actor ha accedido al objeto. Por ejemplo, una persona accediendo a una habitación, u accediendo a un archivo."
+            }
+        },
+        "objectType": "Activity"
+    }
+},
+
+
+
+{
+    "actor": {
+        "mbox": "mailto:player@gmail.com",
+        "account": {
+            "name": "Player"
+        },
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/achieved",
+        "display": {
+            "en-US": "achieved"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/achievements/achievement-1",
+        "definition": {
+            "name": {
+                "en-US": "Example Achievement1"
+            },
+            "description": {
+                "en-US": "You achieved Achievement1"
+            },
+            "type": "http://adlnet.gov/expapi/activities/cmi.interaction",
+            "interactionType": "true-false",
+            "correctResponsesPattern": [
+                "true"
+            ]
+        },
+        "objectType": "Activity"
+    },
+},
+
+
+
+{
+    "actor": {
+        "mbox": "mailto:player@gmail.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/cancelled",
+        "display": {
+            "en-US": "cancelled"
+        }
+    },
+
+    "object": {
+        "id": "http://adlnet.gov/expapi/activities/example",
+        "definition": {
+            "name": {
+                "en-US": "Example Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has canceled the object. For example, canceling a mission.",
+                "es": "Indica que el actor ha cancelado el objeto. Por ejemplo, cancelar una misión."
+            }
+        },
+        "objectType": "Activity"
+    }
+};
+
+
+
+{
+    "actor": {
+        "mbox": "mailto:player@example.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/died",
+        "display": {
+            "en-US": "died"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/activities/game",
+        "definition": {
+            "name": {
+            "en-US": "Game Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has died.",
+                "es": "Indica que el actor ha muerto."
+            }
+        },
+        "objectType": "Activity"
+    },
+
+    "context": {
+        "contextActivities": {
+            "parent": [
+                {
+                    "id": "http://example.com/game",
+                    "objectType": "Activity"
+                }
+            ]
+        }
+    }
+},
+
+
+
+{
+    "actor": {
+        "mbox": "mailto:player@example.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/combined",
+        "display": {
+            "en-US": "combined"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/activities/combinations",
+        "definition": {
+            "name": {
+                "en-US": "Combinations Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has combined the object with another object.",
+                "es": "Indica que el actor ha combinado el objeto con otro objeto."
+            }
+        },
+        "objectType": "Activity"
+    }
+},
+
+{
+    "actor": {
+        "mbox": "mailto:player@example.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/clicked",
+        "display": {
+            "en-US": "clicked"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/resource/object-1",
+        "definition": {
+            "name": {
+                "en-US": "Interacted Object"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has clicked on the object.",
+                "es": "Indica que el actor ha hecho click en el objeto."
+            }
+        },
+        "objectType": "Activity"
+    }
+},
+
+ 
+{
+    "actor": {
+        //"mbox": "mailto:player@gmail.com",
+        "name": "Player",
+        "account": { 
+            "homePage": "https://example.com/accounts",
+            "name": "playerIdAccount"
+        },
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/logIn",
+        "display": {
+            "en-US": "logged in"
+        }
+    },
+
+    "object": {
+        "id": "http://adlnet.gov/expapi/activities/logInActivity",
+        "definition": {
+            "name": {
+                "en-US": "Log in Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has logged in to some service.",
+                "es": "Indica que el actor ha iniciado sesión en algún servicio."
+            }
+        },
+        "objectType": "Activity"
+    }
+},
+
+
+{
+    "actor": {
+        "mbox": "mailto:player@gmail.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://w3id.org/xapi/adl/verbs/closed",
+        "display": {
+            "en-US": "closed"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/activities/example-activity",
+        "definition": {
+            "name": {
+                "en-US": "Example Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has closed the object. For example, close a door or chest.",
+                "es": "Indica que el actor ha cerrado el objeto. Por ejemplo, cerrar una puerta o un cofre."
+            }
+        },
+        "objectType": "Activity"
+    }
+}]
