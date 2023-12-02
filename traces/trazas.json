@@ -230,7 +230,6 @@
  
 {
     "actor": {
-        //"mbox": "mailto:player@gmail.com",
         "name": "Player",
         "account": { 
             "homePage": "https://example.com/accounts",
