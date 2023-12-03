@@ -26,6 +26,7 @@ let registryVerbsMap = new Map<string,verbInfo>([
 
 interface logInStatementInterface {
 	actor: {
+		id: string;
 		account: { 
             homePage: string;
             name: string;
@@ -60,10 +61,11 @@ function logInStatement(
 ): logInStatementInterface {
 	const statement: logInStatementInterface = {
 		actor: {
+			id: playerData().id,
 			name: playerData().name,
 			account: {
 				homePage: "https://example.com",
-				name: playerData().id
+				name: playerData().accountId
 			},
 			objectType: "Agent",
 		},
@@ -86,7 +88,7 @@ function logInStatement(
         	},
         	objectType: "Activity"
 		},
-		timestamp: new Date().toString()
+		timestamp: new Date().toISOString()
 	};
 	return statement;
 }
@@ -166,7 +168,7 @@ function createStatement(
 				},
 				objectType: "Activity"
 			},
-			timestamp: new Date().toString()
+			timestamp: new Date().toISOString()
 		};
 		return statement;
 	}
@@ -175,13 +177,15 @@ interface Player {
     name: string;
     mail: string;
 	id: string;
+	accountId: string;
 }
 
 function playerData(): Player { 
     return {
         name: "Player",
     	mail: "mailto:player@mail.com",
-		id: "nameAccount"
+		id: "nameAccount",
+		accountId: "accountId"
     };
 }
 
