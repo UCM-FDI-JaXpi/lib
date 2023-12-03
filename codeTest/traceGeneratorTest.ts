@@ -57,7 +57,7 @@ interface logInStatementInterface {
 	timestamp: string;
 }
 
-function logInStatement(
+export function logInStatement(
 ): logInStatementInterface {
 	const statement: logInStatementInterface = {
 		actor: {
@@ -173,7 +173,7 @@ function createStatement(
 		return statement;
 	}
 
-interface Player {
+export interface Player {
     name: string;
     mail: string;
 	id: string;
