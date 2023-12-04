@@ -1,30 +1,6 @@
-type verbInfo = {
-	name: string;
-	descriptionEn: string;
-	descriptionEs: string;
-	url?: string;
-};
+import * as jsonArray from "../traces/trazas.json"
 
-let defaultVerb : verbInfo = {
-	name: "ERROR, VERB NOT CONTEMPLATED",
-	descriptionEn: "ERROR, VERB NOT CONTEMPLATED",
-	descriptionEs: "ERROR, VERB NOT CONTEMPLATED"
-}
-
-let gitVerbsMap = new Map<string,verbInfo>([
-	["clicked",{name:"Interacted Object", descriptionEn: "Indicates that the actor has clicked on the object.", descriptionEs: "Indica que el actor ha hecho click en el objeto."}],
-	["interacted",{name:"", descriptionEn: "", descriptionEs: ""}],
-	["other",{name:"", descriptionEn: "", descriptionEs: ""}]
-]);
-
-let registryVerbsMap = new Map<string,verbInfo>([
-	["login",{name:"Log in Activity", descriptionEn: "Indicates that the actor has logged in to some service.", descriptionEs: "Indica que el actor ha iniciado sesión en algún servicio.", url: "http://adlnet.gov/expapi/activities/logInActivity"}],
-	["logout",{name:"Log out Activity", descriptionEn: "Indicates that the actor has logged out to some service.", descriptionEs: "Indica que el actor ha terminado sesión en algún servicio.", url: "http://adlnet.gov/expapi/activities/logOutActivity"}],
-	["b",{name:"", descriptionEn: "", descriptionEs: "", url: ""}]
-]);
-
-
-interface logInStatementInterface {
+interface logStatementInterface {
 	actor: {
 		id: string;
 		account: { 
@@ -36,20 +12,19 @@ interface logInStatementInterface {
 	};
 
 	verb: {
-		id: "logIn";
+		id: string;
 		display:{
 			[key: string]: string;
 		};
 	};
 	object: {
-		id: "http://adlnet.gov/expapi/activities/logInActivity";
+		id: string;
         definition: {
             name: {
-                "en-US": "Log in Activity";
+                [key: string]: string;
             },
             description: {
-                "en-US": "Indicates that the actor has logged in to some service.";
-                "es": "Indica que el actor ha iniciado sesión en algún servicio.";
+                [key: string]: string;
             }
         },
         objectType: "Activity";
@@ -57,34 +32,46 @@ interface logInStatementInterface {
 	timestamp: string;
 }
 
-export function logInStatement(
-): logInStatementInterface {
-	const statement: logInStatementInterface = {
+export function logStatement(
+	verbId: string,
+	objectId: string,
+	player: Player
+): logStatementInterface | undefined {
+
+	let temp = jsonArray.find(callbackfun);
+	function callbackfun(object): boolean{
+		if (object.verb.display["en-US"] === verbId) return true;
+		return false;
+	}
+
+	if (temp === undefined) return undefined;
+	
+	const statement: logStatementInterface = {
 		actor: {
-			id: playerData().id,
-			name: playerData().name,
+			id: player.id,
+			name: player.name,
 			account: {
 				homePage: "https://example.com",
-				name: playerData().accountId
+				name: player.accountId
 			},
 			objectType: "Agent",
 		},
 		verb: {
-			id: "logIn",
+			id: temp!.verb.id,
 			display: {
-				"en-US": "logged in"
+				"en-US": temp!.verb.display["en-US"]
 			},
 		},
 		object: {
-			id: "http://adlnet.gov/expapi/activities/logInActivity",
+			id: "http://adlnet.gov/expapi/activities/" + objectId,
         	definition: {
-            name: {
-                "en-US": "Log in Activity"
-            },
-            description: {
-                "en-US": "Indicates that the actor has logged in to some service.",
-                "es": "Indica que el actor ha iniciado sesión en algún servicio."
-            }
+				name: {
+					"en-US": temp!.object.definition.name["en-US"]
+				},
+				description: {
+					"en-US": temp!.object.definition.description["en-US"],
+					"es": temp!.object.definition.description["es"]
+				}
         	},
         	objectType: "Activity"
 		},
@@ -96,6 +83,7 @@ export function logInStatement(
 interface statementInterface {
 	
 	actor: {
+		id: string;
 		mbox: string;
 		name: string;
 		objectType: string;
@@ -124,34 +112,40 @@ interface statementInterface {
 	timestamp: string;
 }
 
-function verbDetails(verb: string) {
-		if (gitVerbsMap.has(verb)) return gitVerbsMap.get(verb)!;
-		else if (registryVerbsMap.has(verb)) return registryVerbsMap.get(verb)!;
-		else return defaultVerb;
-	}
-
-
-function verbRecog(verb: string) {
-	if (gitVerbsMap.has(verb)) return "https://github.com/UCM-FDI-JaXpi/" + verb;
-	else if (registryVerbsMap.has(verb)) return registryVerbsMap.get(verb)!.url!;
-	else return "ERROR, VERB NOT CONTEMPLATED";
-}
-
-function createStatement(
+export function createStatement(
 	verbId: string,
-	objectId: string
-	): statementInterface {
+	objectId: string,
+	player: Player
+	): statementInterface | undefined {
+
+		//var temp = jsonArray[0];
+
+		/*
+		jsonArray.forEach(element => {
+			if (element.verb.display["en-US"] === verbId) temp = element;
+		});
+		*/
+		let temp = jsonArray.find(callbackfun);
+		function callbackfun(object): boolean{
+			if (object.verb.display["en-US"] === verbId) return true;
+			return false;
+		}
+
+		//if (temp !== undefined ){return undefined}			//En caso de un verbo que no exista
+		if (temp === undefined) return undefined;
+
 		const statement: statementInterface = {
 			actor: {
-				mbox: playerData().mail,
-				name: playerData().name,
+				id: player.id,
+				mbox: player.mail,
+				name: player.name,
 				objectType: "Agent"
 			},
 		
 			verb: {
-				id: verbRecog(verbId),
+				id: temp!.verb.id,								//No se puede asegurar que no sea undefined
 				display: {
-					"en-US": verbId
+					"en-US": temp!.verb.display["en-US"]
 				}
 			},
 		
@@ -159,11 +153,11 @@ function createStatement(
 				id: "http://example.com/resource/" + objectId,
 				definition: {
 					name: {
-						"en-US": verbDetails(verbId).name 
+						"en-US": temp!.object.definition.name["en-US"]
 					},
 					description: {
-						"en-US": verbDetails(verbId).descriptionEn, 
-						"es": verbDetails(verbId).descriptionEs
+						"en-US": temp!.object.definition.description["en-US"], 
+						"es": temp!.object.definition.description["es"]
 					}
 				},
 				objectType: "Activity"
@@ -180,21 +174,23 @@ export interface Player {
 	accountId: string;
 }
 
-function playerData(): Player { 
-    return {
-        name: "Player",
-    	mail: "mailto:player@mail.com",
-		id: "nameAccount",
-		accountId: "accountId"
-    };
-}
-
-let logIn = createStatement("login", "server");
+/*
+let logIn = createStatement("logIn", "server");
 let clicked = createStatement("clicked", "environment");
 let died = createStatement("died", "npc");
 let logOut = createStatement("logout", "server");
+
+
+
+console.log(JSON.stringify(logIn, null, 2));
+var a;
+console.log(a);
+
+console.log(JSON.stringify(jsonArray[0].actor.name));
+
 
 console.log(JSON.stringify(logIn, null, 2));
 console.log(JSON.stringify(clicked, null, 2));
 console.log(JSON.stringify(died, null, 2));
 console.log(JSON.stringify(logOut, null, 2));
+*/

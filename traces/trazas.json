@@ -84,7 +84,8 @@
                 "en-US": "Example Achievement1"
             },
             "description": {
-                "en-US": "You achieved Achievement1"
+                "en-US": "You achieved Achievement1",
+                "es": "Has logrado Achievment1"
             },
             "type": "http://adlnet.gov/expapi/activities/cmi.interaction",
             "interactionType": "true-false",
@@ -241,7 +242,7 @@
     "verb": {
         "id": "https://github.com/UCM-FDI-JaXpi/lib/logIn",
         "display": {
-            "en-US": "logged in"
+            "en-US": "logIn"
         }
     },
 
@@ -254,6 +255,39 @@
             "description": {
                 "en-US": "Indicates that the actor has logged in to some service.",
                 "es": "Indica que el actor ha iniciado sesión en algún servicio."
+            }
+        },
+        "objectType": "Activity"
+    }
+},
+
+
+{
+    "actor": {
+        "name": "Player",
+        "account": { 
+            "homePage": "https://example.com/accounts",
+            "name": "playerIdAccount"
+        },
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/logOut",
+        "display": {
+            "en-US": "logOut"
+        }
+    },
+
+    "object": {
+        "id": "http://adlnet.gov/expapi/activities/logOutActivity",
+        "definition": {
+            "name": {
+                "en-US": "Log out Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has logged out to some service.",
+                "es": "Indica que el actor ha terminado sesión en algún servicio."
             }
         },
         "objectType": "Activity"

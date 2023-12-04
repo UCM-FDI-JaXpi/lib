@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Player, logInStatement } from './traceGeneratorTest';
+import { Player, logStatement, createStatement } from './traceGeneratorTest';
 
 class JaxpiLib {
     private player: Player;
@@ -10,9 +10,10 @@ class JaxpiLib {
         this.url = url;
     }
 
-    public start() {
-        let json = logInStatement();
-        console.log(this.player);
+    public start(account: string) {
+      let json = logStatement("logIn", account, this.player);
+      if (json !== undefined) {
+        console.log(json.object.definition.description["es"])
         axios.post(this.url, json, {
             headers: {
               'Content-Type': 'application/json'
@@ -26,17 +27,52 @@ class JaxpiLib {
             .catch(error => {
               console.error('Error al enviar la traza JaXpi:', error.message);
             });
+        }
     }
     
 
-    public advance(): string {
-        return this.url;
+    public advance(verb: string, object: string){
+      let json = createStatement(verb, object, this.player);
+      if (json !== undefined) {
+        axios.post(this.url, json, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          // En caso de éxito, imprime la respuesta del servidor
+            .then(response => {
+              console.log('Respuesta:', response.data);
+            })
+          // En caso de error, lo imprime
+            .catch(error => {
+              console.error('Error al enviar la traza JaXpi:', error.message);
+            });
+        }
     }
 
-    public end(): string {
-        return this.url;
+    public end(account: string) {
+      let json = logStatement("logOut", account, this.player);
+      if (json !== undefined) {
+        axios.post(this.url, json, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          // En caso de éxito, imprime la respuesta del servidor
+            .then(response => {
+              console.log('Respuesta:', response.data);
+            })
+          // En caso de error, lo imprime
+            .catch(error => {
+              console.error('Error al enviar la traza JaXpi:', error.message);
+            });
+        }
+    }
+
+    public actorUpdate(player: Player) {
+      this.player = player;
     }
 }
         
 let jaxpi = new JaxpiLib({name: "1", mail: "m", id:"b", accountId:"x"},"http://localhost:3000");
-jaxpi.start();
+jaxpi.start("account");
