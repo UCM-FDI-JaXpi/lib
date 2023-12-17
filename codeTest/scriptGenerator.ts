@@ -31,26 +31,13 @@ function generateClassWithFunctions(verbs: VerbUrlMap): string {
     }
     
     obtenerDatosDesdeURL("${value}")
-      .then((data) => {
+      .then((data) => {             // data es un objeto JSON
         
-        //this data is a json object
+        // cambiamos el valor de los campos de actor para el player especifico
         data.actor.mbox = this.player.mail;
         data.actor.name = this.player.name;
         
-        //we send this trace to the server
-        axios.post(this.url, data, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        })
-        // En caso de éxito, imprime la respuesta del servidor
-          .then(response => {
-            console.log('Respuesta:', response.data);
-          })
-        // En caso de error, lo imprime
-          .catch(error => {
-            console.error('Error al enviar la traza JaXpi:', error.message);
-          });
+        this.sendTraza({ user_id: this.player.userId, session_id: this.player.sessionId, traza: data });
         
       })
       .catch((error) => {
@@ -59,15 +46,32 @@ function generateClassWithFunctions(verbs: VerbUrlMap): string {
 
    }`);
    
-  return `import axios from 'axios';\n` + 
-  `import { Player } from './traceGeneratorTest';\n\n` +
-  `export class GeneratedVerbs {
+  return `import axios from 'axios';\n\n` +
+  `interface Player {
+    name: string;
+    mail: string;
+	  userId: string;
+	  sessionId: string;
+  }\n\n` +
+  `export class Jaxpi {
     private player: Player;
     private url: string;\n
     constructor(player: Player, url: string) {
       this.player = player;
       this.url = url;
-    }
+    }\n\n
+    sendTraza = async (traza: any) => {
+      try {
+        const response = await axios.post(this.url, traza, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        });
+        console.log('Respuesta:', response.data);
+      } catch (error) {
+        console.error('Error al enviar la traza JaXpi:', (error as Error).message);
+      }
+    };\n\n
     \n${methods.join('\n')}\n
   }`;
 }
@@ -107,7 +111,7 @@ async function generarMapaDeVerbos(): Promise<VerbUrlMap> {
 generarMapaDeVerbos()
   .then((mapaGenerado) => {
     let generatedCode = generateClassWithFunctions(mapaGenerado);
-    fs.writeFileSync('generated-functions.ts', generatedCode);  //JaxPiLib
+    fs.writeFileSync('JaxpiLib.ts', generatedCode);  //JaxPiLib
   })
   .catch((error) => {
     console.error('Error al generar el mapa:', error);
