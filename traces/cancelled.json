@@ -1,0 +1,28 @@
+{
+    "actor": {
+        "mbox": "mailto:player@gmail.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/cancelled",
+        "display": {
+            "en-US": "cancelled"
+        }
+    },
+
+    "object": {
+        "id": "http://adlnet.gov/expapi/activities/example",
+        "definition": {
+            "name": {
+                "en-US": "Example Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has canceled the object. For example, canceling a mission.",
+                "es": "Indica que el actor ha cancelado el objeto. Por ejemplo, cancelar una misión."
+            }
+        },
+        "objectType": "Activity"
+    }
+}

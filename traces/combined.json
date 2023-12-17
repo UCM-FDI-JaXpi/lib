@@ -1,0 +1,28 @@
+{
+    "actor": {
+        "mbox": "mailto:player@example.com",
+        "name": "Player",
+        "objectType": "Agent"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/combined",
+        "display": {
+            "en-US": "combined"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/activities/combinations",
+        "definition": {
+            "name": {
+                "en-US": "Combinations Activity"
+            },
+            "description": {
+                "en-US": "Indicates that the actor has combined the object with another object.",
+                "es": "Indica que el actor ha combinado el objeto con otro objeto."
+            }
+        },
+        "objectType": "Activity"
+    }
+}
