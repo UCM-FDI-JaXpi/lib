@@ -1,4 +1,4 @@
 import {Jaxpi} from './JaxpiLib';
 
-let jaxpi = new Jaxpi({name: "1", mail: "m", userId:"b", sessionId:"x"},"http://localhost:3000");
+let jaxpi = new Jaxpi({name: "Jugador1", mail: "mail@test.com", userId:"a", sessionId:"b"},"http://localhost:3000/traza-jaxpi");
 jaxpi.achieved();

@@ -12,25 +12,8 @@ interface VerbUrlMap {
 // This function returns a string with the class with a method for each xapi trace 
 function generateClassWithFunctions(verbs: VerbUrlMap): string {
   const methods = Object.entries(verbs).map(([key, value]) =>  ` ${key}() { 
-    
-    async function obtenerDatosDesdeURL(url: string) {
-      try {
-          const response = await fetch(url);
-          
-          if (!response.ok) {
-              throw new Error('No se pudo obtener el archivo JSON');
-          }
-  
-          const data = await response.json();
-          
-          return data;
-      } catch (error) {
-          console.error('Error al obtener datos:', error);
-          return null;
-      }
-    }
-    
-    obtenerDatosDesdeURL("${value}")
+
+    getDataFromURL("${value}")
       .then((data) => {             // data es un objeto JSON
         
         // cambiamos el valor de los campos de actor para el player especifico
@@ -46,12 +29,28 @@ function generateClassWithFunctions(verbs: VerbUrlMap): string {
 
    }`);
    
-  return `import axios from 'axios';\n\n` +
+  let codeBody = `import axios from 'axios';\n\n` +
   `interface Player {
     name: string;
     mail: string;
 	  userId: string;
 	  sessionId: string;
+  }\n\n` +
+  `async function getDataFromURL(url: string) {
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error('No se pudo obtener el archivo JSON');
+        }
+
+        const data = await response.json();
+        
+        return data;
+    } catch (error) {
+        console.error('Error al obtener datos de la url:', error);
+        return null;
+    }
   }\n\n` +
   `export class Jaxpi {
     private player: Player;
@@ -59,8 +58,8 @@ function generateClassWithFunctions(verbs: VerbUrlMap): string {
     constructor(player: Player, url: string) {
       this.player = player;
       this.url = url;
-    }\n\n
-    sendTraza = async (traza: any) => {
+    }\n\n` +
+    `private sendTraza = async (traza: any) => {
       try {
         const response = await axios.post(this.url, traza, {
         headers: {
@@ -71,30 +70,32 @@ function generateClassWithFunctions(verbs: VerbUrlMap): string {
       } catch (error) {
         console.error('Error al enviar la traza JaXpi:', (error as Error).message);
       }
-    };\n\n
-    \n${methods.join('\n')}\n
+    };\n\n`+
+    `\n${methods.join('\n')}\n
   }`;
+
+  return codeBody;
 }
 
 // URL de la API de GitHub para obtener el contenido de la carpeta de los verbos
 const githubApiUrl = 'https://api.github.com/repos/UCM-FDI-JaXpi/lib/contents/traces';
 
-async function generarMapaDeVerbos(): Promise<VerbUrlMap> {
+async function generateVerbMap(): Promise<VerbUrlMap> {
   try {
     const response = await axios.get(githubApiUrl);
 
     if (response.status === 200) {
-      const archivos = response.data;
+      const files = response.data;
 
       const verbUrlMap: VerbUrlMap = {};
 
       // Filtra y obtiene solo los archivos JSON de la lista de archivos
-      const archivosJSON = archivos.filter((archivo: any) => archivo.name.endsWith('.json'));
+      const JSONFiles = files.filter((file: any) => file.name.endsWith('.json'));
 
       // Construye el mapa de verbos y URLs dinámicamente
-      for (const archivo of archivosJSON) {
-        const verbo = archivo.name.replace('.json', '');
-        verbUrlMap[verbo] = archivo.download_url;
+      for (const file of JSONFiles) {
+        const verb = file.name.replace('.json', '');
+        verbUrlMap[verb] = file.download_url;
       }
 
       return verbUrlMap;
@@ -108,7 +109,7 @@ async function generarMapaDeVerbos(): Promise<VerbUrlMap> {
 }
 
 // Llama a la función para generar dinámicamente el mapa de verbos
-generarMapaDeVerbos()
+generateVerbMap()
   .then((mapaGenerado) => {
     let generatedCode = generateClassWithFunctions(mapaGenerado);
     fs.writeFileSync('JaxpiLib.ts', generatedCode);  //JaxPiLib
