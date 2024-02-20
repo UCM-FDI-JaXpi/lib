@@ -14,7 +14,7 @@
     "object": {
         "id": "http://example.com/jumped",
         "definition": {
-            "type": "",
+            "type": "aa",
             "name": {
                 "en-US": "Example jumped"
             },
