@@ -1,0 +1,35 @@
+{
+    "actor": {
+        "name": "Player",
+        "mbox": "mailto:player@gmail.com"
+    },
+
+    "verb": {
+        "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
+        "display": {
+            "en-US": "jumped"
+        }
+    },
+
+    "object": {
+        "id": "http://example.com/jumped",
+        "definition": {
+            "type": "",
+            "name": {
+                "en-US": "Example jumped"
+            },
+            "description": {
+                "en-US": "You jumped",
+                "es": "Has saltado"
+            },
+            "extensions": {
+                "https://github.com/UCM-FDI-JaXpi/distance": 5,
+                "https://github.com/UCM-FDI-JaXpi/units": "meters"
+            }
+        }
+    },
+
+    "result": {
+        "success": true
+    }
+}
