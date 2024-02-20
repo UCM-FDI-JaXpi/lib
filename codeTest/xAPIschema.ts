@@ -1,25 +1,47 @@
-interface XAPITrace {
+interface XAPIStatement {
     actor: {
-      account?: {
-        name: string;
-      }
-      mbox: string;
       name: string;
-      objectType: string;
+      mbox: string;
     };
     verb: {
       id: string;
-      display: Record<string, string>;
+      display: object;
     };
     object: {
       id: string;
       definition: {
-        name: Record<string, string>;
-        description: Record<string, string>;
-        type?: string;
-        interactionType?: string;
-        correctResponsesPattern?: [boolean];
+        type: string;
+        name: object;
+        description: object;
+        extensions?: object;
       };
-      objectType: string;
     };
+    result?: {
+      completion: boolean;
+      success: boolean;
+      score:{
+        scaled: number;
+      };
+      extensions: object;
+    };
+    context?: {
+      instructor:{
+        name: string;
+        mbox: string;
+      };
+      contextActivities:{
+        parent: {
+          id: string;
+        };
+        grouping: {
+          id: string;
+        };
+      };
+      extensions: object;
+    };
+    timestamp: Date;
+    authority?:{
+      name: string;
+      mbox: string;
+    }
   }
