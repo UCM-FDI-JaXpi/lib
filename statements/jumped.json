@@ -27,9 +27,5 @@
                 "https://github.com/UCM-FDI-JaXpi/units": "meters"
             }
         }
-    },
-
-    "result": {
-        "success": true
     }
 }
