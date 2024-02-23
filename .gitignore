@@ -1,3 +1,6 @@
 dist/
 node_modules/
 clientTest.ts
+clientTest.js
+scriptGenerator.js
+validateStatement.js
