@@ -1,103 +1,4 @@
-// script-generate-code.ts
-// import a library for file writing
-import * as fs from 'fs';
-import axios from 'axios';
-import {checkXAPI} from './validateStatement';
-
-
-interface VerbUrlMap {
-  [verbId: string]: string;
-}
-
-async function getDataFromURL(url: string) {
-  try {
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-          throw new Error('No se pudo obtener el archivo JSON');
-      }
-
-      const data = await response.json();
-      
-      return data;
-  } catch (error) {
-      console.error('Error al obtener datos de la url:', error);
-      return null;
-  }
-}
-
-async function getParameters(url: any){
-
-  let parameters = "";
-
-  await getDataFromURL(url)
-        .then((statement) => {
-
-          if (statement.object.definition.extensions !== undefined) {
-            for (let field in statement.object.definition.extensions) {
-              parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
-                + typeof statement.object.definition.extensions[field] + ",";
-            }
-            //parameters = parameters.slice(0, -1);
-          }
-        })
-        .catch((error) => {
-          console.error('Error al ejecutar getparameters:', error);
-        });
-
-  return parameters;
-}
-
-function setStatement(parameters: string) : string{
-  let code = "";
-
-  if(parameters !== ""){   // statement = "distance : "number",units : "string""
-    parameters = parameters.slice(0, -1); // elimina la ultima coma (necesaria por customObject)
-    let arraystring = parameters.split(",");
-    for (let field of Object.values(arraystring)) {
-      code += "data.object.extensions['https://github.com/UCM-FDI-JaXpi/" + field.substring(0,field.lastIndexOf(":") - 1) + "'] = " + field.substring(0,field.lastIndexOf(":") - 1) + ";" + "\n";
-    }
-  }
-
-  return code;
-}
-
-
-// This function returns a string with the class with a method for each xapi trace 
-async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
-
-  const methodPromises = Object.entries(verbs).map(async ([key, value]) => {
-    const parameters = await getParameters(value);
-    
-    return ` ${key}(${parameters}customObject? : object) { 
-      getDataFromURL("${value}")
-      .then((data) => {             // data es un objeto JSON
-        
-        // Cambiamos el objeto si usuario nos pasa uno y actualizamos los parametros
-        if(customObject !== undefined) data.object = customObject;
-        `
-        +
-        setStatement(parameters)
-        +
-        `
-        
-        try {
-          const statement = this.generateStatement(data);
-          statementEnqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
-        } catch (error) {
-          console.error("Error al generar el statement:", error);
-        }
-
-      })
-      .catch((error) => {
-          console.error('Error al obtener datos:', error);
-      });
-    }`;
-  });
-
-  const methods = await Promise.all(methodPromises);
-   
-  let codeBody = ` 
+ 
   import axios from 'axios';
   import { Queue } from 'queue-typescript';
   import { XAPIStatement } from './xAPIschema';
@@ -108,14 +9,15 @@ async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
   function statementEnqueue(traza: any){
     statementQueue.enqueue(traza);
   }
-  \n` +
-  `interface Player {
+  
+interface Player {
     name: string;
     mail: string;
 	  userId: string;
 	  sessionId: string;
-  }\n\n` +
-  `async function getDataFromURL(url: string) {
+  }
+
+async function getDataFromURL(url: string) {
     try {
         const response = await fetch(url);
         
@@ -130,8 +32,9 @@ async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
         console.error('Error al obtener datos de la url:', error);
         return null;
     }
-  }\n\n` +
-  `export class Jaxpi {
+  }
+
+export class Jaxpi {
     private player: Player;
     private url: string;
     private isSending: boolean;
@@ -271,9 +174,8 @@ async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
         }
       }, 100);
     });
-}\n`+
+}
 
- `
   customVerbWithJson(json: any) { 
     
     if (checkXAPI(json)){
@@ -288,65 +190,30 @@ async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
 
     statementEnqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: this.generateStatement(statement) });
 
-  }\n\n`
-  +  `\n${methods.join('\n')}\n
-  }`;
-
-  return codeBody;
-}
-
-// URL de la API de GitHub para obtener el contenido de la carpeta de los verbos
-const githubApiUrl = 'https://api.github.com/repos/UCM-FDI-JaXpi/lib/contents/statements';
-
-
-
-
-async function generateVerbMap(): Promise<VerbUrlMap> {
-  try {
-    const response = await axios.get(githubApiUrl);
-
-    if (response.status === 200) {
-      const files = response.data;
-
-      const verbUrlMap: VerbUrlMap = {};
-
-      // Filtra y obtiene solo los archivos JSON de la lista de archivos
-      const JSONFiles = files.filter((file: any) => file.name.endsWith('.json'));
-
-      // Construye el mapa de verbos y URLs dinámicamente
-      for (const file of JSONFiles) {
-
-        
-        await getDataFromURL(file.download_url)
-        .then((json) => {
-          if(checkXAPI(json)){
-            const verb = file.name.replace('.json', '');
-            verbUrlMap[verb] = file.download_url;
-          }
-        })
-        .catch((error) => {
-          console.error('Error al mostrar el json:', error);
-        });
-
-        
-      }
-
-      return verbUrlMap;
-    } else {
-      throw new Error('No se pudo obtener el contenido del repositorio');
-    }
-  } catch (error) {
-    console.error('Error al obtener datos para construir el mapa de verbos:', error);
-    return {};
   }
-}
 
-// Llama a la función para generar dinámicamente el mapa de verbos
-generateVerbMap()
-  .then(async (mapaGenerado) => {
-    let generatedCode = await generateClassWithFunctions(mapaGenerado);
-    fs.writeFileSync('jaxpiLib.ts', generatedCode);  //JaxPiLib
-  })
-  .catch((error) => {
-    console.error('Error al generar el mapa:', error);
-  });
+
+ jumped(distance : number,units : string,customObject? : object) { 
+      getDataFromURL("https://raw.githubusercontent.com/UCM-FDI-JaXpi/lib/main/statements/jumped.json")
+      .then((data) => {             // data es un objeto JSON
+        
+        // Cambiamos el objeto si usuario nos pasa uno y actualizamos los parametros
+        if(customObject !== undefined) data.object = customObject;
+        data.object.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
+data.object.extensions['https://github.com/UCM-FDI-JaXpi/units'] = units;
+
+        
+        try {
+          const statement = this.generateStatement(data);
+          statementEnqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
+        } catch (error) {
+          console.error("Error al generar el statement:", error);
+        }
+
+      })
+      .catch((error) => {
+          console.error('Error al obtener datos:', error);
+      });
+    }
+
+  }
