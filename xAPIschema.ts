@@ -1,4 +1,4 @@
-interface XAPIStatement {
+export interface XAPIStatement {
     actor: {
       name: string;
       mbox: string;
@@ -39,7 +39,7 @@ interface XAPIStatement {
       };
       extensions: object;
     };
-    timestamp: Date;
+    timestamp: string;
     authority?:{
       name: string;
       mbox: string;
