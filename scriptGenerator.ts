@@ -56,7 +56,7 @@ function setStatement(parameters: string) : string{
     parameters = parameters.slice(0, -1); // elimina la ultima coma (necesaria por customObject)
     let arraystring = parameters.split(",");
     for (let field of Object.values(arraystring)) {
-      code += "data.object.extensions['https://github.com/UCM-FDI-JaXpi/" + field.substring(0,field.lastIndexOf(":") - 1) + "'] = " + field.substring(0,field.lastIndexOf(":") - 1) + ";" + "\n";
+      code += "data.object.definition.extensions['https://github.com/UCM-FDI-JaXpi/" + field.substring(0,field.lastIndexOf(":") - 1) + "'] = " + field.substring(0,field.lastIndexOf(":") - 1) + ";" + "\n";
     }
   }
 
@@ -150,7 +150,7 @@ async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
 
     private generateStatement(data: any) : XAPIStatement{
 
-      if (!data.actor || !data.actor.mbox || !data.actor.name || !data.verb || !data.verb.id || !data.verb.display || !data.object || !data.object.id || !data.object.definition || !data.object.definition.type || !data.object.definition.name || !data.object.definition.description || !data.timestamp) {
+      if (!data.actor || !data.actor.mbox || !data.actor.name || !data.verb || !data.verb.id || !data.verb.display || !data.object || !data.object.id || !data.object.definition || !data.object.definition.type || !data.object.definition.name || !data.object.definition.description) {
         throw new Error('Faltan datos requeridos para generar el statement.');
       }
   
