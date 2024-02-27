@@ -52,7 +52,7 @@ export class Jaxpi {
 
     private generateStatement(data: any) : XAPIStatement{
 
-      if (!data.actor || !data.actor.mbox || !data.actor.name || !data.verb || !data.verb.id || !data.verb.display || !data.object || !data.object.id || !data.object.definition || !data.object.definition.type || !data.object.definition.name || !data.object.definition.description || !data.timestamp) {
+      if (!data.actor || !data.actor.mbox || !data.actor.name || !data.verb || !data.verb.id || !data.verb.display || !data.object || !data.object.id || !data.object.definition || !data.object.definition.type || !data.object.definition.name || !data.object.definition.description) {
         throw new Error('Faltan datos requeridos para generar el statement.');
       }
   
@@ -125,8 +125,8 @@ export class Jaxpi {
     try {
       if (!(this.statementQueue.length != 0)) {
         this.isSending = true;
-
-        const response = await axios.post(this.url, this.statementQueue.tail, { //Entiendo que tail es el elemento de la cola que queremos enviar
+        console.log(this.statementQueue.tail);
+        const response = await axios.post(this.url, this.statementQueue.tail.statement, { //Entiendo que tail es el elemento de la cola que queremos enviar
         headers: {
           'Content-Type': 'application/json',
         },
@@ -193,14 +193,14 @@ export class Jaxpi {
   }
 
 
- jumped(distance : number,units : string,customObject? : object) { 
+ jumped(jumped_distance : number,jumped_units : string,customObject? : object) { 
       getDataFromURL("https://raw.githubusercontent.com/UCM-FDI-JaXpi/lib/main/statements/jumped.json")
       .then((data) => {             // data es un objeto JSON
         
         // Cambiamos el objeto si usuario nos pasa uno y actualizamos los parametros
         if(customObject !== undefined) data.object = customObject;
-        data.object.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
-data.object.extensions['https://github.com/UCM-FDI-JaXpi/units'] = units;
+        data.object.definition.extensions['https://github.com/UCM-FDI-JaXpi/jumped_distance'] = jumped_distance;
+data.object.definition.extensions['https://github.com/UCM-FDI-JaXpi/jumped_units'] = jumped_units;
 
         
         try {
