@@ -33,10 +33,11 @@ async function getParameters(url: any){
   await getDataFromURL(url)
         .then((statement) => {
 
-          if (statement.object.definition.extensions !== undefined) {
+          if (statement.object.definition.extensions !== undefined) {     //Si existen paramtros estos estan en el campo extension de json.object
             for (let field in statement.object.definition.extensions) {
-              parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
-                + typeof statement.object.definition.extensions[field] + ",";
+              if (field.substring(field.lastIndexOf("/") + 1).split("_")[0] == statement.verb.id.substring(statement.verb.id.lastIndexOf("/") + 1))   //Comprueba si el parametro de extension es relevante para el verbo
+                parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
+                  + typeof statement.object.definition.extensions[field] + ",";
             }
             //parameters = parameters.slice(0, -1);
           }
@@ -66,7 +67,7 @@ function setStatement(parameters: string) : string{
 // This function returns a string with the class with a method for each xapi trace 
 async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
 
-  const methodPromises = Object.entries(verbs).map(async ([key, value]) => {
+  const methodPromises = Object.entries(verbs).map(async ([key, value]) => {    //Necesita esperar a las Promise de todos las funciones o las escribe mal al generar el codigo
     const parameters = await getParameters(value);
     
     return ` ${key}(${parameters}customObject? : object) { 

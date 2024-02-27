@@ -1,6 +1,6 @@
 {
     "actor": {
-        "name": "Player",
+        "name": "Fulanito",
         "mbox": "mailto:player@gmail.com"
     },
 
@@ -12,19 +12,20 @@
     },
 
     "object": {
-        "id": "http://example.com/jumped",
+        "id": "http://example.com/Mario",
         "definition": {
-            "type": "aa",
+            "type": "Playable character",
             "name": {
-                "en-US": "Example jumped"
+                "en-US": "Coprotagonist of the game"
             },
             "description": {
-                "en-US": "You jumped",
-                "es": "Has saltado"
+                "en-US": "Mario jumped",
+                "es": "Mario ha saltado"
             },
             "extensions": {
-                "https://github.com/UCM-FDI-JaXpi/distance": 5,
-                "https://github.com/UCM-FDI-JaXpi/units": "meters"
+                "https://github.com/UCM-FDI-JaXpi/jumped_distance": 5,
+                "https://github.com/UCM-FDI-JaXpi/jumped_units": "meters",
+                "https://github.com/UCM-FDI-JaXpi/attacked_damage": 15
             }
         }
     }
