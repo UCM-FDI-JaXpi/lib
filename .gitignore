@@ -2,7 +2,6 @@ dist/
 node_modules/
 jaxpiLib.ts
 jaxpiLib.js
-clientTest.ts
 clientTest.js
 scriptGenerator.js
 validateStatement.js
