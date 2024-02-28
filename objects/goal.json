@@ -1,0 +1,17 @@
+{
+    "id": "http://example.com/goals/goal",
+    "definition": {
+        "type": "Goal",
+        "name": {
+            "en-us": "Goal 1",
+            "es": "Objetivo 1"
+        },
+        "description": {
+            "en-us": "You have achieved goal 1",
+            "es": "Has logrado el objetivo 1"
+        },
+        "extensions": {
+            "https://example.com/game/goal_difficulty": "Hard"
+        }
+    }
+}

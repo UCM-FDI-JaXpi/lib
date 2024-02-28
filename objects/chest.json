@@ -1,0 +1,18 @@
+{
+    "id": "http://example.com/objects/chest",
+    "definition": {
+        "type": "Chest",
+        "name": {
+            "en-us": "Chest 1",
+            "es": "Cofre 1"
+        },
+        "description": {
+            "en-us": "Chest 1 has been closed",
+            "es": "El cofre 1 ha sido cerrado"
+        },
+        "extensions": {
+            "https://example.com/game/chest_locked": true,
+            "https://example.com/game/chest_lock_type": "Combination"
+        }
+    }
+}

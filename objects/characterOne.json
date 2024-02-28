@@ -1,0 +1,19 @@
+{
+  "id": "http://example.com/character-one",
+  "definition": {
+    "type": "Playable character",
+    "name": {
+      "en-us": "Mario",
+      "es": "Mario"
+    },
+    "description": {
+      "en-us": "Mario is the main protagonist of the game",
+      "es": "Mario es el protagonista del juego"
+    },
+    "extensions": {
+      "https://github.com/UCM-FDI-JaXpi/jumped_distance": 5,
+      "https://github.com/UCM-FDI-JaXpi/jumped_units": "meters",
+      "https://github.com/UCM-FDI-JaXpi/attacked_damage": 15
+    }
+  }
+}

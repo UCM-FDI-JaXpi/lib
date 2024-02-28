@@ -1,0 +1,18 @@
+{
+    "id": "http://example.com/rewards/reward",
+    "definition": {
+        "type": "Reward",
+        "name": {
+            "en-us": "Reward 1",
+            "es": "Recompensa 1"
+        },
+        "description": {
+            "en-us": "You have accepted reward 1",
+            "es": "Has aceptado la recompensa 1"
+        },
+        "extensions": {
+            "https://example.com/game/reward_type": "Experience points",
+            "https://example.com/game/reward_value": 100
+        }
+    }
+}

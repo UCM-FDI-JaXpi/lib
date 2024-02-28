@@ -1,0 +1,17 @@
+{
+    "id": "http://example.com/achievements/special-award",
+    "definition": {
+        "type": "Special award",
+        "name": {
+            "en-us": "Special award",
+            "es": "Premio especial"
+        },
+        "description": {
+            "en-us": "Special award earned by achieving a significant milestone in the game",
+            "es": "Premio especial obtenido al alcanzar un hito significativo en el juego"
+    },
+        "extensions": {
+            "https://example.com/game/special_award_value": "Gold"
+        }
+    }
+}

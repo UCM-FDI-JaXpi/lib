@@ -1,0 +1,18 @@
+{
+    "id": "http://example.com/tasks/task",
+    "definition": {
+        "type": "Task",
+        "name": {
+            "en-us": "Task 1",
+            "es": "Tarea 1"
+        },
+        "description": {
+            "en-us": "You have accepted task 1",
+            "es": "Has aceptado la tarea 1"
+        },
+        "extensions": {
+            "https://example.com/game/task_difficulty": "Easy",
+            "https://example.com/game/task_importance": "High"
+        }
+    }
+}

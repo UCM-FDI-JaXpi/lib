@@ -1,0 +1,18 @@
+{
+    "id": "http://example.com/achievements/game-completion",
+    "definition": {
+        "type": "Achievement category",
+        "name": {
+            "en-us": "Game completion",
+            "es": "Juego completado"
+        }
+    },
+    "description": {
+        "en-us": "Congratulations! You have completed the game.",
+        "es": "¡Felicidades! Has completado el juego."
+    },
+    "extensions": {
+        "https://example.com/game/completion_time": "5 hours",
+        "https://example.com/game/total_score": 1500
+    }
+}

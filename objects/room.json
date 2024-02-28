@@ -1,0 +1,19 @@
+{
+    "id": "http://example.com/rooms/room",
+    "definition": {
+        "type": "Room",
+        "name": {
+            "en-us": "Room 1",
+            "es": "Habitación 1"
+        },
+        "description": {
+            "en-us": "You have accessed room 1",
+            "es": "Has accedido a la habitación 1"
+        },
+        "extensions": {
+            "https://example.com/game/room_difficulty": "Medium",
+            "https://example.com/game/room_type": "Puzzle",
+            "https://example.com/game/room_visited_times": 3
+        }
+    }
+}
