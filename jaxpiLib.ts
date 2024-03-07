@@ -168,7 +168,7 @@
 
 
     
- accepted(object1: string,object? : any,extraParameters?: Map<string, any>) { 
+ accepted(object : any,extraParameters?: Map<string, any>) { 
                   
           if(!checkObject(object))
             throw new Error('El objeto no es valido');
