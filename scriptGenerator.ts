@@ -2,12 +2,18 @@
 // import a library for file writing
 import * as fs from 'fs';
 import axios from 'axios';
-import {checkXAPI} from './validateStatement';
+import {checkVerb,checkObject} from './validateStatement';
 
 
-interface VerbUrlMap {
-  [verbId: string]: string;
-}
+const verbObjectRelation: Map<string, string[]> = new Map([
+  ["jumped", ["characterOne", "characterTwo", "enemy"]],
+  ["achieved", ["mission", "level1Complete"]],
+  ["accepted", ["characterOne", "characterTwo", "enemy"]],
+  ["accessed", ["characterOne", "characterTwo", "enemy"]],
+  ["achieved", ["characterOne", "characterTwo", "enemy"]],
+  ["cancelled", ["characterOne", "characterTwo", "enemy"]],
+  ["chatted", ["characterOne", "characterTwo", "enemy"]]
+]);
 
 async function getDataFromURL(url: string) {
   try {
@@ -26,324 +32,300 @@ async function getDataFromURL(url: string) {
   }
 }
 
-async function getParameters(url: any){
+async function getParameters(verb: any, object: any){
+  try{
+    let parameters = "";
+    
+    if(object === undefined) return parameters;
+    if (object.definition.extensions !== undefined) {     //Si existen parametros estos estan en el campo extension de json.object
+      for (let field in object.definition.extensions) {
+        if (field.substring(field.lastIndexOf("/") + 1).split("_")[0] == verb.id.substring(verb.id.lastIndexOf("/") + 1))   //Comprueba si el parametro de extension es relevante para el verbo
+          parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
+            + typeof object.definition.extensions[field] + ",";
+      }
+      //parameters = parameters.slice(0, -1);
+    }
 
-  let parameters = "";
-
-  await getDataFromURL(url)
-        .then((statement) => {
-
-          if (statement.object.definition.extensions !== undefined) {     //Si existen paramtros estos estan en el campo extension de json.object
-            for (let field in statement.object.definition.extensions) {
-              if (field.substring(field.lastIndexOf("/") + 1).split("_")[0] == statement.verb.id.substring(statement.verb.id.lastIndexOf("/") + 1))   //Comprueba si el parametro de extension es relevante para el verbo
-                parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
-                  + typeof statement.object.definition.extensions[field] + ",";
-            }
-            //parameters = parameters.slice(0, -1);
-          }
-        })
-        .catch((error) => {
-          console.error('Error al ejecutar getparameters:', error);
-        });
-
-  return parameters;
+    return parameters;
+  }catch(error) {
+    console.error('Error en getParameters:', error);
+    throw error;
+  }
 }
 
-function setStatement(parameters: string) : string{
-  let code = "";
+function setStatement(parameters: string): string {
+  try {
+    //let parameters = await parametersPromise; // Espera a que se resuelva la promesa de parameters
+    let code = "";
 
-  if(parameters !== ""){   // statement = "distance : "number",units : "string""
-    parameters = parameters.slice(0, -1); // elimina la ultima coma (necesaria por customObject)
-    let arraystring = parameters.split(",");
-    for (let field of Object.values(arraystring)) {
-      code += "data.object.definition.extensions['https://github.com/UCM-FDI-JaXpi/" + field.substring(0,field.lastIndexOf(":") - 1) + "'] = " + field.substring(0,field.lastIndexOf(":") - 1) + ";" + "\n";
+    if (parameters !== "") {
+      parameters = parameters.slice(0, -1); // Elimina la última coma (necesaria por customObject)
+      let arraystring = parameters.split(",");
+      for (let field of Object.values(arraystring)) {
+        code += "object.definition.extensions['https://github.com/UCM-FDI-JaXpi/" + field.substring(0, field.lastIndexOf(":") - 1) + "'] = " + field.substring(0, field.lastIndexOf(":") - 1) + ";" + "\n";
+      }
     }
+
+    return code;
+  } catch (error) {
+    console.error('Error en setStatement:', error);
+    throw error; // Propaga el error para que sea manejado externamente
+  }
+}
+
+
+// Función para obtener el JSON del objeto relacionado con un verbo
+async function getObjectRelatedToVerb(verb: string): Promise<any | undefined> {
+  const objects = verbObjectRelation.get(verb);
+  if (objects === undefined || !objects[0]) {
+    return undefined;
   }
 
-  return code;
+  try {
+    const response = await axios.get(githubApiUrlObjects);
+    const files = response.data;
+
+    // Filtra y obtiene solo los archivos JSON de la lista de archivos
+    const JSONFiles = files.filter((file: any) => file.name.endsWith('.json'));
+
+    // Busca el objeto relacionado con el verbo para obtener su JSON
+    for (const file of JSONFiles) {
+      if (file.name === objects[0] + ".json") {
+        const object = await getDataFromURL(file.download_url);
+        return object;
+      }
+    }
+
+  } catch (error) {
+    console.error('Error al obtener datos del repositorio Git:', error);
+    throw error; // Propaga el error para que sea manejado externamente
+  }
+
+  return undefined;
 }
 
 
 // This function returns a string with the class with a method for each xapi trace 
-async function generateClassWithFunctions(verbs: VerbUrlMap): Promise<string> {
+async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<string,any>): Promise<string> {
+  try{
+    const methodPromises = [...verbs.entries()].map(async ([key, value]) => {    //Necesita esperar a las Promise de todos las funciones o las escribe mal al generar el codigo
+                                                                                // [...verbs.entries()] Porque es una estructura map y eso lo convierte a un array para posible uso, tambien seria valido Map.prototype.entries() sin cambiar el map
+      const object = await getObjectRelatedToVerb(key);
+      const parameters = await getParameters(value,object);
+      const parametersUpdate = setStatement(parameters);
 
-  const methodPromises = Object.entries(verbs).map(async ([key, value]) => {    //Necesita esperar a las Promise de todos las funciones o las escribe mal al generar el codigo
-    const parameters = await getParameters(value);
+      //console.log(parameters + "\n" + parametersUpdate);
 
-    return ` ${key}(${parameters}customObject? : object) { 
-      this.enqueueAction(async () => {
-        const data = await getDataFromURL("${value}");
-        // data es un objeto JSON
-  
-        // Cambiamos el objeto si el usuario nos pasa uno y actualizamos los parámetros
-        if (customObject !== undefined) data.object = customObject;
-        `
-        +
-        setStatement(parameters)
-        +
-        `
-        const statement = this.generateStatement(data);
-        await this.statementEnqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
+      return ` ${key}(${parameters}object : any,extraParameters?: Map<string, any>) { 
+                  
+          if(!checkObject(object))
+            throw new Error('El objeto no es valido');
+          
+          // if(!this.getObjectsRelatedToVerb(object.id.substring(object.id.lastIndexOf("/") + 1))){
+          //   throw new Error('El objeto no esta relacionado con el verbo');
+          // }
+    
+          if (!object.definition.hasOwnProperty("extensions")) {
+            object.definition["extensions"] = {};
+          }
+
+          ${parametersUpdate}
+
+          if (extraParameters && extraParameters.size > 0) {
+            extraParameters.forEach((value, key) => {
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + key] = value;
+            });
+          }
+    
+          const statement = generateStatement(this.player,this.verbMap.get("${key}"), object);
+          this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
+      }`;
+    });
+
+    const methods = await Promise.all(methodPromises);
+    const verbsMap = Array.from(verbs.entries()).map(async ([key, value]) => {
+      return `["${key}",${JSON.stringify(value)}]`;
+    });
+    const objectsMap = Array.from(objects.entries()).map(async ([key, value]) => {
+      return `["${key}",${JSON.stringify(value)}]`;
+    });
+    const [resolvedVerbsMap, resolvedObjectsMap] = await Promise.all([Promise.all(verbsMap), Promise.all(objectsMap)]);
+
+    
+    let codeBody = `  import { Player, generateStatement, generateStatementFromZero } from './generateStatement';
+  import { checkObject, checkVerb } from './validateStatement';
+  import axios from 'axios';
+  import { Queue } from 'queue-typescript';
+
+
+  export class Jaxpi {
+    private player: Player;
+    private url: string;
+    private isSending: boolean;
+    private statementQueue = new Queue<any>();
+    private queuedPromise: Promise<void> = Promise.resolve(); // Inicializamos una promesa resuelta
+    //private statementInterval: NodeJS.Timeout;
+
+    private verbMap = new Map([${resolvedVerbsMap.join(',\n')}])\n
+    private objectMap = new Map([${resolvedObjectsMap.join(',\n')}])\n
+
+
+    constructor(player: Player, url: string) {
+      this.player = player;
+      this.url = url;
+      this.isSending = false;
+
+      //this.statementInterval = setInterval(this.sendStatementsInterval.bind(this), 300); // Inicia el intervalo de envios de traza cada 5 seg
+    }
+
+
+    private enqueueAction(action: () => Promise<void>) {
+      // Creamos una nueva promesa que se resolverá una vez que la traza se haya encolado
+      this.queuedPromise = this.queuedPromise.then(async () => {
+        await action();
       });
-    }`;
-  });
-
-  const methods = await Promise.all(methodPromises);
-   
-  let codeBody = ` 
-import axios from 'axios';
-import { Queue } from 'queue-typescript';
-import { XAPIStatement } from './xAPIschema';
-import { checkXAPI } from './validateStatement';
-
-
-
-interface Player {
-  name: string;
-  mail: string;
-  userId: string;
-  sessionId: string;
-}
-
-async function getDataFromURL(url: string) {
-  try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error('No se pudo obtener el archivo JSON');
     }
 
-    const data = await response.json();
+    private sendStatement = async () => {
+      try {
+        if (this.statementQueue.length != 0) {
+          this.isSending = true;
 
-    return data;
-  } catch (error) {
-    console.error('Error al obtener datos de la url:', error);
-    return null;
-  }
-}
+          const response = await axios.post(this.url, this.statementQueue.tail.statement, { //Entiendo que tail es el elemento de la cola que queremos enviar
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          if (response.status == 201) this.statementQueue.dequeue(); //Si envia exitosamente lo elimina del encolado
+          //Si falla no hacemos nada
+          console.log('Respuesta:', response.data);
 
-export class Jaxpi {
-  private player: Player;
-  private url: string;
-  private isSending: boolean;
-  private statementQueue = new Queue<any>();
-
-
-  constructor(player: Player, url: string) {
-    this.player = player;
-    this.url = url;
-    this.isSending = false;
-  }
-
-  private queuedPromise: Promise<void> = Promise.resolve(); // Inicializamos una promesa resuelta
-
-  private enqueueAction(action: () => Promise<void>) {
-    // Creamos una nueva promesa que se resolverá una vez que la traza se haya encolado
-    this.queuedPromise = this.queuedPromise.then(async () => {
-      await action();
-    });
-  }
-
-  private statementEnqueue(traza: any) {
-    this.statementQueue.enqueue(traza);
-  }
-
-  private generateStatement(data: any): XAPIStatement {
-
-    if (!data.actor || !data.actor.mbox || !data.actor.name || !data.verb || !data.verb.id || !data.verb.display || !data.object || !data.object.id || !data.object.definition || !data.object.definition.type || !data.object.definition.name || !data.object.definition.description) {
-      throw new Error('Faltan datos requeridos para generar el statement.');
-    }
-
-    const statement: XAPIStatement = {
-      actor: {
-        mbox: this.player.mail,
-        name: this.player.name,
-      },
-      verb: {
-        id: data.verb.id,
-        display: data.verb.display,
-      },
-      object: {
-        id: data.object.id,
-        definition: {
-          type: data.object.definition.type,
-          name: data.object.definition.name,
-          description: data.object.definition.description,
         }
-      },
-      timestamp: new Date().toISOString(),
+      } catch (error) {
+        console.error('Error al enviar la traza JaXpi:', (error as Error).message);
+      }
+      this.isSending = false;
     };
 
-    if (data.object.definition.extensions !== undefined) statement.object.definition.extensions = data.object.definition.extensions;
-    if (data.result !== undefined) statement.result = data.result;
-    if (data.context !== undefined) statement.context = data.context;
-    if (data.authority !== undefined) statement.authority = data.authority;
+    // private sendStatementsInterval() {
+    //   this.sendStatement();
+    // }
 
-    return statement;
-  }
+    // // Funcion que detiene el intervalo de envios de traza
+    // public stopStatementInterval() {
+    //   clearInterval(this.statementInterval); // Detiene el temporizador
+    // }
 
 
-  private generateStatementFromZero(verbId: string, objectId: string, parameters: Map<string, any>): XAPIStatement {
+    flush = async () => { //Si cliente quiere limpiar el encolado por lo que sea
+      await this.queuedPromise;
 
-    let parameter = "";
-    const header = "http://example.com/";
-    const statement: XAPIStatement = {
-      actor: {
-        mbox: this.player.mail,
-        name: this.player.name,
-      },
-      verb: {
-        id: header + verbId,
-        display: {},
-      },
-      object: {
-        id: header + objectId,
-        definition: {
-          type: "",
-          name: {},
-          description: {},
-          extensions: {}
-        }
-      },
-      timestamp: new Date().toISOString(),
-    };
-
-    for (let [key, value] of parameters) {
-      if (statement.object.definition.extensions !== undefined) {
-        parameter = header + key;
-        (statement.object.definition.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
+      if (this.isSending) {
+        await this.waitQueue();  // Si se está enviando alguna traza, esperar hasta que se haya completado
       }
 
-    }
+      this.isSending = true;
 
-    return statement;
-  }
-
-  private sendStatement = async () => {
-    try {
       if (this.statementQueue.length != 0) {
-        this.isSending = true;
-
-        const response = await axios.post(this.url, this.statementQueue.tail.statement, { //Entiendo que tail es el elemento de la cola que queremos enviar
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        if (response.status == 201) this.statementQueue.dequeue(); //Si envia exitosamente lo elimina del encolado
-        //Si falla no hacemos nada
-        console.log('Respuesta:', response.data);
-
+        console.log("Primera traza a enviar:\\n" + JSON.stringify(this.statementQueue.tail.statement, null, 2) + "\\n\\n");
+        this.sendStatement()
+        
+        //this.statementQueue.dequeue();
       }
-    } catch (error) {
-      console.error('Error al enviar la traza JaXpi:', (error as Error).message);
+      else
+        console.log("La cola de trazas esta vacia");
+
+      this.isSending = false;
+    };
+
+    private async waitQueue(): Promise<void> {
+      return new Promise<void>((resolve) => {
+        // Esperar hasta que el envío haya sido completado
+        const intervalo = setInterval(() => {
+          if (!this.isSending) {
+            clearInterval(intervalo);
+            resolve();
+          }
+        }, 100);
+      });
     }
-    this.isSending = false;
-  };
 
+    customVerbWithJson(verb: any, object: any) {
 
-  flush = async () => { //Si cliente quiere limpiar el encolado por lo que sea
-    await this.queuedPromise;
+      if (checkObject(object) && checkVerb(verb)) {
+        this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generateStatement(this.player, verb, object) });
+      }
 
-    if (this.isSending) {
-      await this.waitQueue();  // Si se está enviando alguna traza, esperar hasta que se haya completado
     }
 
-    this.isSending = true;
+    customVerb(verb: string, object: string, parameters: Map<string, any>) {
 
-    if (this.statementQueue.length != 0) {
-      this.sendStatement();
-      console.log("Primera traza a enviar:\n" + JSON.stringify(this.statementQueue.tail.statement, null, 2) + "\n\n");
-      //this.statementQueue.dequeue();
-    }
-    else
-      console.log("La cola de trazas esta vacia");
+      const [verbJson, objectJson] = generateStatementFromZero(verb, object, parameters);
 
-    this.isSending = false;
-  };
+      this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generateStatement(this.player, verbJson, objectJson) });
 
-  private async waitQueue(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      // Esperar hasta que el envío haya sido completado
-      const intervalo = setInterval(() => {
-        if (!this.isSending) {
-          clearInterval(intervalo);
-          resolve();
-        }
-      }, 100);
-    });
+    }\n\n
+    \n${methods.join('\n')}\n
+    }`;
+
+    return codeBody;
+  } catch (error) {
+    console.error('Error al generar el código de la clase:', error);
+    throw error; // Propaga el error para que sea manejado externamente
   }
-
-  customVerbWithJson(json: any) {
-
-    if (checkXAPI(json)) {
-      this.statementEnqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: this.generateStatement(json) });
-    }
-
-  }
-
-  customVerb(verb: string, object: string, parameters: Map<string, any>) {
-
-    let statement = this.generateStatementFromZero(verb, object, parameters);
-
-    this.statementEnqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: this.generateStatement(statement) });
-
-  }\n\n`
-  +  `\n${methods.join('\n')}\n
-  }`;
-
-  return codeBody;
 }
 
 // URL de la API de GitHub para obtener el contenido de la carpeta de los verbos
-const githubApiUrl = 'https://api.github.com/repos/UCM-FDI-JaXpi/lib/contents/statements';
+const githubApiUrlVerbs = 'https://api.github.com/repos/UCM-FDI-JaXpi/lib/contents/verbs';
+const githubApiUrlObjects = 'https://api.github.com/repos/UCM-FDI-JaXpi/lib/contents/objects';
 
 
-
-
-async function generateVerbMap(): Promise<VerbUrlMap> {
+async function generateMap(): Promise<{ verbJsonMap: Map<string, any>, objectJsonMap: Map<string, any> }> {
   try {
-    const response = await axios.get(githubApiUrl);
+    const response = await axios.get(githubApiUrlVerbs);
+    const response2 = await axios.get(githubApiUrlObjects);
+    const objectJsonMap: Map<string,any> = new Map();
+    const verbJsonMap: Map<string,any> = new Map();
 
     if (response.status === 200) {
       const files = response.data;
+      const JSONFiles = files.filter((file: any) => file.name.endsWith('.json'));    // Filtra y obtiene solo los archivos JSON de la lista de archivos
 
-      const verbUrlMap: VerbUrlMap = {};
-
-      // Filtra y obtiene solo los archivos JSON de la lista de archivos
-      const JSONFiles = files.filter((file: any) => file.name.endsWith('.json'));
-
-      // Construye el mapa de verbos y URLs dinámicamente
-      for (const file of JSONFiles) {
-
-        
-        await getDataFromURL(file.download_url)
-        .then((json) => {
-          if(checkXAPI(json)){
-            const verb = file.name.replace('.json', '');
-            verbUrlMap[verb] = file.download_url;
-          }
-        })
-        .catch((error) => {
-          console.error('Error al mostrar el json:', error);
-        });
-
-        
+      for (const file of JSONFiles) { // Construye el mapa de verbos y URLs dinámicamente
+        const json = await getDataFromURL(file.download_url);
+        if (checkVerb(json)) {
+          const verb = file.name.replace('.json', '');
+          verbJsonMap.set(verb, json);
+        }
       }
-
-      return verbUrlMap;
-    } else {
-      throw new Error('No se pudo obtener el contenido del repositorio');
     }
+
+    if (response2.status === 200) {
+      const files = response2.data;
+      const JSONFiles = files.filter((file: any) => file.name.endsWith('.json'));    // Filtra y obtiene solo los archivos JSON de la lista de archivos
+
+      for (const file of JSONFiles) { // Construye el mapa de objetos y URLs dinámicamente
+        const json = await getDataFromURL(file.download_url);
+        if (checkObject(json)) {
+          const object = file.name.replace('.json', '');
+          objectJsonMap.set(object, json);
+        }
+      }
+    }
+
+    return { verbJsonMap, objectJsonMap };
   } catch (error) {
     console.error('Error al obtener datos para construir el mapa de verbos:', error);
-    return {};
+    let verbJsonMap = new Map();
+    let objectJsonMap = new Map();
+    return { verbJsonMap, objectJsonMap };
   }
 }
 
 // Llama a la función para generar dinámicamente el mapa de verbos
-generateVerbMap()
+generateMap()
   .then(async (mapaGenerado) => {
-    let generatedCode = await generateClassWithFunctions(mapaGenerado);
+    let generatedCode = await generateClassWithFunctions(mapaGenerado.verbJsonMap,mapaGenerado.objectJsonMap);
     fs.writeFileSync('jaxpiLib.ts', generatedCode);  //JaxPiLib
   })
   .catch((error) => {
