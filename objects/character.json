@@ -1,5 +1,5 @@
 {
-  "id": "http://example.com/character-one",
+  "id": "http://example.com/character",
   "definition": {
     "type": "Playable character",
     "name": {

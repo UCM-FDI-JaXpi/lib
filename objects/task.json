@@ -11,8 +11,12 @@
             "es": "Has aceptado la tarea 1"
         },
         "extensions": {
-            "https://example.com/game/task_difficulty": "Easy",
-            "https://example.com/game/task_importance": "High"
+            "https://example.com/game/accepted_difficulty": "Easy",
+            "https://example.com/game/accepted_importance": "High",
+            "https://example.com/game/completed_difficulty": "Easy",
+            "https://example.com/game/completed_importance": "High",
+            "https://example.com/game/cancelled_difficulty": "Easy",
+            "https://example.com/game/cancelled_importance": "High"
         }
     }
 }

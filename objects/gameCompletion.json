@@ -12,7 +12,9 @@
         "es": "¡Felicidades! Has completado el juego."
     },
     "extensions": {
-        "https://example.com/game/completion_time": "5 hours",
-        "https://example.com/game/total_score": 1500
+        "https://example.com/game/achieved_time": "5 hours",
+        "https://example.com/game/achieved_total_score": 1500,
+        "https://example.com/game/completed_time": "5 hours",
+        "https://example.com/game/completed_total_score": 1500
     }
 }

@@ -11,8 +11,10 @@
             "es": "Has aceptado la recompensa 1"
         },
         "extensions": {
-            "https://example.com/game/reward_type": "Experience points",
-            "https://example.com/game/reward_value": 100
+            "https://example.com/game/accepted_type": "Experience points",
+            "https://example.com/game/accepted_value": 100,
+            "https://example.com/game/achieved_type": "Experience points",
+            "https://example.com/game/achieved_value": 100
         }
     }
 }

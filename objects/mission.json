@@ -11,8 +11,14 @@
             "es": "Has aceptado la misión 1"
         },
         "extensions": {
-            "https://example.com/game/mission_difficulty": "Medium",
-            "https://example.com/game/mission_duration": "30 minutes"
+            "https://example.com/game/accepted_difficulty": "Medium",
+            "https://example.com/game/accepted_duration": "30 minutes",
+            "https://example.com/game/completed_difficulty": "Medium",
+            "https://example.com/game/completed_duration": "30 minutes",
+            "https://example.com/game/cancelled_difficulty": "Medium",
+            "https://example.com/game/cancelled_duration": "30 minutes",
+            "https://example.com/game/failed_difficulty": "Medium",
+            "https://example.com/game/failed_duration": "30 minutes"
         }
     }
 }

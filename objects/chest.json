@@ -11,8 +11,16 @@
             "es": "El cofre 1 ha sido cerrado"
         },
         "extensions": {
-            "https://example.com/game/chest_locked": true,
-            "https://example.com/game/chest_lock_type": "Combination"
+            "https://example.com/game/accessed_locked": true,
+            "https://example.com/game/accessed_lock_type": "Combination",
+            "https://example.com/game/closed_locked": true,
+            "https://example.com/game/closed_lock_type": "Combination",
+            "https://example.com/game/opened_locked": true,
+            "https://example.com/game/opened_lock_type": "Combination",
+            "https://example.com/game/used_locked": true,
+            "https://example.com/game/used_lock_type": "Combination",
+            "https://example.com/game/unlocked_locked": false,
+            "https://example.com/game/unlocked_lock_type": "Combination"
         }
     }
 }

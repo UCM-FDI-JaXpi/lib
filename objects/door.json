@@ -11,8 +11,12 @@
             "es": "La puerta 1 ha sido cerrada"
         },
         "extensions": {
-            "https://example.com/game/door_locked": true,
-            "https://example.com/game/door_lock_type": "Key"
+            "https://example.com/game/accessed_locked": true,
+            "https://example.com/game/accessed_lock_type": "Key",
+            "https://example.com/game/closed_locked": true,
+            "https://example.com/game/closed_lock_type": "Key",
+            "https://example.com/game/opened_locked": true,
+            "https://example.com/game/opened_lock_type": "Key"
         }
     }
 }

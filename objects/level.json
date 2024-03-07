@@ -1,0 +1,25 @@
+{
+    "id": "http://example.com/achievements/level",
+    "definition": {
+        "type": "Level",
+        "name": {
+            "en-us": "Level 1 completed",
+            "es": "Nivel 1 completado"
+        },
+        "description": {
+            "en-us": "You completed level 1!",
+            "es": "¡Has completado el nivel 1!"
+        },
+        "extensions": {
+          "https://example.com/game/achieved_difficulty": "Easy",
+          "https://example.com/game/achieved_completion_time": "15 minutes",
+          "https://example.com/game/achieved_score": 500,
+          "https://example.com/game/completed_difficulty": "Easy",
+          "https://example.com/game/completed_completion_time": "15 minutes",
+          "https://example.com/game/completed_score": 500,
+          "https://example.com/game/started_difficulty": "Easy",
+          "https://example.com/game/started_completion_time": "15 minutes",
+          "https://example.com/game/started_score": 500
+        }
+    }
+}

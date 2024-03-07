@@ -11,7 +11,8 @@
             "es": "Has logrado el objetivo 1"
         },
         "extensions": {
-            "https://example.com/game/goal_difficulty": "Hard"
+            "https://example.com/game/achieved_difficulty": "Hard",
+            "https://example.com/game/completed_difficulty": "Hard"
         }
     }
 }

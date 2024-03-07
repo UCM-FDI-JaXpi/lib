@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/achievements/special-award",
+    "id": "http://example.com/achievements/award",
     "definition": {
         "type": "Special award",
         "name": {
@@ -11,7 +11,10 @@
             "es": "Premio especial obtenido al alcanzar un hito significativo en el juego"
     },
         "extensions": {
-            "https://example.com/game/special_award_value": "Gold"
+            "https://example.com/game/accepted_value": "Gold",
+            "https://example.com/game/accepted_level": "Level 10",
+            "https://example.com/game/achieved_value": "Gold",
+            "https://example.com/game/achieved_level": "Level 10"
         }
     }
 }
