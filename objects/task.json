@@ -16,7 +16,7 @@
             "https://example.com/game/accepted_type": "Exploration",
             "https://example.com/game/accepted_importance": "Low",
             "https://example.com/game/completed_time": "5 hours",
-            "https://example.com/game/completed _score": 10000,
+            "https://example.com/game/completed_score": 10000,
             "https://example.com/game/cancelled_actions": ["Defeat enemy"],
             "https://example.com/game/cancelled_reason": "Player decision"
         }

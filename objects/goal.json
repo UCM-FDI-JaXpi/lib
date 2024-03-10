@@ -16,7 +16,7 @@
             "https://example.com/game/achieved_score": 50,
             "https://example.com/game/achieved_date": "2024-03-05",
             "https://example.com/game/completed_time": "5 hours",
-            "https://example.com/game/completed _score": 10000
+            "https://example.com/game/completed_score": 10000
         }
     }
 }

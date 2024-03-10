@@ -18,9 +18,8 @@
             "https://example.com/game/accessed_points_earned": 100,
             "https://example.com/game/accessed_items_found": [""],
             "https://example.com/game/accessed_visited_times": 3,
-            "https://example.com/game/exited_difficulty": "Medium",
-            "https://example.com/game/exit_time": "2024-03-10T12:30:00",
-            "https://example.com/game/exit_location": "Area 2"
+            "https://example.com/game/exited_time": "2024-03-10T12:30:00",
+            "https://example.com/game/exited_location": "Area 2"
         }
     }
 }
