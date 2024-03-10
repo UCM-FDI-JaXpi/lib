@@ -11,12 +11,15 @@
             "es": "Has accedido a la habitación 1"
         },
         "extensions": {
-            "https://example.com/game/accessed_difficulty": "Medium",
-            "https://example.com/game/accessed_type": "Puzzle",
+            "https://example.com/game/accessed_locked": true,
+            "https://example.com/game/accessed_lock_type": "Combination",
+            "https://example.com/game/accessed_difficulty": "Beginner",
+            "https://example.com/game/accessed_access_time": "2024-03-10T12:00:00",
+            "https://example.com/game/accessed_points_earned": 100,
+            "https://example.com/game/accessed_items_found": [""],
             "https://example.com/game/accessed_visited_times": 3,
-            "https://example.com/game/exited_difficulty": "Medium",
-            "https://example.com/game/exited_type": "Puzzle",
-            "https://example.com/game/exited_visited_times": 3
+            "https://example.com/game/exited_time": "2024-03-10T12:30:00",
+            "https://example.com/game/exited_location": "Area 2"
         }
     }
 }

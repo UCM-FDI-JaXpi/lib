@@ -13,10 +13,13 @@
         "extensions": {
             "https://example.com/game/accessed_locked": true,
             "https://example.com/game/accessed_lock_type": "Key",
-            "https://example.com/game/closed_locked": true,
-            "https://example.com/game/closed_lock_type": "Key",
-            "https://example.com/game/opened_locked": true,
-            "https://example.com/game/opened_lock_type": "Key"
+            "https://example.com/game/accessed_difficulty": "Beginner",
+            "https://example.com/game/accessed_access_time": "2024-03-10T12:00:00",
+            "https://example.com/game/accessed_points_earned": 10,
+            "https://example.com/game/accessed_items_found": ["Mario"],
+            "https://example.com/game/accessed_visited_times": 1,
+            "https://example.com/game/closed_close_time": "2024-03-10T12:15:00",
+            "https://example.com/game/opened_open_time": "2024-03-10T12:30:00"
         }
     }
 }

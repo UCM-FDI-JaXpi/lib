@@ -13,14 +13,15 @@
         "extensions": {
             "https://example.com/game/accessed_locked": true,
             "https://example.com/game/accessed_lock_type": "Combination",
-            "https://example.com/game/closed_locked": true,
-            "https://example.com/game/closed_lock_type": "Combination",
-            "https://example.com/game/opened_locked": true,
-            "https://example.com/game/opened_lock_type": "Combination",
-            "https://example.com/game/used_locked": true,
-            "https://example.com/game/used_lock_type": "Combination",
-            "https://example.com/game/unlocked_locked": false,
-            "https://example.com/game/unlocked_lock_type": "Combination"
+            "https://example.com/game/accessed_difficulty": "Intermediate",
+            "https://example.com/game/accessed_access_time": "2024-03-10T12:00:00",
+            "https://example.com/game/accessed_points_earned": 50,
+            "https://example.com/game/accessed_items_found": ["Gold Coin", "Magic Potion"],
+            "https://example.com/game/accessed_visited_times": 3,
+            "https://example.com/game/closed_close_time": "2024-03-10T12:15:00",
+            "https://example.com/game/opened_open_time": "2024-03-10T12:30:00",
+            "https://example.com/game/used_usage_time": "2024-03-10T12:45:00",
+            "https://example.com/game/unlocked_time": "2024-03-10T12:50:00"
         }
     }
 }

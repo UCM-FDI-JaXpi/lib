@@ -12,9 +12,11 @@
         "es": "¡Felicidades! Has completado el juego."
     },
     "extensions": {
-        "https://example.com/game/achieved_time": "5 hours",
-        "https://example.com/game/achieved_total_score": 1500,
+        "https://example.com/game/achieved_difficulty": "Hard",
+        "https://example.com/game/achieved_completion_time": "5 hours",
+        "https://example.com/game/achieved_score": 55500,
+        "https://example.com/game/achieved_date": "2024-03-10",
         "https://example.com/game/completed_time": "5 hours",
-        "https://example.com/game/completed_total_score": 1500
+        "https://example.com/game/completed_score": 10000
     }
 }
