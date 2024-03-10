@@ -11,10 +11,15 @@
             "es": "Premio especial obtenido al alcanzar un hito significativo en el juego"
     },
         "extensions": {
-            "https://example.com/game/accepted_value": "Gold",
-            "https://example.com/game/accepted_level": "Level 10",
-            "https://example.com/game/achieved_value": "Gold",
-            "https://example.com/game/achieved_level": "Level 10"
+            "https://example.com/game/accepted_difficulty": "Hard",
+            "https://example.com/game/accepted_level": "10",
+            "https://example.com/game/accepted_type": "Combat",
+            "https://example.com/game/accepted_importance": "High",
+            "https://example.com/game/achieved_difficulty": "Hard",
+            "https://example.com/game/achieved_completion_time": "25 minutes",
+            "https://example.com/game/achieved_score": 1500,
+            "https://example.com/game/achieved_date": "2024-03-09"
+
         }
     }
 }

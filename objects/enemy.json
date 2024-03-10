@@ -11,7 +11,10 @@
             "es": "Bowser es el principal antagonista del juego"
         },
         "extensions": {
-            "https://github.com/UCM-FDI-JaXpi/attacked_damage": 20
+            "https://github.com/UCM-FDI-JaXpi/jumped_distance": 2,
+            "https://github.com/UCM-FDI-JaXpi/jumped_units": "meters",
+            "https://example.com/game/cancelled_actions": ["Attack"],
+            "https://example.com/game/cancelled_reason": "Insufficient energy"
         }
     }
 }

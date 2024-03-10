@@ -11,14 +11,16 @@
             "es": "Has aceptado la misión 1"
         },
         "extensions": {
-            "https://example.com/game/accepted_difficulty": "Medium",
-            "https://example.com/game/accepted_duration": "30 minutes",
-            "https://example.com/game/completed_difficulty": "Medium",
-            "https://example.com/game/completed_duration": "30 minutes",
-            "https://example.com/game/cancelled_difficulty": "Medium",
-            "https://example.com/game/cancelled_duration": "30 minutes",
-            "https://example.com/game/failed_difficulty": "Medium",
-            "https://example.com/game/failed_duration": "30 minutes"
+            "https://example.com/game/accepted_difficulty": "Easy",
+            "https://example.com/game/accepted_level": "1",
+            "https://example.com/game/accepted_type": "Exploration",
+            "https://example.com/game/accepted_importance": "Low",
+            "https://example.com/game/completed_time": "5 hours",
+            "https://example.com/game/completed _score": 10000,
+            "https://example.com/game/cancelled_actions": ["Defeat enemy"],
+            "https://example.com/game/cancelled_reason": "Player decision",
+            "https://example.com/game/failed_item": "Mission",
+            "https://example.com/game/failed_reason": "Failed to locate objective"
         }
     }
 }

@@ -12,11 +12,13 @@
         },
         "extensions": {
             "https://example.com/game/accepted_difficulty": "Easy",
-            "https://example.com/game/accepted_importance": "High",
-            "https://example.com/game/completed_difficulty": "Easy",
-            "https://example.com/game/completed_importance": "High",
-            "https://example.com/game/cancelled_difficulty": "Easy",
-            "https://example.com/game/cancelled_importance": "High"
+            "https://example.com/game/accepted_level": "1",
+            "https://example.com/game/accepted_type": "Exploration",
+            "https://example.com/game/accepted_importance": "Low",
+            "https://example.com/game/completed_time": "5 hours",
+            "https://example.com/game/completed _score": 10000,
+            "https://example.com/game/cancelled_actions": ["Defeat enemy"],
+            "https://example.com/game/cancelled_reason": "Player decision"
         }
     }
 }
