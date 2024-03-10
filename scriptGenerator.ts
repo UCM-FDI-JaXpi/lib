@@ -6,13 +6,51 @@ import {checkVerb,checkObject} from './validateStatement';
 
 
 const verbObjectRelation: Map<string, string[]> = new Map([
-  ["jumped", ["characterOne", "characterTwo", "enemy"]],
-  ["achieved", ["mission", "level1Complete"]],
-  ["accepted", ["characterOne", "characterTwo", "enemy"]],
-  ["accessed", ["characterOne", "characterTwo", "enemy"]],
-  ["achieved", ["characterOne", "characterTwo", "enemy"]],
-  ["cancelled", ["characterOne", "characterTwo", "enemy"]],
-  ["chatted", ["characterOne", "characterTwo", "enemy"]]
+  ["accepted", ["award", "mission", "reward", "task"]],
+  ["accessed", ["chest", "door", "room"]],
+  ["achieved", ["award", "character", "enemy", "gameCompletion", "goal", "level", "reward"]],
+  ["cancelled", ["character", "enemy", "mission", "task"]],    
+  ["chatted", ["character", "enemy"]],
+  ["clicked", [""]],
+  ["climbed", [""]],
+  ["closed", ["chest", "door"]],
+  ["combined", [""]],
+  ["completed", ["gameCompletion", "goal", "level", "mission", "task"]],
+  ["connected", [""]],
+  ["crafted", [""]],
+  ["dashed", [""]],
+  ["defeated", ["character", "enemy"]],
+  ["died", [""]],
+  ["discovered", [""]],
+  ["doubleJumped", [""]],
+  ["earned", [""]],
+  ["equipped", [""]],
+  ["examined", [""]],
+  ["exited", ["room"]],
+  ["explored", [""]],
+  ["failed", ["mission"]],
+  ["fell", [""]],
+  ["jumped", ["character", "enemy"]],
+  ["launched", [""]],
+  ["loggedIn", [""]],
+  ["loggedOut", [""]],
+  ["moved", [""]],
+  ["navigated", [""]],
+  ["opened", ["chest", "door"]],
+  ["paused", [""]],
+  ["registered", [""]],
+  ["rejected", [""]],
+  ["rotated", [""]],
+  ["shared", [""]],
+  ["skipped", [""]],
+  ["solvedAPuzzle", [""]],
+  ["sprinted", [""]],
+  ["started", ["level"]],
+  ["teleported", [""]],
+  ["unlocked", ["chest"]],
+  ["upgraded", [""]],
+  ["used", ["chest"]],
+  ["watched", [""]],
 ]);
 
 async function getDataFromURL(url: string) {
@@ -35,7 +73,7 @@ async function getDataFromURL(url: string) {
 async function getParameters(verb: any, object: any){
   try{
     let parameters = "";
-    
+
     if(object === undefined) return parameters;
     if (object.definition.extensions !== undefined) {     //Si existen parametros estos estan en el campo extension de json.object
       for (let field in object.definition.extensions) {
@@ -62,7 +100,7 @@ function setStatement(parameters: string): string {
       parameters = parameters.slice(0, -1); // Elimina la última coma (necesaria por customObject)
       let arraystring = parameters.split(",");
       for (let field of Object.values(arraystring)) {
-        code += "object.definition.extensions['https://github.com/UCM-FDI-JaXpi/" + field.substring(0, field.lastIndexOf(":") - 1) + "'] = " + field.substring(0, field.lastIndexOf(":") - 1) + ";" + "\n";
+        code += "object.definition.extensions['https://github.com/UCM-FDI-JaXpi/" + field.substring(0, field.lastIndexOf(":") - 1) + "'] = " + field.substring(0, field.lastIndexOf(":") - 1) + ";" + "\n  ";
       }
     }
 
@@ -116,30 +154,35 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
 
       //console.log(parameters + "\n" + parametersUpdate);
 
-      return ` ${key}(${parameters}object : any,extraParameters?: Map<string, any>) { 
-                  
-          if(!checkObject(object))
-            throw new Error('El objeto no es valido');
-          
-          // if(!this.getObjectsRelatedToVerb(object.id.substring(object.id.lastIndexOf("/") + 1))){
-          //   throw new Error('El objeto no esta relacionado con el verbo');
-          // }
-    
-          if (!object.definition.hasOwnProperty("extensions")) {
-            object.definition["extensions"] = {};
-          }
+      return ` 
+${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) { 
+  
+  if (typeof object === 'string'){
+    object = generate.generateObject(object);
+  }else if(!checkObject(object))
+    throw new Error('El objeto no es valido');
+  
+  // if(!this.getObjectsRelatedToVerb(object.id.substring(object.id.lastIndexOf("/") + 1))){
+  //   throw new Error('El objeto no esta relacionado con el verbo');
+  // }
 
-          ${parametersUpdate}
+  if (!object.definition.hasOwnProperty("extensions")) {
+    object.definition["extensions"] = {};
+  }
 
-          if (extraParameters && extraParameters.size > 0) {
-            extraParameters.forEach((value, key) => {
-                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + key] = value;
-            });
-          }
-    
-          const statement = generateStatement(this.player,this.verbMap.get("${key}"), object);
-          this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
-      }`;
+  ${parametersUpdate}
+
+  if (extraParameters && extraParameters.length > 0) {
+    extraParameters.forEach((value, key) => {
+        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/${key}_' + value[0]] = value[1];
+    });
+  }
+
+  const statement = generate.generateStatement(this.player,this.verbMap.get("${key}"), object);
+  //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
+  this.statementQueue.enqueue(statement);
+  if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
+}`;
     });
 
     const methods = await Promise.all(methodPromises);
@@ -147,51 +190,71 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
       return `["${key}",${JSON.stringify(value)}]`;
     });
     const objectsMap = Array.from(objects.entries()).map(async ([key, value]) => {
-      return `["${key}",${JSON.stringify(value)}]`;
+      return `"${key}":${JSON.stringify(value)}`;
     });
     const [resolvedVerbsMap, resolvedObjectsMap] = await Promise.all([Promise.all(verbsMap), Promise.all(objectsMap)]);
 
-    
-    let codeBody = `  import { Player, generateStatement, generateStatementFromZero } from './generateStatement';
+    //private objectMap = new Map([${resolvedObjectsMap.join(',\n')}])\n
+    let codeBody = `  import * as generate from './generateStatement';
   import { checkObject, checkVerb } from './validateStatement';
   import axios from 'axios';
   import { Queue } from 'queue-typescript';
 
+  const MAX_QUEUE_LENGTH = 7;
 
   export class Jaxpi {
-    private player: Player;
+    private player: generate.Player;
     private url: string;
     private isSending: boolean;
     private statementQueue = new Queue<any>();
     private queuedPromise: Promise<void> = Promise.resolve(); // Inicializamos una promesa resuelta
-    //private statementInterval: NodeJS.Timeout;
+    private statementInterval: NodeJS.Timeout;
 
     private verbMap = new Map([${resolvedVerbsMap.join(',\n')}])\n
-    private objectMap = new Map([${resolvedObjectsMap.join(',\n')}])\n
+    
 
-
-    constructor(player: Player, url: string) {
-      this.player = player;
-      this.url = url;
-      this.isSending = false;
-
-      //this.statementInterval = setInterval(this.sendStatementsInterval.bind(this), 300); // Inicia el intervalo de envios de traza cada 5 seg
+    public object = {
+      ${resolvedObjectsMap.join(',\n      ')}
     }
 
 
-    private enqueueAction(action: () => Promise<void>) {
-      // Creamos una nueva promesa que se resolverá una vez que la traza se haya encolado
-      this.queuedPromise = this.queuedPromise.then(async () => {
-        await action();
+    constructor(player: generate.Player, url: string) {
+      this.player = player;
+      this.url = url;
+      this.isSending = false;
+      // Inicia el intervalo de envios de traza cada 5 seg
+      this.statementInterval = setInterval(this.statementDequeue.bind(this), 5000); 
+      // Registra la función de limpieza para enviar las trazas encoladas cuando el programa finalice
+      process.on('exit', () => {
+        this.statementDequeue();
       });
+    }
+
+    private statementDequeue (){
+      try{
+        this.isSending = true;
+        
+        while (this.statementQueue.length != 0) {
+          console.log("Traza a enviar:\\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\\n\\n");
+          this.sendStatement()
+          
+          //this.statementQueue.dequeue();
+        }
+        console.log("La cola de trazas esta vacia");
+
+      } catch (error) {
+        console.error('Error al enviar la traza JaXpi:', (error as Error).message);
+
+      } finally {
+        this.isSending = false;
+      }
     }
 
     private sendStatement = async () => {
       try {
         if (this.statementQueue.length != 0) {
-          this.isSending = true;
 
-          const response = await axios.post(this.url, this.statementQueue.tail.statement, { //Entiendo que tail es el elemento de la cola que queremos enviar
+          const response = await axios.post(this.url, this.statementQueue.head.statement, { // Head es el elemento de la cola que queremos enviar
             headers: {
               'Content-Type': 'application/json',
             },
@@ -203,40 +266,30 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
         }
       } catch (error) {
         console.error('Error al enviar la traza JaXpi:', (error as Error).message);
-      }
-      this.isSending = false;
-    };
+      } 
+      
+    }
 
-    // private sendStatementsInterval() {
-    //   this.sendStatement();
-    // }
+    // Funcion que detiene el intervalo de envios de traza
+    public stopStatementInterval() {
+      clearInterval(this.statementInterval); // Detiene el temporizador
+    }
 
-    // // Funcion que detiene el intervalo de envios de traza
-    // public stopStatementInterval() {
-    //   clearInterval(this.statementInterval); // Detiene el temporizador
-    // }
+    public startSendingInterval(seconds: number) {
+      clearInterval(this.statementInterval);
+      this.statementInterval = setInterval(this.statementDequeue.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
+    }
 
 
-    flush = async () => { //Si cliente quiere limpiar el encolado por lo que sea
+    flush = async () => { //Si cliente quiere enviar las trazas encoladas
       await this.queuedPromise;
 
       if (this.isSending) {
         await this.waitQueue();  // Si se está enviando alguna traza, esperar hasta que se haya completado
       }
 
-      this.isSending = true;
-
-      if (this.statementQueue.length != 0) {
-        console.log("Primera traza a enviar:\\n" + JSON.stringify(this.statementQueue.tail.statement, null, 2) + "\\n\\n");
-        this.sendStatement()
-        
-        //this.statementQueue.dequeue();
-      }
-      else
-        console.log("La cola de trazas esta vacia");
-
-      this.isSending = false;
-    };
+      this.statementDequeue();
+    }
 
     private async waitQueue(): Promise<void> {
       return new Promise<void>((resolve) => {
@@ -253,17 +306,21 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
     customVerbWithJson(verb: any, object: any) {
 
       if (checkObject(object) && checkVerb(verb)) {
-        this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generateStatement(this.player, verb, object) });
+        //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verb, object) });
+        this.statementQueue.enqueue(generate.generateStatement(this.player, verb, object));
+        if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
       }
 
     }
 
-    customVerb(verb: string, object: string, parameters: Map<string, any>) {
+    customVerb(verb: string, object: string, parameters: Array<[string,any]>) {
 
-      const [verbJson, objectJson] = generateStatementFromZero(verb, object, parameters);
+      const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
 
-      this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generateStatement(this.player, verbJson, objectJson) });
-
+      //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
+      this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson));
+      if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
+      
     }\n\n
     \n${methods.join('\n')}\n
     }`;

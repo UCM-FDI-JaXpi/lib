@@ -7,7 +7,7 @@ export interface Player {
     sessionId: string;
 }
 
-export function generateStatementFromZero(verbId: string, objectId: string, parameters: Map<string, any>): [any, any] {
+export function generateStatementFromZero(verbId: string, objectId: string, parameters: Array<[string,any]>): [any, any] {
 
     let parameter = "";
     const header = "http://example.com/";
@@ -25,9 +25,9 @@ export function generateStatementFromZero(verbId: string, objectId: string, para
         }
     }
 
-    for (let [key, value] of parameters) {
+    for (let [key, value] of parameters) { // tranforma el map parameters a un array [clave,valor] para evitar problemas de compilacion con JavaScript
         if (object.definition.extensions !== undefined) {
-        parameter = header + key;
+        parameter = header + verbId + "_" + key;
         (object.definition.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
         }
 
@@ -64,4 +64,18 @@ export function generateStatement(player: Player, verb: any, object: any, result
     if (authority !== undefined) statement.authority = authority;
 
     return statement;
+}
+
+export function generateObject(name: string): any {
+
+    const object = {
+        id: "http://example.com/" + name,
+        definition: {
+            type: "",
+            name: {},
+            description: {}
+        },
+    };
+    
+    return object;
 }
