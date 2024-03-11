@@ -17,7 +17,7 @@ function generateStatementFromZero(verbId, objectId, parameters) {
             extensions: {}
         }
     };
-    for (var _i = 0, parameters_1 = parameters; _i < parameters_1.length; _i++) { // tranforma el map parameters a un array [clave,valor] para evitar problemas de compilacion con JavaScript
+    for (var _i = 0, parameters_1 = parameters; _i < parameters_1.length; _i++) {
         var _a = parameters_1[_i], key = _a[0], value = _a[1];
         if (object.definition.extensions !== undefined) {
             parameter = header + verbId + "_" + key;

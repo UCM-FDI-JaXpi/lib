@@ -44,7 +44,6 @@ let test: Array<[string, any]> = [["patatas",2],["coches",true],["algo","a"]]
 jaxpi.setContext("Maria","mmaria@bro.com","class_A","UCM",[["patatas",2],["coches",true],["algo","a"]])
 
 // jaxpi.customVerbWithJson(verb, object)
-jaxpi.completed
 jaxpi.customVerb("mirar","patata",test)
 jaxpi.accepted("Rupias","3 Millones","Rupias","3 Millones","Pot",test)
 // jaxpi.accepted("Rupias","3 Millones","Pot")

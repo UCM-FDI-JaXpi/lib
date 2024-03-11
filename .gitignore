@@ -5,5 +5,7 @@ jaxpiLib.js
 clientTest.js
 scriptGenerator.js
 validateStatement.js
+generateStatement.js
+xAPIschema.js
 test.ts
 test.js

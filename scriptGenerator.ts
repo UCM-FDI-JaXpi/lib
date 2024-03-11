@@ -270,7 +270,7 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
     private sendStatement = async () => {
       try {
         if (this.statementQueue.length != 0) {
-          const response = await axios.post(this.url, this.statementQueue.head.statement, { // Head es el elemento de la cola que queremos enviar
+          const response = await axios.post(this.url, this.statementQueue.head, { // Head es el elemento de la cola que queremos enviar
             headers: {
               'Content-Type': 'application/json',
             },

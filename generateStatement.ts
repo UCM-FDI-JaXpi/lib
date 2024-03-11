@@ -25,7 +25,7 @@ export function generateStatementFromZero(verbId: string, objectId: string, para
         }
     }
 
-    for (let [key, value] of parameters) { // tranforma el map parameters a un array [clave,valor] para evitar problemas de compilacion con JavaScript
+    for (let [key, value] of parameters) {
         if (object.definition.extensions !== undefined) {
         parameter = header + verbId + "_" + key;
         (object.definition.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
