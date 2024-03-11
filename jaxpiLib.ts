@@ -12,7 +12,7 @@
     private statementQueue = new Queue<any>();
     private queuedPromise: Promise<void> = Promise.resolve(); // Inicializamos una promesa resuelta
     private statementInterval: NodeJS.Timeout;
-    private context: object;
+    private context: any;
     private flagSendError: boolean = false;
 
     private verbMap = new Map([["accepted",{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-us":"accepted","es":"aceptado"}}],
@@ -86,17 +86,7 @@
       // Inicia el intervalo de envios de traza cada 5 seg
       this.statementInterval = setInterval(this.statementDequeue.bind(this), 5000); 
       // Registra la función de limpieza para enviar las trazas encoladas cuando el programa finalice
-      this.context = {
-        instructor: {
-            name: 'Irene Instructor', // Esto me lo da server
-            mbox: 'mailto:irene@example.com'
-        },
-        contextActivities: {
-            parent: { id: player.sessionId },
-            grouping: { id: 'http://example.com/activities/hang-gliding-school' } // player.userId
-        },
-        extensions: {}
-      }
+      this.context = undefined;
       
       process.on('exit', () => {
         this.statementDequeue();
@@ -108,15 +98,15 @@
         this.isSending = true;
         
         while (this.statementQueue.length != 0 && !this.flagSendError) {
-          //console.log("Traza a enviar:\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\\n");
+          //console.log("Traza a enviar:\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\n");
           const responseReceived = await this.sendStatement()
           // Si no hay respuesta, esperar
           if (!responseReceived) {
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
-          console.log("flag = " + this.flagSendError)
+          // console.log("flag = " + this.flagSendError)
 
-          //this.statementQueue.dequeue();
+          this.statementQueue.dequeue();
         }
         this.isSending = false;
         this.flagSendError = false;
@@ -181,6 +171,29 @@
           }
         }, 100);
       });
+    }
+
+    public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string,any]>){
+      this.context = {
+        instructor: {
+            name: name,
+            mbox: mbox
+        },
+        contextActivities: {
+            parent: { id: "http://example.com/activities/" + sessionId },
+            grouping: { id: 'http://example.com/activities/' + groupId }
+        },
+        extensions: {}
+      }
+      if (parameters){
+        for (let [key, value] of parameters) { 
+          if (this.context.extensions !== undefined) {
+          let parameter = "http://example.com/activities/" + key;
+          (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
+          }
+      }
+
+      }
     }
 
     customVerbWithJson(verb: any, object: any) {

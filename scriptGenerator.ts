@@ -249,7 +249,7 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
         this.isSending = true;
         
         while (this.statementQueue.length != 0 && !this.flagSendError) {
-          //console.log("Traza a enviar:\\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\\n\\n");
+          //console.log("Traza a enviar:\\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\\n");
           const responseReceived = await this.sendStatement()
           // Si no hay respuesta, esperar
           if (!responseReceived) {

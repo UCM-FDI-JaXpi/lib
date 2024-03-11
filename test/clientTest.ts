@@ -1,6 +1,6 @@
 import {Jaxpi} from '../jaxpiLib';
 
-let jaxpi = new Jaxpi({name: "Jugador1", mail: "mail@test.com", userId:"a", sessionId:"http://example.com/activities/hang-gliding-class-a"},"http://localhost:3000/statements");
+let jaxpi = new Jaxpi({name: "Jugador1", mail: "mail@test.com", userId:"a", sessionId:"hang-gliding-class-a"},"http://localhost:3000/records");
 
 let object = {
     "id": "http://example.com/Mario",
@@ -35,11 +35,13 @@ let mapa = new Map([["patatas",2],["coches",3]])
 
 let test: Array<[string, any]> = [["patatas",2],["coches",true],["algo","a"]]
 
-console.log(Array.from(mapa.entries()))
-console.log(test)
+// console.log(Array.from(mapa.entries()))
+// console.log(test)
 // console.log(typeof jaxpi.object)
 // console.log(typeof object)
 // console.log(typeof jaxpi.object.character.id)
+
+jaxpi.setContext("Maria","mmaria@bro.com","class_A","UCM",[["patatas",2],["coches",true],["algo","a"]])
 
 // jaxpi.customVerbWithJson(verb, object)
 jaxpi.completed
