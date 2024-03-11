@@ -178,7 +178,7 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
     });
   }
 
-  const statement = generate.generateStatement(this.player,this.verbMap.get("${key}"), object);
+  const statement = generate.generateStatement(this.player,this.verbMap.get("${key}"), object, undefined, this.context, undefined);
   //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
   this.statementQueue.enqueue(statement);
   if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
@@ -209,6 +209,8 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
     private statementQueue = new Queue<any>();
     private queuedPromise: Promise<void> = Promise.resolve(); // Inicializamos una promesa resuelta
     private statementInterval: NodeJS.Timeout;
+    private context: object;
+    private flagSendError: boolean = false;
 
     private verbMap = new Map([${resolvedVerbsMap.join(',\n')}])\n
     
@@ -225,49 +227,68 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
       // Inicia el intervalo de envios de traza cada 5 seg
       this.statementInterval = setInterval(this.statementDequeue.bind(this), 5000); 
       // Registra la función de limpieza para enviar las trazas encoladas cuando el programa finalice
+      this.context = {
+        instructor: {
+            name: 'Irene Instructor', // Esto me lo da server
+            mbox: 'mailto:irene@example.com'
+        },
+        contextActivities: {
+            parent: { id: player.sessionId },
+            grouping: { id: 'http://example.com/activities/hang-gliding-school' } // player.userId
+        },
+        extensions: {}
+      }
+      
       process.on('exit', () => {
         this.statementDequeue();
       });
     }
 
-    private statementDequeue (){
+    private async statementDequeue (){
       try{
         this.isSending = true;
         
-        while (this.statementQueue.length != 0) {
-          console.log("Traza a enviar:\\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\\n\\n");
-          this.sendStatement()
-          
+        while (this.statementQueue.length != 0 && !this.flagSendError) {
+          //console.log("Traza a enviar:\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\n\n");
+          const responseReceived = await this.sendStatement()
+          // Si no hay respuesta, esperar
+          if (!responseReceived) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+          console.log("flag = " + this.flagSendError)
+
           //this.statementQueue.dequeue();
         }
-        console.log("La cola de trazas esta vacia");
-
-      } catch (error) {
-        console.error('Error al enviar la traza JaXpi:', (error as Error).message);
-
-      } finally {
         this.isSending = false;
+        this.flagSendError = false;
+        console.log("El envio ha terminado, quedan " + this.statementQueue.length + " trazas por enviar");
+      } catch (error){
+        console.log("error")
       }
     }
 
     private sendStatement = async () => {
       try {
         if (this.statementQueue.length != 0) {
-
           const response = await axios.post(this.url, this.statementQueue.head.statement, { // Head es el elemento de la cola que queremos enviar
             headers: {
               'Content-Type': 'application/json',
             },
+            timeout: 1000
           });
           if (response.status == 201) this.statementQueue.dequeue(); //Si envia exitosamente lo elimina del encolado
-          //Si falla no hacemos nada
+          else this.flagSendError = true;  //Si falla activamos la flag para que salga del bucle
+          
           console.log('Respuesta:', response.data);
-
+          return true;
         }
       } catch (error) {
-        console.error('Error al enviar la traza JaXpi:', (error as Error).message);
+          if (axios.isAxiosError(error))
+            console.error(error.code);
+          this.flagSendError = true;
+          console.error('Error al enviar la traza JaXpi sendStatement:', (error as Error).message);
+          return false;
       } 
-      
     }
 
     // Funcion que detiene el intervalo de envios de traza
@@ -307,7 +328,7 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
 
       if (checkObject(object) && checkVerb(verb)) {
         //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verb, object) });
-        this.statementQueue.enqueue(generate.generateStatement(this.player, verb, object));
+        this.statementQueue.enqueue(generate.generateStatement(this.player, verb, object, undefined, this.context, undefined));
         if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
       }
 
@@ -318,7 +339,7 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
       const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
 
       //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
-      this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson));
+      this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined));
       if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
       
     }\n\n
