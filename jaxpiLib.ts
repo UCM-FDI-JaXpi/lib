@@ -4,7 +4,6 @@
   import { Queue } from 'queue-typescript';
 
   const MAX_QUEUE_LENGTH = 7;
-  const TIME_SEND_INTERVAL = 5;
 
   export class Jaxpi {
     private player: generate.Player;
@@ -85,7 +84,7 @@
       this.url = url;
       this.isSending = false;
       // Inicia el intervalo de envios de traza cada 5 seg
-      this.statementInterval = setInterval(this.statementDequeue.bind(this), TIME_SEND_INTERVAL * 1000); 
+      this.statementInterval = setInterval(this.statementDequeue.bind(this), 5000); 
       // Registra la función de limpieza para enviar las trazas encoladas cuando el programa finalice
       this.context = {
         instructor: {
@@ -109,7 +108,7 @@
         this.isSending = true;
         
         while (this.statementQueue.length != 0 && !this.flagSendError) {
-          //console.log("Traza a enviar:\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\n\n");
+          //console.log("Traza a enviar:\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\\n");
           const responseReceived = await this.sendStatement()
           // Si no hay respuesta, esperar
           if (!responseReceived) {
