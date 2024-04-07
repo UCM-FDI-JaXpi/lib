@@ -1,5 +1,6 @@
 dist/
 node_modules/
+scratch/
 jaxpiLib.ts
 jaxpiLib.js
 clientTest.js
