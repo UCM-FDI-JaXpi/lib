@@ -3,5 +3,6 @@
     "display": {
         "en-us": "equipped",
         "es": "equipado"
-    }
+    },
+    "objects": ["item"]
 }

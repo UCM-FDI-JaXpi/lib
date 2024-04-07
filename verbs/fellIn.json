@@ -1,0 +1,8 @@
+{
+    "id": "https://github.com/UCM-FDI-JaXpi/lib/fellIn",
+    "display": {
+        "en-us": "fell in",
+        "es": "cayó en"
+    },
+    "objects": ["location"]
+}

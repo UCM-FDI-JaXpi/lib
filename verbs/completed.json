@@ -3,5 +3,12 @@
     "display": {
         "en-us": "completed",
         "es": "completado"
+    },
+    "objects": ["achievement","game","goal","level","mission","task"],
+    "extensions":{
+        "https://example.com/game/score": 500
+    },
+    "extensions-doc":{
+        "https://example.com/game/score": "Score reach with the completion"
     }
 }

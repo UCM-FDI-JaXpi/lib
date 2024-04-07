@@ -3,5 +3,6 @@
     "display": {
         "en-us": "opened",
         "es": "abierto"
-    }
+    },
+    "objects": ["chest","door"]
 }

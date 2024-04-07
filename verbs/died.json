@@ -3,5 +3,6 @@
     "display": {
         "en-us": "died",
         "es": "muerto"
-    }
+    },
+    "objects": ["character","location"]
 }

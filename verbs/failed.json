@@ -3,5 +3,6 @@
     "display": {
         "en-us": "failed",
         "es": "falló"
-    }
+    },
+    "objects": ["mission","task","level"]
 }

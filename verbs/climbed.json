@@ -3,5 +3,6 @@
     "display": {
         "en-us": "climbed",
         "es": "escalado"
-    }
+    },
+    "objects": ["location"]
 }

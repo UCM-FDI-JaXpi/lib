@@ -3,5 +3,6 @@
     "display": {
         "en-us": "accepted",
         "es": "aceptado"
-    }
+    },
+    "objects": ["achievement","award","mission","reward","task"]
 }

@@ -3,5 +3,12 @@
     "display": {
         "en-us": "accessed",
         "es": "accedido"
+    },
+    "objects": ["chest","door","room"],
+    "extensions": {
+        "https://example.com/game/visited_times": 3
+    },
+    "extensions-doc": {
+        "https://example.com/game/visited_times": "Number of times the object has been accessed"
     }
 }

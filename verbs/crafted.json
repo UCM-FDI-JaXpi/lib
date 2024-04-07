@@ -3,5 +3,6 @@
     "display": {
         "en-us": "crafted",
         "es": "elaborado"
-    }
+    },
+    "objects": ["item"]
 }

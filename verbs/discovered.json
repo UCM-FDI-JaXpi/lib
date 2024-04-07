@@ -3,5 +3,6 @@
     "display": {
         "en-us": "discovered",
         "es": "descubierto"
-    }
+    },
+    "objects": ["level","location"]
 }

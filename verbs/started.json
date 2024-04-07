@@ -3,5 +3,6 @@
     "display": {
         "en-us": "started",
         "es": "empezó"
-    }
+    },
+    "objects": ["level"]
 }

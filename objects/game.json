@@ -1,0 +1,14 @@
+{
+    "id": "http://example.com/achievements/game",
+    "definition": {
+        "type": "Achievement category",
+        "name": {
+            "en-us": "Game",
+            "es": "Juego"
+        }
+    },
+    "description": {
+        "en-us": "Game you are playing.",
+        "es": "El juego que estas jugando."
+    }
+}

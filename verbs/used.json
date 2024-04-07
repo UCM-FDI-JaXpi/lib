@@ -3,5 +3,6 @@
     "display": {
         "en-us": "used",
         "es": "utilizado"
-    }
+    },
+    "objects": ["chest","item"]
 }

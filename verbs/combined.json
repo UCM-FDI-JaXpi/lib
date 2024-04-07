@@ -3,5 +3,6 @@
     "display": {
         "en-us": "combined",
         "es": "combinado"
-    }
+    },
+    "objects": ["item"]
 }

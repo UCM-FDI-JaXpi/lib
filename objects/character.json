@@ -9,12 +9,6 @@
     "description": {
       "en-us": "Mario is the main protagonist of the game",
       "es": "Mario es el protagonista del juego"
-    },
-    "extensions": {
-      "https://github.com/UCM-FDI-JaXpi/jumped_distance": 5,
-      "https://github.com/UCM-FDI-JaXpi/jumped_units": "meters",
-      "https://example.com/game/cancelled_actions": ["Jump", "Attack"],
-      "https://example.com/game/cancelled_reason": "Obstacle ahead"
     }
   }
 }

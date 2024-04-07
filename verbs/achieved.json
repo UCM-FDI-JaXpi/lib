@@ -3,5 +3,6 @@
     "display": {
         "en-us": "achieved",
         "es": "logrado"
-    }
+    },
+    "objects": ["achievement","award","game","goal","level","reward"]
 }

@@ -1,0 +1,14 @@
+{
+    "id": "http://example.com/achievements/item",
+    "definition": {
+        "type": "Item",
+        "name": {
+            "en-us": "Item",
+            "es": "Objeto"
+        },
+        "description": {
+            "en-us": "Interactable item",
+            "es": "Objeto interactuable"
+        }
+    }
+}

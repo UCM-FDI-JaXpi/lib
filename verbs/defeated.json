@@ -3,5 +3,6 @@
     "display": {
         "en-us": "defeated",
         "es": "derrotado"
-    }
+    },
+    "objects": ["enemy"]
 }

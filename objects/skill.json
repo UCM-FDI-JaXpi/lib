@@ -1,0 +1,14 @@
+{
+    "id": "http://example.com/achievements/skill",
+    "definition": {
+        "type": "Skill",
+        "name": {
+            "en-us": "Skill",
+            "es": "Habilidad"
+        },
+        "description": {
+            "en-us": "Character skill",
+            "es": "Habilidad del personaje"
+        }
+    }
+}

@@ -1,7 +1,8 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/teleported",
     "display": {
-        "en-us": "teleported",
+        "en-us": "teleported to",
         "es": "teletransportado"
-    }
+    },
+    "objects": ["location"]
 }

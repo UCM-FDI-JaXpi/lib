@@ -3,5 +3,13 @@
     "display": {
         "en-us": "cancelled",
         "es": "cancelado"
+    },
+    "objects": ["mission","task"],
+    "extensions": {
+      "https://example.com/game/reason": "Obstacle ahead"
+    },
+    "extensions-doc": {
+      "https://example.com/game/reason": "Reason of the cancelation"
     }
+    
 }

@@ -3,5 +3,6 @@
     "display": {
         "en-us": "upgraded",
         "es": "mejorado"
-    }
+    },
+    "objects": ["item"]
 }

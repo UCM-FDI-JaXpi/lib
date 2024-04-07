@@ -3,5 +3,6 @@
     "display": {
         "en-us": "dashed",
         "es": "dash"
-    }
+    },
+    "objects": ["character"]
 }

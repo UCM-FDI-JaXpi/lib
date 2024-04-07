@@ -3,5 +3,6 @@
     "display": {
         "en-us": "unlocked",
         "es": "desbloqueado"
-    }
+    },
+    "objects": ["chest","skill"]
 }

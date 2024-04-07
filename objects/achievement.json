@@ -9,18 +9,6 @@
         "description": {
             "en-us": "You completed achievement 1!",
             "es": "¡Has completado el achievement 1!"
-        },
-        "extensions": {
-          "https://example.com/game/accepted_difficulty": "Easy",
-          "https://example.com/game/accepted_level": "1",
-          "https://example.com/game/accepted_type": "Exploration",
-          "https://example.com/game/accepted_importance": "Medium",
-          "https://example.com/game/achieved_difficulty": "Easy",
-          "https://example.com/game/achieved_completion_time": "15 minutes",
-          "https://example.com/game/achieved_score": 500,
-          "https://example.com/game/achieved_date": "2024-03-10",
-          "https://example.com/game/completed_time": "5 hours",
-          "https://example.com/game/completed_score": 10000
         }
     }
 }

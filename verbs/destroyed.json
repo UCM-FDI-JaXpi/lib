@@ -1,0 +1,8 @@
+{
+    "id": "https://github.com/UCM-FDI-JaXpi/lib/destroyed",
+    "display": {
+        "en-us": "destroyed",
+        "es": "destruido"
+    },
+    "objects": ["item"]
+}

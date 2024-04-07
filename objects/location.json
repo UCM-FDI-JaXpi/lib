@@ -1,0 +1,14 @@
+{
+    "id": "http://example.com/achievements/location",
+    "definition": {
+        "type": "Location",
+        "name": {
+            "en-us": "Location",
+            "es": "Lugar"
+        },
+        "description": {
+            "en-us": "Location in which action ocurrs",
+            "es": "Lugar donde ocurre la acción"
+        }
+    }
+}

@@ -3,5 +3,6 @@
     "display": {
         "en-us": "explored",
         "es": "explorado"
-    }
+    },
+    "objects": ["location"]
 }

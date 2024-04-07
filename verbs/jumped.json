@@ -3,5 +3,14 @@
     "display": {
         "en-us": "jumped",
         "es": "saltado"
+    },
+    "objects": ["character","enemy"],
+    "extensions": {
+      "https://github.com/UCM-FDI-JaXpi/distance": 5,
+      "https://github.com/UCM-FDI-JaXpi/units": "meters"
+    },
+    "extensions-doc": {
+      "https://github.com/UCM-FDI-JaXpi/distance": "Number of units the object jumped",
+      "https://github.com/UCM-FDI-JaXpi/units": "Units in which the distance is expressed"
     }
 }

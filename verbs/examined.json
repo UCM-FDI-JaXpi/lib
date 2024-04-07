@@ -3,5 +3,6 @@
     "display": {
         "en-us": "examined",
         "es": "examinado"
-    }
+    },
+    "objects": ["item","room"]
 }

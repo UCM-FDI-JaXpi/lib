@@ -9,14 +9,6 @@
         "description": {
             "en-us": "You have achieved goal 1",
             "es": "Has logrado el objetivo 1"
-        },
-        "extensions": {
-            "https://example.com/game/achieved_difficulty": "Easy",
-            "https://example.com/game/achieved_completion_time": "4 minutes",
-            "https://example.com/game/achieved_score": 50,
-            "https://example.com/game/achieved_date": "2024-03-05",
-            "https://example.com/game/completed_time": "5 hours",
-            "https://example.com/game/completed_score": 10000
         }
     }
 }
