@@ -1,7 +1,7 @@
 {
     "id": "http://example.com/achievements/game",
     "definition": {
-        "type": "Achievement category",
+        "type": "Game",
         "name": {
             "en-us": "Game",
             "es": "Juego"
