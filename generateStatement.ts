@@ -18,7 +18,7 @@ export function generateStatementFromZero(verbId: string, objectId: string, para
     const object = {
         id: header + objectId,
         definition: {
-        type: "",
+        type: "custom",
         name: {},
         description: {},
         extensions: {}
@@ -66,16 +66,21 @@ export function generateStatement(player: Player, verb: any, object: any, result
     return statement;
 }
 
-export function generateObject(name: string): any {
+export function generateObject(objectJson: any, name?: string): any {
 
-    const object = {
-        id: "http://example.com/" + name,
+    const object: {id: string, definition: any} = {
+        id: objectJson.id,
         definition: {
-            type: "",
-            name: {},
-            description: {}
-        },
+            type: objectJson.definition.type,
+            name: objectJson.definition.name,
+            description: objectJson.definition.description,
+            extensions: {}
+        }
+        
     };
+
+    if (name)
+        object.id = object.id.substring(0, object.id.lastIndexOf("/") - 1) + name
     
     return object;
 }

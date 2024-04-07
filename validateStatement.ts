@@ -1,5 +1,6 @@
 export function checkVerb(json: any): boolean{
-  const expectedFieldsInVerb = ["id", "display"];
+  const expectedFieldsInVerb = ["id", "display","objects","extensions","extensions-doc"];
+  const requiredFieldsInVerb = ["id", "display"]
 
   for (const field in json) {
     if (!expectedFieldsInVerb.includes(field)) {
@@ -7,7 +8,7 @@ export function checkVerb(json: any): boolean{
     }
   }
 
-  for (const field of expectedFieldsInVerb) {
+  for (const field of requiredFieldsInVerb) {
     if (!json[field]) {
       return false; // Devuelve false si falta algún campo esperado
     }

@@ -1,6 +1,6 @@
 import {Jaxpi} from '../jaxpiLib';
 
-let jaxpi = new Jaxpi({name: "Jugador1", mail: "mail@test.com", userId:"a", sessionId:"hang-gliding-class-a"},"http://localhost:3000/records");
+let jaxpi = new Jaxpi({name: "Jugador1", mail: "mail@test.com", userId:"a", sessionId:"hang-gliding-class-a"},"http://localhost:3000/records", false);
 
 let object = {
     "id": "http://example.com/Mario",
@@ -33,7 +33,7 @@ let verb = {
 
 let mapa = new Map([["patatas",2],["coches",3]])
 
-let test: Array<[string, any]> = [["patatas",2],["coches",true],["algo","a"]]
+let extraParameters: Array<[string, any]> = [["patatas",2],["coches",true],["algo","a"]]
 
 // console.log(Array.from(mapa.entries()))
 // console.log(test)
@@ -44,8 +44,8 @@ let test: Array<[string, any]> = [["patatas",2],["coches",true],["algo","a"]]
 jaxpi.setContext("Maria","mmaria@bro.com","class_A","UCM",[["patatas",2],["coches",true],["algo","a"]])
 
 // jaxpi.customVerbWithJson(verb, object)
-jaxpi.customVerb("mirar","patata",test)
-jaxpi.accepted("Rupias","3 Millones","Rupias","3 Millones","Pot",test)
+//jaxpi.customVerb("mirar","patata",test)
+
 // jaxpi.accepted("Rupias","3 Millones","Pot")
 // jaxpi.jumped(2,"lagos", jaxpi.object.character)
 // jaxpi.jumped(8000,"pulgadas",object);
@@ -54,11 +54,26 @@ jaxpi.accepted("Rupias","3 Millones","Rupias","3 Millones","Pot",test)
 
 //jaxpi.stopStatementInterval()
 
-jaxpi.flush();
+
 
 // jaxpi.accepted("Rupias2222","2222 Millones","Pot")
 // jaxpi.chatted(jaxpi.object.character)
 // jaxpi.cancelled(object);
 // jaxpi.jumped(505050,"gurarara", jaxpi.object.character)
+
+
+
+
+
+
+jaxpi.accepted().award("patata")
+jaxpi.accessed(0).door("Door 1")
+jaxpi.exited().room("Home")
+jaxpi.discovered().location("Paleta Town")
+jaxpi.died()
+
+
+
+jaxpi.flush();
 
 //process.exit(0)

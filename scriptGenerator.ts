@@ -142,46 +142,80 @@ async function getObjectRelatedToVerb(verb: string): Promise<any | undefined> {
   return undefined;
 }
 
+function getExtensionName(extension: string) : string{
+  return extension.substring(extension.lastIndexOf("/") + 1);
+}
+
 
 // This function returns a string with the class with a method for each xapi trace 
 async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<string,any>): Promise<string> {
   try{
     const methodPromises = [...verbs.entries()].map(async ([key, value]) => {    //Necesita esperar a las Promise de todos las funciones o las escribe mal al generar el codigo
                                                                                 // [...verbs.entries()] Porque es una estructura map y eso lo convierte a un array para posible uso, tambien seria valido Map.prototype.entries() sin cambiar el map
-      const object = await getObjectRelatedToVerb(key);
-      const parameters = await getParameters(value,object);
+      
+      let parameters = ""
+      
+      if (value.extensions !== undefined) {     //Si existen parametros estos estan en el campo extension de json.object
+        for (let field in value.extensions) {
+          parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
+            + typeof value.extensions[field] + ",";
+        }
+      }
+
+      //const object = await getObjectRelatedToVerb(key);
+      //const parameters = await getParameters(value,object);
       const parametersUpdate = setStatement(parameters);
+      let params = [];
 
       //console.log(parameters + "\n" + parametersUpdate);
+      for (const extension in value.extensions) {
+        const description = value["extensions-doc"][extension];
+        if (description) {
+          params.push(`@param {${typeof(value.extensions[extension])}} ${getExtensionName(extension)} - ${description}`);
+        }
+      }
 
-      return ` 
-${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) { 
+      let object: string[] = [];
+      if (value.objects)
+        value.objects.forEach((element: string) => {
+          object.push(`
+      ${element}: (name?:string, extraParameters?: Array<[string,any]>) => {
+
+        if (name)
+          object = generate.generateObject(this.object.${element}, name)
+        else
+          object = generate.generateObject(this.object.${element})
+        
+        ${parametersUpdate}
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player,this.verbMap.get("${key}"), object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          `)
+        });
+
+
+      return `
+/**
+ * ${value.display["en-us"]} action.
+ * ${params.join("\n * ")}
+ */ 
+${key}(${parameters}extraParameters?: Array<[string,any]>) { 
   
-  if (typeof object === 'string'){
-    object = generate.generateObject(object);
-  }else if(!checkObject(object))
-    throw new Error('El objeto no es valido');
-  
-  // if(!this.getObjectsRelatedToVerb(object.id.substring(object.id.lastIndexOf("/") + 1))){
-  //   throw new Error('El objeto no esta relacionado con el verbo');
-  // }
+  let object: any;
 
-  if (!object.definition.hasOwnProperty("extensions")) {
-    object.definition["extensions"] = {};
-  }
-
-  ${parametersUpdate}
-
-  if (extraParameters && extraParameters.length > 0) {
-    extraParameters.forEach((value, key) => {
-        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/${key}_' + value[0]] = value[1];
-    });
-  }
-
-  const statement = generate.generateStatement(this.player,this.verbMap.get("${key}"), object, undefined, this.context, undefined);
-  //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: statement });
-  this.statementQueue.enqueue(statement);
-  if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
+  return {
+    ${object.join("\n,")}
+  };
 }`;
     });
 
@@ -195,156 +229,270 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
     const [resolvedVerbsMap, resolvedObjectsMap] = await Promise.all([Promise.all(verbsMap), Promise.all(objectsMap)]);
 
     //private objectMap = new Map([${resolvedObjectsMap.join(',\n')}])\n
-    let codeBody = `  import * as generate from './generateStatement';
-  import { checkObject, checkVerb } from './validateStatement';
-  import axios from 'axios';
-  import { Queue } from 'queue-typescript';
+    let codeBody = `
+import path = require('path');
+import * as generate from './generateStatement';
+import { checkObject, checkVerb } from './validateStatement';
+import { Queue } from 'queue-typescript';
 
-  const MAX_QUEUE_LENGTH = 7;
-
-  export class Jaxpi {
-    private player: generate.Player;
-    private url: string;
-    private isSending: boolean;
-    private statementQueue = new Queue<any>();
-    private queuedPromise: Promise<void> = Promise.resolve(); // Inicializamos una promesa resuelta
-    private statementInterval: NodeJS.Timeout;
-    private context: object;
-    private flagSendError: boolean = false;
-
-    private verbMap = new Map([${resolvedVerbsMap.join(',\n')}])\n
-    
-
-    public object = {
-      ${resolvedObjectsMap.join(',\n      ')}
-    }
+const { Worker } = require('worker_threads');
+const { LocalStorage } = require('node-localstorage');
 
 
-    constructor(player: generate.Player, url: string) {
-      this.player = player;
-      this.url = url;
-      this.isSending = false;
-      // Inicia el intervalo de envios de traza cada 5 seg
-      this.statementInterval = setInterval(this.statementDequeue.bind(this), 5000); 
-      // Registra la función de limpieza para enviar las trazas encoladas cuando el programa finalice
-      this.context = {
-        instructor: {
-            name: 'Irene Instructor', // Esto me lo da server
-            mbox: 'mailto:irene@example.com'
-        },
-        contextActivities: {
-            parent: { id: player.sessionId },
-            grouping: { id: 'http://example.com/activities/hang-gliding-school' } // player.userId
-        },
-        extensions: {}
-      }
-      
-      process.on('exit', () => {
-        this.statementDequeue();
-      });
-    }
+const TIME_INTERVAL_SEND = 5;
 
-    private async statementDequeue (){
-      try{
-        this.isSending = true;
-        
-        while (this.statementQueue.length != 0 && !this.flagSendError) {
-          //console.log("Traza a enviar:\\n" + JSON.stringify(this.statementQueue.head, null, 2) + "\\n");
-          const responseReceived = await this.sendStatement()
-          // Si no hay respuesta, esperar
-          if (!responseReceived) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          }
-          console.log("flag = " + this.flagSendError)
+//const worker = new Worker('./sendStatement.js');
+const workerPath = path.resolve(__dirname, 'sendStatement.js');
+//const worker = new Worker(workerPath);
+const localStorage = new LocalStorage('./scratch');
 
-          //this.statementQueue.dequeue();
-        }
-        this.isSending = false;
-        this.flagSendError = false;
-        console.log("El envio ha terminado, quedan " + this.statementQueue.length + " trazas por enviar");
-      } catch (error){
-        console.log("error")
-      }
-    }
+export class Jaxpi {
+  private player: generate.Player;
+  private url: string;
+  private statementQueue = new Queue<any>();
+  private statementInterval: NodeJS.Timeout | undefined;
+  private context: any;
+  private promises: Promise<void>[] = [];
+  private QUEUE_ID: number = 1;
+  private MAX_QUEUE_LENGTH: number = 7;
+  
+  
 
-    private sendStatement = async () => {
-      try {
-        if (this.statementQueue.length != 0) {
-          const response = await axios.post(this.url, this.statementQueue.head, { // Head es el elemento de la cola que queremos enviar
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            timeout: 1000
+  private verbMap = new Map([${resolvedVerbsMap.join(',\n')}])\n
+
+
+  public object = {
+    ${resolvedObjectsMap.join(',\n      ')}
+  }
+
+  /**
+   * @param {Object} player - Structure that contains player data.
+   * @param {string} player.name - The name of the player.
+   * @param {string} player.mail - The mail of the player.
+   * @param {string} url - The url of the server where statements will be sent.
+   * @param {string} interval - Boolean that activates an interval to send statements. 
+   * @param {string} [time_interval] - Number of seconds an interval will try to send the statements to the server. 
+   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
+   */ 
+  constructor(player: generate.Player, url: string, interval: boolean, time_interval?: number, max_queue?: number) {
+    this.player = player;
+    this.url = url;
+    // Inicia el intervalo de envios de traza. default = cada 5 seg 
+    if(interval)
+      if(time_interval !== undefined)
+        this.statementInterval = setInterval(this.flush.bind(this), 1000 * time_interval); 
+      else
+        this.statementInterval = setInterval(this.flush.bind(this), 1000 * TIME_INTERVAL_SEND); 
+    // Registra la función de limpieza para enviar las trazas encoladas cuando el programa finalice
+    this.context = undefined;
+    this.promises = [];
+    if (max_queue)
+      this.MAX_QUEUE_LENGTH = max_queue
+
+    // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
+    if(localStorage.length){
+      for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+  
+          let recovArray = JSON.parse(value)
+          let recovQueue = new Queue<any>;
+          recovArray.forEach((element: JSON) => {
+              recovQueue.enqueue(element)
           });
-          if (response.status == 201) this.statementQueue.dequeue(); //Si envia exitosamente lo elimina del encolado
-          else this.flagSendError = true;  //Si falla activamos la flag para que salga del bucle
-          
-          console.log('Respuesta:', response.data);
-          return true;
-        }
-      } catch (error) {
-          if (axios.isAxiosError(error))
-            console.error(error.code);
-          this.flagSendError = true;
-          console.error('Error al enviar la traza JaXpi sendStatement:', (error as Error).message);
-          return false;
-      } 
-    }
-
-    // Funcion que detiene el intervalo de envios de traza
-    public stopStatementInterval() {
-      clearInterval(this.statementInterval); // Detiene el temporizador
-    }
-
-    public startSendingInterval(seconds: number) {
-      clearInterval(this.statementInterval);
-      this.statementInterval = setInterval(this.statementDequeue.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
-    }
-
-
-    flush = async () => { //Si cliente quiere enviar las trazas encoladas
-      await this.queuedPromise;
-
-      if (this.isSending) {
-        await this.waitQueue();  // Si se está enviando alguna traza, esperar hasta que se haya completado
+          this.promises.push(this.createWorkerLStorage(recovQueue, key))
       }
-
-      this.statementDequeue();
     }
 
-    private async waitQueue(): Promise<void> {
-      return new Promise<void>((resolve) => {
-        // Esperar hasta que el envío haya sido completado
-        const intervalo = setInterval(() => {
-          if (!this.isSending) {
-            clearInterval(intervalo);
-            resolve();
-          }
-        }, 100);
+    process.on('SIGTERM', async () => {
+      this.flush()
+      await Promise.all(this.promises)
+      .then( () => {
+          process.exit(0)
+      })
+      .catch( (error) => {
+        console.error("Se produjo un error al resolver las promesas:", error);
+        process.exit(1);
       });
-    }
+    })
 
-    customVerbWithJson(verb: any, object: any) {
+    process.on('SIGINT', async () => {
+      this.flush()
+      await Promise.all(this.promises)
+      .then( () => {
+          process.exit(0)
+      })
+      .catch( (error) => {
+        console.error("Se produjo un error al resolver las promesas:", error);
+        process.exit(1);
+      });
+    })
+    
+    process.on('exit', () => {
+      if (this.statementQueue.length) {
+        let aux = "queue" + this.QUEUE_ID.toString();
 
-      if (checkObject(object) && checkVerb(verb)) {
-        //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verb, object) });
-        this.statementQueue.enqueue(generate.generateStatement(this.player, verb, object, undefined, this.context, undefined));
-        if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
+        while (localStorage.getItem(aux) !== null){
+          this.QUEUE_ID++;
+          aux = "queue" + this.QUEUE_ID.toString();
+        }
+
+        localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray()))
       }
+    });
+  }
 
+  public stopStatementInterval() {
+    if (this.statementInterval)
+      clearInterval(this.statementInterval); // Detiene el temporizador
+  }
+
+  public startSendingInterval(seconds: number) {
+    if (this.statementInterval)
+      clearInterval(this.statementInterval);
+    this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
+  }
+
+
+  public async flush() : Promise<void>{ //Si cliente quiere enviar las trazas encoladas
+    if (this.statementQueue.length) {
+      // Almacena la promesa devuelta por createWorker() en el array de promesas
+      this.promises.push(this.createWorker());
+    } 
+    if(localStorage.length){
+      for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+  
+          let recovArray = JSON.parse(value)
+          let recovQueue = new Queue<any>;
+          recovArray.forEach((element: JSON) => {
+              recovQueue.enqueue(element)
+          });
+          this.promises.push(this.createWorkerLStorage(recovQueue, key))
+      }
+    }
+  }
+
+  private createWorker() {
+    //Mandar al localstorage mando una cola con un id unico
+    //Para evitar pisar colas en localstorage con el mismo id
+    let aux = "queue" + this.QUEUE_ID.toString();
+
+    while (localStorage.getItem(aux) !== null){
+      this.QUEUE_ID++;
+      aux = "queue" + this.QUEUE_ID.toString();
     }
 
-    customVerb(verb: string, object: string, parameters: Array<[string,any]>) {
+    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray()))
 
-      const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
+    //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
+    let promise = new Promise<void>((resolve, reject) => {
+      var worker = new Worker(workerPath);
+      worker.postMessage({ url: this.url, statementQueue: this.statementQueue.toArray(), length: this.statementQueue.length, queue_id: aux});
+      worker.on('message', (message: any) => {
+        if (message.error){
+          reject(message.error);
+        }
+        else{
+          const { log, queue_id } = message;
+          console.log('Mensaje recibido desde el worker:', log);
 
-      //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
-      this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined));
-      if (this.statementQueue.length >= MAX_QUEUE_LENGTH) this.statementDequeue();
-      
-    }\n\n
-    \n${methods.join('\n')}\n
-    }`;
+          //Borrar de localstorage las trazas que se han enviado eliminando la cola con la id adecuada
+          localStorage.removeItem(queue_id)
+
+          // Destruye el worker generado una vez finalizada su tarea
+          worker.terminate()
+          // Resuelve la promesa una vez que se haya procesado la cola de trazas
+          resolve();
+        }
+      });
+  });
+
+    //Vacia la cola actual
+    while (this.statementQueue.length != 0){
+      this.statementQueue.dequeue()
+    }
+    
+    return promise.catch((error) => {
+      // Manejar el error rechazado aquí para evitar UnhandledPromiseRejectionWarning
+      console.error('Error rechazado no capturado:', error);
+    });
+  }
+
+  public createWorkerLStorage(queue: Queue<any>, key : string){ //Si cliente quiere enviar las trazas encoladas
+    //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
+    return new Promise<void>((resolve, reject) => {
+      var worker = new Worker(workerPath);
+      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: key});
+      worker.on('message', (message: any) => {
+        if (message.error){
+          reject(message.error);
+        }
+        else{
+          const { log, queue_id } = message;
+          console.log('Mensaje recibido desde el worker:', log);
+
+          //Borrar de localstorage las trazas que se han enviado eliminando la cola con la id adecuada
+          localStorage.removeItem(queue_id)
+
+          // Destruye el worker generado una vez finalizada su tarea
+          worker.terminate()
+          // Resuelve la promesa una vez que se haya procesado la cola de trazas
+          resolve();
+        }
+      });
+    }).catch((error) => {
+      // Manejar el error rechazado aquí para evitar UnhandledPromiseRejectionWarning
+      console.error('Error rechazado no capturado:', error);
+    });
+  }
+
+  
+  public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string,any]>){
+    this.context = {
+      instructor: {
+          name: name,
+          mbox: mbox
+      },
+      contextActivities: {
+          parent: { id: "http://example.com/activities/" + sessionId },
+          grouping: { id: 'http://example.com/activities/' + groupId }
+      },
+      extensions: {}
+    }
+    if (parameters){
+      for (let [key, value] of parameters) { 
+        if (this.context.extensions !== undefined) {
+        let parameter = "http://example.com/activities/" + key;
+        (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
+        }
+    }
+
+    }
+  }
+
+  // customVerbWithJson(verb: any, object: any) {
+
+  //   if (checkObject(object) && checkVerb(verb)) {
+  //     //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verb, object) });
+  //     this.statementQueue.enqueue(generate.generateStatement(this.player, verb, object, undefined, this.context, undefined));
+  //     if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+  //   }
+
+  // }
+
+  customVerb(verb: string, object: string, parameters: Array<[string,any]>) {
+
+    const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
+
+    //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
+    this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined));
+    if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+    
+  }\n\n
+\n${methods.join('\n')}\n
+}`;
 
     return codeBody;
   } catch (error) {
@@ -353,7 +501,7 @@ ${key}(${parameters}object : any,extraParameters?: Array<[string,any]>) {
   }
 }
 
-// URL de la API de GitHub para obtener el contenido de la carpeta de los verbos
+// URL de la API de GitHub para obtener el contenido de la carpeta de los verbos y otra de objetos
 const githubApiUrlVerbs = 'https://api.github.com/repos/UCM-FDI-JaXpi/lib/contents/verbs';
 const githubApiUrlObjects = 'https://api.github.com/repos/UCM-FDI-JaXpi/lib/contents/objects';
 

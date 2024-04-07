@@ -11,7 +11,7 @@ function generateStatementFromZero(verbId, objectId, parameters) {
     var object = {
         id: header + objectId,
         definition: {
-            type: "",
+            type: "custom",
             name: {},
             description: {},
             extensions: {}
@@ -58,15 +58,18 @@ function generateStatement(player, verb, object, result, context, authority) {
     return statement;
 }
 exports.generateStatement = generateStatement;
-function generateObject(name) {
+function generateObject(objectJson, name) {
     var object = {
-        id: "http://example.com/" + name,
+        id: objectJson.id,
         definition: {
-            type: "",
-            name: {},
-            description: {}
-        },
+            type: objectJson.definition.type,
+            name: objectJson.definition.name,
+            description: objectJson.definition.description,
+            extensions: {}
+        }
     };
+    if (name)
+        object.id = object.id.substring(0, object.id.lastIndexOf("/") - 1) + name;
     return object;
 }
 exports.generateObject = generateObject;
