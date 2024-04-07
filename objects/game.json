@@ -5,10 +5,10 @@
         "name": {
             "en-us": "Game",
             "es": "Juego"
+        },
+        "description": {
+            "en-us": "Game you are playing.",
+            "es": "El juego que estas jugando."
         }
-    },
-    "description": {
-        "en-us": "Game you are playing.",
-        "es": "El juego que estas jugando."
     }
 }

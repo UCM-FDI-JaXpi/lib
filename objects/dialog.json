@@ -1,0 +1,14 @@
+{
+    "id": "http://example.com/achievements/dialog",
+    "definition": {
+        "type": "Dialog",
+        "name": {
+            "en-us": "Dialog",
+            "es": "Dialogo"
+        },
+        "description": {
+            "en-us": "Dialog the player interacts with.",
+            "es": "Dialogo con el que el jugador interacciona."
+        }
+    }
+}
