@@ -195,6 +195,8 @@ export class Jaxpi {
    * Function to send the statements queue to the server, it also creates a backup if the sending fails
    */ 
   public async flush() : Promise<void>{ //Si cliente quiere enviar las trazas encoladas
+    let newQueue = this.statementQueue
+    this.statementQueue = new Queue<any>();
     if(localStorage.length){
       for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
@@ -208,13 +210,13 @@ export class Jaxpi {
           this.promises.push(this.createWorkerLStorage(recovQueue, key))
       }
     }
-    if (this.statementQueue.length) {
+    if (newQueue.length) {
       // Almacena la promesa devuelta por createWorker() en el array de promesas
-      this.promises.push(this.createWorker());
+      this.promises.push(this.createWorker(newQueue));
     } 
   }
 
-  private createWorker() {
+  private createWorker(queue: Queue<any>) {
     //Mandar al localstorage mando una cola con un id unico
     //Para evitar pisar colas en localstorage con el mismo id
     let aux = "queue" + this.QUEUE_ID.toString();
@@ -224,12 +226,12 @@ export class Jaxpi {
       aux = "queue" + this.QUEUE_ID.toString();
     }
 
-    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray(),null,2))
+    localStorage.setItem(aux,JSON.stringify(queue.toArray(),null,2))
 
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     let promise = new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
-      worker.postMessage({ url: this.url, statementQueue: this.statementQueue.toArray(), length: this.statementQueue.length, queue_id: aux});
+      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux});
       worker.on('message', (message: any) => {
         if (message.error){
           reject(message.error);
@@ -249,10 +251,10 @@ export class Jaxpi {
       });
     });
 
-    //Vacia la cola actual
-    while (this.statementQueue.length != 0){
-      this.statementQueue.dequeue()
-    }
+    // //Vacia la cola actual
+    // while (this.statementQueue.length != 0){
+    //   this.statementQueue.dequeue()
+    // }
     
     return promise.catch((error) => {
       // Manejar el error rechazado aquí para evitar UnhandledPromiseRejectionWarning
