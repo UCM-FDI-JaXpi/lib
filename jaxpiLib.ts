@@ -25,6 +25,7 @@ export class Jaxpi {
   private promises: Promise<void>[] = [];
   private QUEUE_ID: number = 1;
   private MAX_QUEUE_LENGTH: number = 7;
+  private flagFlush: boolean = false;
   
   
 
@@ -195,6 +196,10 @@ export class Jaxpi {
    * Function to send the statements queue to the server, it also creates a backup if the sending fails
    */ 
   public async flush() : Promise<void>{ //Si cliente quiere enviar las trazas encoladas
+    
+    while (this.flagFlush);
+    this.flagFlush = true;
+
     let newQueue = this.statementQueue
     this.statementQueue = new Queue<any>();
     if(localStorage.length){
@@ -214,6 +219,7 @@ export class Jaxpi {
       // Almacena la promesa devuelta por createWorker() en el array de promesas
       this.promises.push(this.createWorker(newQueue));
     } 
+    this.flagFlush = false
   }
 
   private createWorker(queue: Queue<any>) {
