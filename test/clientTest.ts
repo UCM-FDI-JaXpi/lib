@@ -68,7 +68,7 @@ jaxpi.setContext("Maria","mmaria@bro.com","class_A","UCM",[["patatas",2],["coche
 
 jaxpi.accepted().award("patata")
 jaxpi.accessed(0).door("Door 1")
-jaxpi.exited().room("Home")
+jaxpi.exited().game("Super Mario")
 jaxpi.discovered().location("Paleta Town")
 jaxpi.died()
 jaxpi.customVerb(jaxpi.verbs.cancelled, jaxpi.objects.character)

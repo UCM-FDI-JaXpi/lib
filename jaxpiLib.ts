@@ -29,51 +29,52 @@ export class Jaxpi {
   
 
   public verbs = {
-    "accepted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-us":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"]},
-      "accessed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accessed","display":{"en-us":"accessed","es":"accedido"},"objects":["chest","door","room"],"extensions":{"https://example.com/game/visited_times":3},"extensions-doc":{"https://example.com/game/visited_times":"Number of times the object has been accessed"}},
-      "achieved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/achieved","display":{"en-us":"achieved","es":"logrado"},"objects":["achievement","award","game","goal","level","reward"]},
-      "cancelled":{"id":"https://github.com/UCM-FDI-JaXpi/lib/cancelled","display":{"en-us":"cancelled","es":"cancelado"},"objects":["mission","task"],"extensions":{"https://example.com/game/reason":"Obstacle ahead"},"extensions-doc":{"https://example.com/game/reason":"Reason of the cancelation"}},
-      "chatted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/chatted","display":{"en-us":"chatted","es":"charló"},"objects":["character"]},
-      "clicked":{"id":"https://github.com/UCM-FDI-JaXpi/lib/clicked","display":{"en-us":"clicked","es":"clicado"}},
-      "climbed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/climbed","display":{"en-us":"climbed","es":"escalado"},"objects":["location"]},
-      "closed":{"id":"https://w3id.org/xapi/adl/verbs/closed","display":{"en-us":"closed","es":"cerrado"},"objects":["chest","door"]},
-      "combined":{"id":"https://github.com/UCM-FDI-JaXpi/lib/combined","display":{"en-us":"combined","es":"combinado"},"objects":["item"]},
-      "completed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/completed","display":{"en-us":"completed","es":"completado"},"objects":["achievement","game","goal","level","mission","task"],"extensions":{"https://example.com/game/score":500},"extensions-doc":{"https://example.com/game/score":"Score reach with the completion"}},
-      "connected":{"id":"https://github.com/UCM-FDI-JaXpi/lib/connected","display":{"en-us":"connected","es":"conectado"}},
-      "crafted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/crafted","display":{"en-us":"crafted","es":"elaborado"},"objects":["item"]},
-      "dashed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/dashed","display":{"en-us":"dashed","es":"dash"},"objects":["character"]},
-      "defeated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/defeated","display":{"en-us":"defeated","es":"derrotado"},"objects":["enemy"]},
-      "destroyed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/destroyed","display":{"en-us":"destroyed","es":"destruido"},"objects":["item"]},
-      "died":{"id":"https://github.com/UCM-FDI-JaXpi/lib/died","display":{"en-us":"died","es":"muerto"},"objects":["character","location"]},
-      "discovered":{"id":"https://github.com/UCM-FDI-JaXpi/lib/discovered","display":{"en-us":"discovered","es":"descubierto"},"objects":["level","location"]},
+    "accepted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-us":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"],"description":"The player accepts an object like a task or a reward"},
+      "accessed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accessed","display":{"en-us":"accessed","es":"accedido"},"objects":["chest","door","room","location"],"description":"The player access an object like a room or a new area","extensions":{"https://example.com/game/visited_times":3},"extensions-doc":{"https://example.com/game/visited_times":"Number of times the object has been accessed"}},
+      "achieved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/achieved","display":{"en-us":"achieved","es":"logrado"},"objects":["achievement","award","game","goal","level","reward"],"description":"The player achieves something like a level up"},
+      "cancelled":{"id":"https://github.com/UCM-FDI-JaXpi/lib/cancelled","display":{"en-us":"cancelled","es":"cancelado"},"objects":["mission","task"],"description":"The player cancels an object like a mission","extensions":{"https://example.com/game/reason":"Obstacle ahead"},"extensions-doc":{"https://example.com/game/reason":"Reason of the cancelation"}},
+      "chatted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/chatted","display":{"en-us":"chatted","es":"charló"},"objects":["character"],"description":"The player opens a dialog with an object like a npc"},
+      "clicked":{"id":"https://github.com/UCM-FDI-JaXpi/lib/clicked","display":{"en-us":"clicked","es":"clicado"},"objects":["character","item","dialog","door"],"description":"The player interact with an object"},
+      "climbed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/climbed","display":{"en-us":"climbed","es":"escalado"},"objects":["location"],"description":"The player climbes an object like a wall"},
+      "closed":{"id":"https://w3id.org/xapi/adl/verbs/closed","display":{"en-us":"closed","es":"cerrado"},"objects":["chest","door"],"description":"The player closes an object like a dialog or a door"},
+      "combined":{"id":"https://github.com/UCM-FDI-JaXpi/lib/combined","display":{"en-us":"combined","es":"combinado"},"objects":["item"],"description":"The player combines an object with something","extensions":{"https://example.com/game/target":"Item in inventory"},"extensions-doc":{"https://example.com/game/target":"Target of the combination"}},
+      "completed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/completed","display":{"en-us":"completed","es":"completado"},"objects":["achievement","game","goal","level","mission","task"],"description":"The player completes an object like a mission or the game","extensions":{"https://example.com/game/score":500},"extensions-doc":{"https://example.com/game/score":"Score reach with the completion"}},
+      "connected":{"id":"https://github.com/UCM-FDI-JaXpi/lib/connected","display":{"en-us":"connected","es":"conectado"},"description":"The player connects an object with something"},
+      "crafted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/crafted","display":{"en-us":"crafted","es":"elaborado"},"objects":["item"],"description":"The player crafts an object like a new item"},
+      "dashed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/dashed","display":{"en-us":"dashed","es":"dash"},"objects":["character"],"description":"The player dashes (no object? or himself?)"},
+      "defeated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/defeated","display":{"en-us":"defeated","es":"derrotado"},"objects":["enemy"],"description":"The player defeates an object like a boss"},
+      "destroyed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/destroyed","display":{"en-us":"destroyed","es":"destruido"},"objects":["item"],"description":"The player destroys an object like an old item"},
+      "died":{"id":"https://github.com/UCM-FDI-JaXpi/lib/died","display":{"en-us":"died","es":"muerto"},"objects":["character","location"],"description":"The player dies (no object? or himself? or what killed him?)"},
+      "discovered":{"id":"https://github.com/UCM-FDI-JaXpi/lib/discovered","display":{"en-us":"discovered","es":"descubierto"},"objects":["level","location"],"description":"The player discoveres an object like a new location"},
       "doubleJumped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/double-jumped","display":{"en-us":"double jumped","es":"doble salto"}},
-      "earned":{"id":"https://github.com/UCM-FDI-JaXpi/lib/earned","display":{"en-us":"earned","es":"ganado"},"objects":["reward"]},
-      "equipped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/equipped","display":{"en-us":"equipped","es":"equipado"},"objects":["item"]},
-      "examined":{"id":"https://github.com/UCM-FDI-JaXpi/lib/examined","display":{"en-us":"examined","es":"examinado"},"objects":["item","room"]},
-      "exited":{"id":"https://github.com/UCM-FDI-JaXpi/lib/exited","display":{"en-us":"exited","es":"salió"},"objects":["location","room"]},
-      "explored":{"id":"https://github.com/UCM-FDI-JaXpi/lib/explored","display":{"en-us":"explored","es":"explorado"},"objects":["location"]},
-      "failed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/failed","display":{"en-us":"failed","es":"falló"},"objects":["mission","task","level"]},
-      "fellIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/fellIn","display":{"en-us":"fell in","es":"cayó en"},"objects":["location"]},
-      "jumped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/jumped","display":{"en-us":"jumped","es":"saltado"},"objects":["character","enemy"],"extensions":{"https://github.com/UCM-FDI-JaXpi/distance":5,"https://github.com/UCM-FDI-JaXpi/units":"meters"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/distance":"Number of units the object jumped","https://github.com/UCM-FDI-JaXpi/units":"Units in which the distance is expressed"}},
+      "earned":{"id":"https://github.com/UCM-FDI-JaXpi/lib/earned","display":{"en-us":"earned","es":"ganado"},"objects":["reward"],"description":"The player earns an object like a reward"},
+      "equipped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/equipped","display":{"en-us":"equipped","es":"equipado"},"objects":["item"],"description":"The player equippes an object like a new item"},
+      "examined":{"id":"https://github.com/UCM-FDI-JaXpi/lib/examined","display":{"en-us":"examined","es":"examinado"},"objects":["item","room"],"description":"The player examines an object like an item or a room"},
+      "exited":{"id":"https://github.com/UCM-FDI-JaXpi/lib/exited","display":{"en-us":"exited","es":"salió"},"objects":["game","level"],"description":"The player exits the game or level"},
+      "explored":{"id":"https://github.com/UCM-FDI-JaXpi/lib/explored","display":{"en-us":"explored","es":"explorado"},"objects":["location"],"description":"The player explors an object like a location"},
+      "failed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/failed","display":{"en-us":"failed","es":"falló"},"objects":["mission","task","level"],"description":"The player fails an object like a mission"},
+      "fellIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/fellIn","display":{"en-us":"fell in","es":"cayó en"},"objects":["location"],"description":"The player fells in an object like a pit"},
+      "jumped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/jumped","display":{"en-us":"jumped","es":"saltado"},"objects":["character","enemy"],"description":"The player jumps (no object? or himself?)","extensions":{"https://github.com/UCM-FDI-JaXpi/distance":5,"https://github.com/UCM-FDI-JaXpi/units":"meters"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/distance":"Number of units the object jumped","https://github.com/UCM-FDI-JaXpi/units":"Units in which the distance is expressed"}},
       "launched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/launched","display":{"en-us":"launched","es":"ejecutado"}},
+      "loaded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loaded","display":{"en-us":"loaded","es":"cargado"},"objects":["game","level"],"description":"The player loads the game or a level"},
       "loggedIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedIn","display":{"en-us":"loggedIn","es":"conectado"}},
       "loggedOut":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedOut","display":{"en-us":"loggedOut","es":"desconectado"}},
-      "moved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/moved","display":{"en-us":"moved","es":"movido"},"objects":["item"]},
-      "navigated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/navigated","display":{"en-us":"navigated","es":"navegado"},"objects":["location"]},
-      "opened":{"id":"https://github.com/UCM-FDI-JaXpi/lib/opened","display":{"en-us":"opened","es":"abierto"},"objects":["chest","door"]},
-      "paused":{"id":"https://github.com/UCM-FDI-JaXpi/lib/paused","display":{"en-us":"paused","es":"pausado"},"objects":["game"]},
+      "moved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/moved","display":{"en-us":"moved","es":"movido"},"objects":["item"],"description":"The player moves an object like a boulder"},
+      "navigated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/navigated","display":{"en-us":"navigated","es":"navegado"},"objects":["location"],"description":"The player navigates a new location"},
+      "opened":{"id":"https://github.com/UCM-FDI-JaXpi/lib/opened","display":{"en-us":"opened","es":"abierto"},"objects":["chest","door"],"description":"The player opens an object like a door or a chest"},
+      "paused":{"id":"https://github.com/UCM-FDI-JaXpi/lib/paused","display":{"en-us":"paused","es":"pausado"},"objects":["game"],"description":"The player pauses the game"},
       "registered":{"id":"https://github.com/UCM-FDI-JaXpi/lib/registered","display":{"en-us":"registered","es":"registrado"}},
       "rejected":{"id":"https://github.com/UCM-FDI-JaXpi/lib/rejected","display":{"en-us":"rejected","es":"rechazado"}},
       "rotated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/rotated","display":{"en-us":"rotated","es":"rotado"}},
       "shared":{"id":"https://github.com/UCM-FDI-JaXpi/lib/shared","display":{"en-us":"shared","es":"compartido"}},
-      "skipped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/skipped","display":{"en-us":"skipped","es":"omitido"},"objects":["dialog"]},
+      "skipped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/skipped","display":{"en-us":"skipped","es":"omitido"},"objects":["dialog"],"description":"The player skips a dialog"},
       "solved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/solved","display":{"en-us":"solved","es":"resuelto"}},
-      "sprinted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/sprinted","display":{"en-us":"sprinted","es":"sprint"}},
-      "started":{"id":"https://github.com/UCM-FDI-JaXpi/lib/started","display":{"en-us":"started","es":"empezó"},"objects":["level"]},
-      "teleported":{"id":"https://github.com/UCM-FDI-JaXpi/lib/teleported","display":{"en-us":"teleported to","es":"teletransportado"},"objects":["location"]},
-      "unlocked":{"id":"https://github.com/UCM-FDI-JaXpi/lib/unlocked","display":{"en-us":"unlocked","es":"desbloqueado"},"objects":["chest","skill"]},
-      "upgraded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/upgraded","display":{"en-us":"upgraded","es":"mejorado"},"objects":["item"]},
-      "used":{"id":"https://github.com/UCM-FDI-JaXpi/lib/used","display":{"en-us":"used","es":"utilizado"},"objects":["chest","item"]},
+      "sprinted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/sprinted","display":{"en-us":"sprinted","es":"sprint"},"description":"The player jumps (no object? or himself?)"},
+      "started":{"id":"https://github.com/UCM-FDI-JaXpi/lib/started","display":{"en-us":"started","es":"empezó"},"objects":["level","game"],"description":"The player starts a level or a new game"},
+      "teleported":{"id":"https://github.com/UCM-FDI-JaXpi/lib/teleported","display":{"en-us":"teleported to","es":"teletransportado"},"objects":["location","character"],"description":"The player teleports to a location or a character"},
+      "unlocked":{"id":"https://github.com/UCM-FDI-JaXpi/lib/unlocked","display":{"en-us":"unlocked","es":"desbloqueado"},"objects":["chest","skill"],"description":"The player unlocks an object like a chest or a skill"},
+      "upgraded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/upgraded","display":{"en-us":"upgraded","es":"mejorado"},"objects":["item"],"description":"The player upgrades an item"},
+      "used":{"id":"https://github.com/UCM-FDI-JaXpi/lib/used","display":{"en-us":"used","es":"utilizado"},"objects":["item"],"description":"The player uses an item","extensions":{"https://github.com/UCM-FDI-JaXpi/consumed":false},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/consumed":"The item is consumed with the use or not"}},
       "watched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/watched","display":{"en-us":"watched","es":"visto"}}
   }
 
@@ -223,7 +224,7 @@ export class Jaxpi {
       aux = "queue" + this.QUEUE_ID.toString();
     }
 
-    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray(),null,2))
+    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray()))
 
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     let promise = new Promise<void>((resolve, reject) => {
@@ -345,7 +346,7 @@ export class Jaxpi {
 
 
 /**
- * undefined
+ * The player accepts an object like a task or a reward
  * 
  */ 
 accepted(extraParameters?: Array<[string,any]>) { 
@@ -487,7 +488,7 @@ accepted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player access an object like a room or a new area
  * @param {number} visited_times - Number of times the object has been accessed
  */ 
 accessed(visited_times : number,extraParameters?: Array<[string,any]>) { 
@@ -576,11 +577,38 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
       
       }
           
+,
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.location, name, description)
+        
+        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
+  
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
   };
 }
 
 /**
- * undefined
+ * The player achieves something like a level up
  * 
  */ 
 achieved(extraParameters?: Array<[string,any]>) { 
@@ -748,7 +776,7 @@ achieved(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player cancels an object like a mission
  * @param {string} reason - Reason of the cancelation
  */ 
 cancelled(reason : string,extraParameters?: Array<[string,any]>) { 
@@ -814,7 +842,7 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player opens a dialog with an object like a npc
  * 
  */ 
 chatted(extraParameters?: Array<[string,any]>) { 
@@ -852,7 +880,7 @@ chatted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player interact with an object
  * 
  */ 
 clicked(extraParameters?: Array<[string,any]>) { 
@@ -861,11 +889,114 @@ clicked(extraParameters?: Array<[string,any]>) {
 
   return {
     
+      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.character, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
+,
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.item, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
+,
+      dialog: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.dialog, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
+,
+      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.door, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
   };
 }
 
 /**
- * undefined
+ * The player climbes an object like a wall
  * 
  */ 
 climbed(extraParameters?: Array<[string,any]>) { 
@@ -903,7 +1034,7 @@ climbed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player closes an object like a dialog or a door
  * 
  */ 
 closed(extraParameters?: Array<[string,any]>) { 
@@ -967,10 +1098,10 @@ closed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
- * 
+ * The player combines an object with something
+ * @param {string} target - Target of the combination
  */ 
-combined(extraParameters?: Array<[string,any]>) { 
+combined(target : string,extraParameters?: Array<[string,any]>) { 
   
   let object: any;
 
@@ -980,7 +1111,8 @@ combined(extraParameters?: Array<[string,any]>) {
 
         object = generate.generateObject(this.objects.item, name, description)
         
-        
+        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/target'] = target;
+  
       
         if (extraParameters && extraParameters.length > 0) {
           extraParameters.forEach((value) => {
@@ -1005,7 +1137,7 @@ combined(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player completes an object like a mission or the game
  * @param {number} score - Score reach with the completion
  */ 
 completed(score : number,extraParameters?: Array<[string,any]>) { 
@@ -1179,7 +1311,7 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player connects an object with something
  * 
  */ 
 connected(extraParameters?: Array<[string,any]>) { 
@@ -1192,7 +1324,7 @@ connected(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player crafts an object like a new item
  * 
  */ 
 crafted(extraParameters?: Array<[string,any]>) { 
@@ -1230,7 +1362,7 @@ crafted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player dashes (no object? or himself?)
  * 
  */ 
 dashed(extraParameters?: Array<[string,any]>) { 
@@ -1268,7 +1400,7 @@ dashed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player defeates an object like a boss
  * 
  */ 
 defeated(extraParameters?: Array<[string,any]>) { 
@@ -1306,7 +1438,7 @@ defeated(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player destroys an object like an old item
  * 
  */ 
 destroyed(extraParameters?: Array<[string,any]>) { 
@@ -1344,7 +1476,7 @@ destroyed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player dies (no object? or himself? or what killed him?)
  * 
  */ 
 died(extraParameters?: Array<[string,any]>) { 
@@ -1408,7 +1540,7 @@ died(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player discoveres an object like a new location
  * 
  */ 
 discovered(extraParameters?: Array<[string,any]>) { 
@@ -1485,7 +1617,7 @@ doubleJumped(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player earns an object like a reward
  * 
  */ 
 earned(extraParameters?: Array<[string,any]>) { 
@@ -1523,7 +1655,7 @@ earned(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player equippes an object like a new item
  * 
  */ 
 equipped(extraParameters?: Array<[string,any]>) { 
@@ -1561,7 +1693,7 @@ equipped(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player examines an object like an item or a room
  * 
  */ 
 examined(extraParameters?: Array<[string,any]>) { 
@@ -1625,7 +1757,7 @@ examined(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player exits the game or level
  * 
  */ 
 exited(extraParameters?: Array<[string,any]>) { 
@@ -1634,9 +1766,9 @@ exited(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generate.generateObject(this.objects.game, name, description)
         
         
       
@@ -1660,9 +1792,9 @@ exited(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      room: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        object = generate.generateObject(this.objects.room, name, description)
+        object = generate.generateObject(this.objects.level, name, description)
         
         
       
@@ -1689,7 +1821,7 @@ exited(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player explors an object like a location
  * 
  */ 
 explored(extraParameters?: Array<[string,any]>) { 
@@ -1727,7 +1859,7 @@ explored(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player fails an object like a mission
  * 
  */ 
 failed(extraParameters?: Array<[string,any]>) { 
@@ -1817,7 +1949,7 @@ failed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player fells in an object like a pit
  * 
  */ 
 fellIn(extraParameters?: Array<[string,any]>) { 
@@ -1855,7 +1987,7 @@ fellIn(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player jumps (no object? or himself?)
  * @param {number} distance - Number of units the object jumped
  * @param {string} units - Units in which the distance is expressed
  */ 
@@ -1937,6 +2069,70 @@ launched(extraParameters?: Array<[string,any]>) {
 }
 
 /**
+ * The player loads the game or a level
+ * 
+ */ 
+loaded(extraParameters?: Array<[string,any]>) { 
+  
+  let object: any;
+
+  return {
+    
+      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.game, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
+,
+      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.level, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
+  };
+}
+
+/**
  * undefined
  * 
  */ 
@@ -1963,7 +2159,7 @@ loggedOut(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player moves an object like a boulder
  * 
  */ 
 moved(extraParameters?: Array<[string,any]>) { 
@@ -2001,7 +2197,7 @@ moved(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player navigates a new location
  * 
  */ 
 navigated(extraParameters?: Array<[string,any]>) { 
@@ -2039,7 +2235,7 @@ navigated(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player opens an object like a door or a chest
  * 
  */ 
 opened(extraParameters?: Array<[string,any]>) { 
@@ -2103,7 +2299,7 @@ opened(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player pauses the game
  * 
  */ 
 paused(extraParameters?: Array<[string,any]>) { 
@@ -2193,7 +2389,7 @@ shared(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player skips a dialog
  * 
  */ 
 skipped(extraParameters?: Array<[string,any]>) { 
@@ -2244,7 +2440,7 @@ solved(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player jumps (no object? or himself?)
  * 
  */ 
 sprinted(extraParameters?: Array<[string,any]>) { 
@@ -2257,7 +2453,7 @@ sprinted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player starts a level or a new game
  * 
  */ 
 started(extraParameters?: Array<[string,any]>) { 
@@ -2291,11 +2487,37 @@ started(extraParameters?: Array<[string,any]>) {
       
       }
           
+,
+      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.game, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.started, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
   };
 }
 
 /**
- * undefined
+ * The player teleports to a location or a character
  * 
  */ 
 teleported(extraParameters?: Array<[string,any]>) { 
@@ -2329,11 +2551,37 @@ teleported(extraParameters?: Array<[string,any]>) {
       
       }
           
+,
+      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+
+        object = generate.generateObject(this.objects.character, name, description)
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+      
+        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, undefined, this.context, undefined);
+        this.statementQueue.enqueue(statement);
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+        
+      
+      }
+          
   };
 }
 
 /**
- * undefined
+ * The player unlocks an object like a chest or a skill
  * 
  */ 
 unlocked(extraParameters?: Array<[string,any]>) { 
@@ -2397,7 +2645,7 @@ unlocked(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
+ * The player upgrades an item
  * 
  */ 
 upgraded(extraParameters?: Array<[string,any]>) { 
@@ -2435,46 +2683,21 @@ upgraded(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * undefined
- * 
+ * The player uses an item
+ * @param {boolean} consumed - The item is consumed with the use or not
  */ 
-used(extraParameters?: Array<[string,any]>) { 
+used(consumed : boolean,extraParameters?: Array<[string,any]>) { 
   
   let object: any;
 
   return {
     
-      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
-
-        object = generate.generateObject(this.objects.chest, name, description)
-        
-        
-      
-        if (extraParameters && extraParameters.length > 0) {
-          extraParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
-
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
-      
-        const statement = generate.generateStatement(this.player, this.verbs.used, object, undefined, this.context, undefined);
-        this.statementQueue.enqueue(statement);
-        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
-        
-      
-      }
-          
-,
       item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
-        
+        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/consumed'] = consumed;
+  
       
         if (extraParameters && extraParameters.length > 0) {
           extraParameters.forEach((value) => {
