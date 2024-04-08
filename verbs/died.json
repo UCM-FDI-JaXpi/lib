@@ -4,5 +4,6 @@
         "en-us": "died",
         "es": "muerto"
     },
-    "objects": ["character","location"]
+    "objects": ["character","location"],
+    "description": "The player dies (no object? or himself? or what killed him?)"
 }

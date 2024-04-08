@@ -4,5 +4,12 @@
         "en-us": "used",
         "es": "utilizado"
     },
-    "objects": ["chest","item"]
+    "objects": ["item"],
+    "description": "The player uses an item",
+    "extensions": {
+        "https://github.com/UCM-FDI-JaXpi/consumed": false
+      },
+      "extensions-doc": {
+        "https://github.com/UCM-FDI-JaXpi/consumed": "The item is consumed with the use or not"
+      }
 }

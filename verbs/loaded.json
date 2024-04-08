@@ -1,0 +1,9 @@
+{
+    "id": "https://github.com/UCM-FDI-JaXpi/lib/loaded",
+    "display": {
+        "en-us": "loaded",
+        "es": "cargado"
+    },
+    "objects": ["game","level"],
+    "description": "The player loads the game or a level"
+}

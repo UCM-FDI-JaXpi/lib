@@ -4,5 +4,6 @@
         "en-us": "skipped",
         "es": "omitido"
     },
-    "objects": ["dialog"]
+    "objects": ["dialog"],
+    "description": "The player skips a dialog"
 }

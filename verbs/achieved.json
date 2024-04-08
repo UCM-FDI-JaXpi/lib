@@ -4,5 +4,6 @@
         "en-us": "achieved",
         "es": "logrado"
     },
-    "objects": ["achievement","award","game","goal","level","reward"]
+    "objects": ["achievement","award","game","goal","level","reward"],
+    "description": "The player achieves something like a level up"
 }

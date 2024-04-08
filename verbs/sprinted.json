@@ -3,5 +3,6 @@
     "display": {
         "en-us": "sprinted",
         "es": "sprint"
-    }
+    },
+    "description": "The player jumps (no object? or himself?)"
 }

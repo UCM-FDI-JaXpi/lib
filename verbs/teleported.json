@@ -4,5 +4,6 @@
         "en-us": "teleported to",
         "es": "teletransportado"
     },
-    "objects": ["location"]
+    "objects": ["location","character"],
+    "description": "The player teleports to a location or a character"
 }

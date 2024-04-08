@@ -179,12 +179,9 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
       if (value.objects)
         value.objects.forEach((element: string) => {
           object.push(`
-      ${element}: (name?:string, extraParameters?: Array<[string,any]>) => {
+      ${element}: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.${element}, name)
-        else
-          object = generate.generateObject(this.object.${element})
+        object = generate.generateObject(this.objects.${element}, name, description)
         
         ${parametersUpdate}
       
@@ -193,8 +190,14 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("${key}"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.${key}, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -206,7 +209,7 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
 
       return `
 /**
- * ${value.display["en-us"]} action.
+ * ${value.description}
  * ${params.join("\n * ")}
  */ 
 ${key}(${parameters}extraParameters?: Array<[string,any]>) { 
@@ -221,7 +224,7 @@ ${key}(${parameters}extraParameters?: Array<[string,any]>) {
 
     const methods = await Promise.all(methodPromises);
     const verbsMap = Array.from(verbs.entries()).map(async ([key, value]) => {
-      return `["${key}",${JSON.stringify(value)}]`;
+      return `"${key}":${JSON.stringify(value)}`;
     });
     const objectsMap = Array.from(objects.entries()).map(async ([key, value]) => {
       return `"${key}":${JSON.stringify(value)}`;
@@ -246,6 +249,7 @@ const workerPath = path.resolve(__dirname, 'sendStatement.js');
 //const worker = new Worker(workerPath);
 const localStorage = new LocalStorage('./scratch');
 
+
 export class Jaxpi {
   private player: generate.Player;
   private url: string;
@@ -258,10 +262,12 @@ export class Jaxpi {
   
   
 
-  private verbMap = new Map([${resolvedVerbsMap.join(',\n')}])\n
+  public verbs = {
+    ${resolvedVerbsMap.join(',\n      ')}
+  }
 
 
-  public object = {
+  public objects = {
     ${resolvedObjectsMap.join(',\n      ')}
   }
 
@@ -271,7 +277,7 @@ export class Jaxpi {
    * @param {string} player.mail - The mail of the player.
    * @param {string} url - The url of the server where statements will be sent.
    * @param {string} interval - Boolean that activates an interval to send statements. 
-   * @param {string} [time_interval] - Number of seconds an interval will try to send the statements to the server. 
+   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
    * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
    */ 
   constructor(player: generate.Player, url: string, interval: boolean, time_interval?: number, max_queue?: number) {
@@ -341,24 +347,26 @@ export class Jaxpi {
       }
     });
   }
-
+  /**
+   * Function to stop the interval to send the statements queue to the server
+   */
   public stopStatementInterval() {
     if (this.statementInterval)
       clearInterval(this.statementInterval); // Detiene el temporizador
   }
-
+  /**
+   * Function to start the interval to send the statements queue to the server
+   */ 
   public startSendingInterval(seconds: number) {
     if (this.statementInterval)
       clearInterval(this.statementInterval);
     this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
   }
 
-
+  /**
+   * Function to send the statements queue to the server, it also creates a backup if the sending fails
+   */ 
   public async flush() : Promise<void>{ //Si cliente quiere enviar las trazas encoladas
-    if (this.statementQueue.length) {
-      // Almacena la promesa devuelta por createWorker() en el array de promesas
-      this.promises.push(this.createWorker());
-    } 
     if(localStorage.length){
       for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
@@ -372,6 +380,10 @@ export class Jaxpi {
           this.promises.push(this.createWorkerLStorage(recovQueue, key))
       }
     }
+    if (this.statementQueue.length) {
+      // Almacena la promesa devuelta por createWorker() en el array de promesas
+      this.promises.push(this.createWorker());
+    } 
   }
 
   private createWorker() {
@@ -407,7 +419,7 @@ export class Jaxpi {
           resolve();
         }
       });
-  });
+    });
 
     //Vacia la cola actual
     while (this.statementQueue.length != 0){
@@ -420,7 +432,7 @@ export class Jaxpi {
     });
   }
 
-  public createWorkerLStorage(queue: Queue<any>, key : string){ //Si cliente quiere enviar las trazas encoladas
+  private createWorkerLStorage(queue: Queue<any>, key : string){ //Si cliente quiere enviar las trazas encoladas
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     return new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
@@ -448,7 +460,14 @@ export class Jaxpi {
     });
   }
 
-  
+  /**
+   * Function to set the context field of the statement (class / association where it takes places)
+   * @param {string} name - Name of the instructor
+   * @param {string} mbox - Mail of the instructor
+   * @param {string} sessionId - Unique id of the session (class URI)
+   * @param {string} groupId - Unique id of the association (college URI)
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
+   */ 
   public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string,any]>){
     this.context = {
       instructor: {
@@ -467,29 +486,32 @@ export class Jaxpi {
         let parameter = "http://example.com/activities/" + key;
         (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
         }
-    }
-
+      }
     }
   }
 
-  // customVerbWithJson(verb: any, object: any) {
+/**
+ * Function to accept verbs / objects not contemplated in the library
+ * @param {string | object} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
+ * @param {string | object} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
+ * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
+ */ 
+  customVerb(verb: string | object, object: string | object, parameters?: Array<[string,any]>) {
 
-  //   if (checkObject(object) && checkVerb(verb)) {
-  //     //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verb, object) });
-  //     this.statementQueue.enqueue(generate.generateStatement(this.player, verb, object, undefined, this.context, undefined));
-  //     if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
-  //   }
+    if (checkObject(object)){
+      if (checkVerb(verb)){
+        const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
 
-  // }
+        //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
+        this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined));
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+      }
+      else
+        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb. or maintain the structure of this last one")
+    }
+    else
+      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object. or maintain the structure of this last one")
 
-  customVerb(verb: string, object: string, parameters: Array<[string,any]>) {
-
-    const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
-
-    //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
-    this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined));
-    if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
-    
   }\n\n
 \n${methods.join('\n')}\n
 }`;

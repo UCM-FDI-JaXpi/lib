@@ -4,5 +4,6 @@
         "en-us": "equipped",
         "es": "equipado"
     },
-    "objects": ["item"]
+    "objects": ["item"],
+    "description": "The player equippes an object like a new item"
 }

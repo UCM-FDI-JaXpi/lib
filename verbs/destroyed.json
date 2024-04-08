@@ -4,5 +4,6 @@
         "en-us": "destroyed",
         "es": "destruido"
     },
-    "objects": ["item"]
+    "objects": ["item"],
+    "description": "The player destroys an object like an old item"
 }

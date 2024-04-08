@@ -3,5 +3,6 @@
     "display": {
         "en-us": "connected",
         "es": "conectado"
-    }
+    },
+    "description": "The player connects an object with something"
 }

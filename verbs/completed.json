@@ -5,6 +5,7 @@
         "es": "completado"
     },
     "objects": ["achievement","game","goal","level","mission","task"],
+    "description": "The player completes an object like a mission or the game",
     "extensions":{
         "https://example.com/game/score": 500
     },

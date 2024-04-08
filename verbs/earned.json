@@ -4,5 +4,6 @@
         "en-us": "earned",
         "es": "ganado"
     },
-    "objects": ["reward"]
+    "objects": ["reward"],
+    "description": "The player earns an object like a reward"
 }

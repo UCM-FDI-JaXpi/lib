@@ -4,22 +4,38 @@ exports.generateObject = exports.generateStatement = exports.generateStatementFr
 function generateStatementFromZero(verbId, objectId, parameters) {
     var parameter = "";
     var header = "http://example.com/";
-    var verb = {
-        id: header + verbId,
-        display: {},
-    };
-    var object = {
-        id: header + objectId,
-        definition: {
-            type: "custom",
-            name: {},
-            description: {},
-            extensions: {}
-        }
-    };
-    for (var _i = 0, parameters_1 = parameters; _i < parameters_1.length; _i++) {
-        var _a = parameters_1[_i], key = _a[0], value = _a[1];
-        if (object.definition.extensions !== undefined) {
+    var verb;
+    var object;
+    if (typeof verbId === "string")
+        verb = {
+            id: header + verbId,
+            display: {},
+        };
+    else if (verbId.id)
+        verb = {
+            id: verbId.id,
+            display: verbId.display,
+        };
+    if (typeof objectId === "string")
+        object = {
+            id: header + objectId,
+            definition: {
+                type: "custom",
+                name: {},
+                description: {},
+                extensions: {}
+            }
+        };
+    else
+        object = {
+            id: objectId.id,
+            definition: objectId.definition
+        };
+    if (parameters) {
+        if (object.definition.extensions !== undefined)
+            object.definition.extensions = {};
+        for (var _i = 0, parameters_1 = parameters; _i < parameters_1.length; _i++) {
+            var _a = parameters_1[_i], key = _a[0], value = _a[1];
             parameter = header + verbId + "_" + key;
             object.definition.extensions[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
         }
@@ -58,7 +74,7 @@ function generateStatement(player, verb, object, result, context, authority) {
     return statement;
 }
 exports.generateStatement = generateStatement;
-function generateObject(objectJson, name) {
+function generateObject(objectJson, name, description) {
     var object = {
         id: objectJson.id,
         definition: {
@@ -69,7 +85,10 @@ function generateObject(objectJson, name) {
         }
     };
     if (name)
-        object.id = object.id.substring(0, object.id.lastIndexOf("/") - 1) + name;
+        object.definition.name["en-us"] = name;
+    // object.id = object.id.substring(0, object.id.lastIndexOf("/") - 1) + name
+    if (description)
+        object.definition.description["en-us"] = description;
     return object;
 }
 exports.generateObject = generateObject;

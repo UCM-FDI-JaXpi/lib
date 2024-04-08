@@ -1,5 +1,5 @@
 export function checkVerb(json: any): boolean{
-  const expectedFieldsInVerb = ["id", "display","objects","extensions","extensions-doc"];
+  const expectedFieldsInVerb = ["id", "display","objects","extensions","extensions-doc","description"];
   const requiredFieldsInVerb = ["id", "display"]
 
   for (const field in json) {

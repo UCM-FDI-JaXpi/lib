@@ -4,5 +4,6 @@
         "en-us": "discovered",
         "es": "descubierto"
     },
-    "objects": ["level","location"]
+    "objects": ["level","location"],
+    "description": "The player discoveres an object like a new location"
 }

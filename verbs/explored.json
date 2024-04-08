@@ -4,5 +4,6 @@
         "en-us": "explored",
         "es": "explorado"
     },
-    "objects": ["location"]
+    "objects": ["location"],
+    "description": "The player explors an object like a location"
 }

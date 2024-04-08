@@ -4,5 +4,6 @@
         "en-us": "accepted",
         "es": "aceptado"
     },
-    "objects": ["achievement","award","mission","reward","task"]
+    "objects": ["achievement","award","mission","reward","task"],
+    "description": "The player accepts an object like a task or a reward"
 }

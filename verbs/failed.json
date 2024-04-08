@@ -4,5 +4,6 @@
         "en-us": "failed",
         "es": "falló"
     },
-    "objects": ["mission","task","level"]
+    "objects": ["mission","task","level"],
+    "description": "The player fails an object like a mission"
 }

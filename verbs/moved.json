@@ -4,5 +4,6 @@
         "en-us": "moved",
         "es": "movido"
     },
-    "objects": ["item"]
+    "objects": ["item"],
+    "description": "The player moves an object like a boulder"
 }

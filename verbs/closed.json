@@ -4,5 +4,6 @@
         "en-us": "closed",
         "es": "cerrado"
     },
-    "objects": ["chest","door"]
+    "objects": ["chest","door"],
+    "description": "The player closes an object like a dialog or a door"
 }

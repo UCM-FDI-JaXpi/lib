@@ -5,6 +5,7 @@
         "es": "saltado"
     },
     "objects": ["character","enemy"],
+    "description": "The player jumps (no object? or himself?)",
     "extensions": {
       "https://github.com/UCM-FDI-JaXpi/distance": 5,
       "https://github.com/UCM-FDI-JaXpi/units": "meters"

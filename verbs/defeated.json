@@ -4,5 +4,6 @@
         "en-us": "defeated",
         "es": "derrotado"
     },
-    "objects": ["enemy"]
+    "objects": ["enemy"],
+    "description": "The player defeates an object like a boss"
 }

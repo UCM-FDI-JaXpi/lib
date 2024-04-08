@@ -4,5 +4,6 @@
         "en-us": "exited",
         "es": "salió"
     },
-    "objects": ["location","room"]
+    "objects": ["game","level"],
+    "description": "The player exits the game or level"
 }

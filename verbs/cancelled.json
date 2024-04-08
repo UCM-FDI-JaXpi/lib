@@ -5,6 +5,7 @@
         "es": "cancelado"
     },
     "objects": ["mission","task"],
+    "description": "The player cancels an object like a mission",
     "extensions": {
       "https://example.com/game/reason": "Obstacle ahead"
     },

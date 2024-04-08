@@ -4,5 +4,6 @@
         "en-us": "upgraded",
         "es": "mejorado"
     },
-    "objects": ["item"]
+    "objects": ["item"],
+    "description": "The player upgrades an item"
 }

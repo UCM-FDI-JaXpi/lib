@@ -15,6 +15,7 @@ const workerPath = path.resolve(__dirname, 'sendStatement.js');
 //const worker = new Worker(workerPath);
 const localStorage = new LocalStorage('./scratch');
 
+
 export class Jaxpi {
   private player: generate.Player;
   private url: string;
@@ -27,56 +28,57 @@ export class Jaxpi {
   
   
 
-  private verbMap = new Map([["accepted",{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-us":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"]}],
-["accessed",{"id":"https://github.com/UCM-FDI-JaXpi/lib/accessed","display":{"en-us":"accessed","es":"accedido"},"objects":["chest","door","room"],"extensions":{"https://example.com/game/visited_times":3},"extensions-doc":{"https://example.com/game/visited_times":"Number of times the object has been accessed"}}],
-["achieved",{"id":"https://github.com/UCM-FDI-JaXpi/lib/achieved","display":{"en-us":"achieved","es":"logrado"},"objects":["achievement","award","game","goal","level","reward"]}],
-["cancelled",{"id":"https://github.com/UCM-FDI-JaXpi/lib/cancelled","display":{"en-us":"cancelled","es":"cancelado"},"objects":["mission","task"],"extensions":{"https://example.com/game/reason":"Obstacle ahead"},"extensions-doc":{"https://example.com/game/reason":"Reason of the cancelation"}}],
-["chatted",{"id":"https://github.com/UCM-FDI-JaXpi/lib/chatted","display":{"en-us":"chatted","es":"charló"},"objects":["character"]}],
-["clicked",{"id":"https://github.com/UCM-FDI-JaXpi/lib/clicked","display":{"en-us":"clicked","es":"clicado"}}],
-["climbed",{"id":"https://github.com/UCM-FDI-JaXpi/lib/climbed","display":{"en-us":"climbed","es":"escalado"},"objects":["location"]}],
-["closed",{"id":"https://w3id.org/xapi/adl/verbs/closed","display":{"en-us":"closed","es":"cerrado"},"objects":["chest","door"]}],
-["combined",{"id":"https://github.com/UCM-FDI-JaXpi/lib/combined","display":{"en-us":"combined","es":"combinado"},"objects":["item"]}],
-["completed",{"id":"https://github.com/UCM-FDI-JaXpi/lib/completed","display":{"en-us":"completed","es":"completado"},"objects":["achievement","game","goal","level","mission","task"],"extensions":{"https://example.com/game/score":500},"extensions-doc":{"https://example.com/game/score":"Score reach with the completion"}}],
-["connected",{"id":"https://github.com/UCM-FDI-JaXpi/lib/connected","display":{"en-us":"connected","es":"conectado"}}],
-["crafted",{"id":"https://github.com/UCM-FDI-JaXpi/lib/crafted","display":{"en-us":"crafted","es":"elaborado"},"objects":["item"]}],
-["dashed",{"id":"https://github.com/UCM-FDI-JaXpi/lib/dashed","display":{"en-us":"dashed","es":"dash"},"objects":["character"]}],
-["defeated",{"id":"https://github.com/UCM-FDI-JaXpi/lib/defeated","display":{"en-us":"defeated","es":"derrotado"},"objects":["enemy"]}],
-["destroyed",{"id":"https://github.com/UCM-FDI-JaXpi/lib/destroyed","display":{"en-us":"destroyed","es":"destruido"},"objects":["item"]}],
-["died",{"id":"https://github.com/UCM-FDI-JaXpi/lib/died","display":{"en-us":"died","es":"muerto"},"objects":["character","location"]}],
-["discovered",{"id":"https://github.com/UCM-FDI-JaXpi/lib/discovered","display":{"en-us":"discovered","es":"descubierto"},"objects":["level","location"]}],
-["doubleJumped",{"id":"https://github.com/UCM-FDI-JaXpi/lib/double-jumped","display":{"en-us":"double jumped","es":"doble salto"}}],
-["earned",{"id":"https://github.com/UCM-FDI-JaXpi/lib/earned","display":{"en-us":"earned","es":"ganado"},"objects":["reward"]}],
-["equipped",{"id":"https://github.com/UCM-FDI-JaXpi/lib/equipped","display":{"en-us":"equipped","es":"equipado"},"objects":["item"]}],
-["examined",{"id":"https://github.com/UCM-FDI-JaXpi/lib/examined","display":{"en-us":"examined","es":"examinado"},"objects":["item","room"]}],
-["exited",{"id":"https://github.com/UCM-FDI-JaXpi/lib/exited","display":{"en-us":"exited","es":"salió"},"objects":["location","room"]}],
-["explored",{"id":"https://github.com/UCM-FDI-JaXpi/lib/explored","display":{"en-us":"explored","es":"explorado"},"objects":["location"]}],
-["failed",{"id":"https://github.com/UCM-FDI-JaXpi/lib/failed","display":{"en-us":"failed","es":"falló"},"objects":["mission","task","level"]}],
-["fellIn",{"id":"https://github.com/UCM-FDI-JaXpi/lib/fellIn","display":{"en-us":"fell in","es":"cayó en"},"objects":["location"]}],
-["jumped",{"id":"https://github.com/UCM-FDI-JaXpi/lib/jumped","display":{"en-us":"jumped","es":"saltado"},"objects":["character","enemy"],"extensions":{"https://github.com/UCM-FDI-JaXpi/distance":5,"https://github.com/UCM-FDI-JaXpi/units":"meters"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/distance":"Number of units the object jumped","https://github.com/UCM-FDI-JaXpi/units":"Units in which the distance is expressed"}}],
-["launched",{"id":"https://github.com/UCM-FDI-JaXpi/lib/launched","display":{"en-us":"launched","es":"ejecutado"}}],
-["loggedIn",{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedIn","display":{"en-us":"loggedIn","es":"conectado"}}],
-["loggedOut",{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedOut","display":{"en-us":"loggedOut","es":"desconectado"}}],
-["moved",{"id":"https://github.com/UCM-FDI-JaXpi/lib/moved","display":{"en-us":"moved","es":"movido"},"objects":["item"]}],
-["navigated",{"id":"https://github.com/UCM-FDI-JaXpi/lib/navigated","display":{"en-us":"navigated","es":"navegado"},"objects":["location"]}],
-["opened",{"id":"https://github.com/UCM-FDI-JaXpi/lib/opened","display":{"en-us":"opened","es":"abierto"},"objects":["chest","door"]}],
-["paused",{"id":"https://github.com/UCM-FDI-JaXpi/lib/paused","display":{"en-us":"paused","es":"pausado"},"objects":["game"]}],
-["registered",{"id":"https://github.com/UCM-FDI-JaXpi/lib/registered","display":{"en-us":"registered","es":"registrado"}}],
-["rejected",{"id":"https://github.com/UCM-FDI-JaXpi/lib/rejected","display":{"en-us":"rejected","es":"rechazado"}}],
-["rotated",{"id":"https://github.com/UCM-FDI-JaXpi/lib/rotated","display":{"en-us":"rotated","es":"rotado"}}],
-["shared",{"id":"https://github.com/UCM-FDI-JaXpi/lib/shared","display":{"en-us":"shared","es":"compartido"}}],
-["skipped",{"id":"https://github.com/UCM-FDI-JaXpi/lib/skipped","display":{"en-us":"skipped","es":"omitido"},"objects":["dialog"]}],
-["solved",{"id":"https://github.com/UCM-FDI-JaXpi/lib/solved","display":{"en-us":"solved","es":"resuelto"}}],
-["sprinted",{"id":"https://github.com/UCM-FDI-JaXpi/lib/sprinted","display":{"en-us":"sprinted","es":"sprint"}}],
-["started",{"id":"https://github.com/UCM-FDI-JaXpi/lib/started","display":{"en-us":"started","es":"empezó"},"objects":["level"]}],
-["teleported",{"id":"https://github.com/UCM-FDI-JaXpi/lib/teleported","display":{"en-us":"teleported to","es":"teletransportado"},"objects":["location"]}],
-["unlocked",{"id":"https://github.com/UCM-FDI-JaXpi/lib/unlocked","display":{"en-us":"unlocked","es":"desbloqueado"},"objects":["chest","skill"]}],
-["upgraded",{"id":"https://github.com/UCM-FDI-JaXpi/lib/upgraded","display":{"en-us":"upgraded","es":"mejorado"},"objects":["item"]}],
-["used",{"id":"https://github.com/UCM-FDI-JaXpi/lib/used","display":{"en-us":"used","es":"utilizado"},"objects":["chest","item"]}],
-["watched",{"id":"https://github.com/UCM-FDI-JaXpi/lib/watched","display":{"en-us":"watched","es":"visto"}}]])
+  public verbs = {
+    "accepted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-us":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"]},
+      "accessed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accessed","display":{"en-us":"accessed","es":"accedido"},"objects":["chest","door","room"],"extensions":{"https://example.com/game/visited_times":3},"extensions-doc":{"https://example.com/game/visited_times":"Number of times the object has been accessed"}},
+      "achieved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/achieved","display":{"en-us":"achieved","es":"logrado"},"objects":["achievement","award","game","goal","level","reward"]},
+      "cancelled":{"id":"https://github.com/UCM-FDI-JaXpi/lib/cancelled","display":{"en-us":"cancelled","es":"cancelado"},"objects":["mission","task"],"extensions":{"https://example.com/game/reason":"Obstacle ahead"},"extensions-doc":{"https://example.com/game/reason":"Reason of the cancelation"}},
+      "chatted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/chatted","display":{"en-us":"chatted","es":"charló"},"objects":["character"]},
+      "clicked":{"id":"https://github.com/UCM-FDI-JaXpi/lib/clicked","display":{"en-us":"clicked","es":"clicado"}},
+      "climbed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/climbed","display":{"en-us":"climbed","es":"escalado"},"objects":["location"]},
+      "closed":{"id":"https://w3id.org/xapi/adl/verbs/closed","display":{"en-us":"closed","es":"cerrado"},"objects":["chest","door"]},
+      "combined":{"id":"https://github.com/UCM-FDI-JaXpi/lib/combined","display":{"en-us":"combined","es":"combinado"},"objects":["item"]},
+      "completed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/completed","display":{"en-us":"completed","es":"completado"},"objects":["achievement","game","goal","level","mission","task"],"extensions":{"https://example.com/game/score":500},"extensions-doc":{"https://example.com/game/score":"Score reach with the completion"}},
+      "connected":{"id":"https://github.com/UCM-FDI-JaXpi/lib/connected","display":{"en-us":"connected","es":"conectado"}},
+      "crafted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/crafted","display":{"en-us":"crafted","es":"elaborado"},"objects":["item"]},
+      "dashed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/dashed","display":{"en-us":"dashed","es":"dash"},"objects":["character"]},
+      "defeated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/defeated","display":{"en-us":"defeated","es":"derrotado"},"objects":["enemy"]},
+      "destroyed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/destroyed","display":{"en-us":"destroyed","es":"destruido"},"objects":["item"]},
+      "died":{"id":"https://github.com/UCM-FDI-JaXpi/lib/died","display":{"en-us":"died","es":"muerto"},"objects":["character","location"]},
+      "discovered":{"id":"https://github.com/UCM-FDI-JaXpi/lib/discovered","display":{"en-us":"discovered","es":"descubierto"},"objects":["level","location"]},
+      "doubleJumped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/double-jumped","display":{"en-us":"double jumped","es":"doble salto"}},
+      "earned":{"id":"https://github.com/UCM-FDI-JaXpi/lib/earned","display":{"en-us":"earned","es":"ganado"},"objects":["reward"]},
+      "equipped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/equipped","display":{"en-us":"equipped","es":"equipado"},"objects":["item"]},
+      "examined":{"id":"https://github.com/UCM-FDI-JaXpi/lib/examined","display":{"en-us":"examined","es":"examinado"},"objects":["item","room"]},
+      "exited":{"id":"https://github.com/UCM-FDI-JaXpi/lib/exited","display":{"en-us":"exited","es":"salió"},"objects":["location","room"]},
+      "explored":{"id":"https://github.com/UCM-FDI-JaXpi/lib/explored","display":{"en-us":"explored","es":"explorado"},"objects":["location"]},
+      "failed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/failed","display":{"en-us":"failed","es":"falló"},"objects":["mission","task","level"]},
+      "fellIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/fellIn","display":{"en-us":"fell in","es":"cayó en"},"objects":["location"]},
+      "jumped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/jumped","display":{"en-us":"jumped","es":"saltado"},"objects":["character","enemy"],"extensions":{"https://github.com/UCM-FDI-JaXpi/distance":5,"https://github.com/UCM-FDI-JaXpi/units":"meters"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/distance":"Number of units the object jumped","https://github.com/UCM-FDI-JaXpi/units":"Units in which the distance is expressed"}},
+      "launched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/launched","display":{"en-us":"launched","es":"ejecutado"}},
+      "loggedIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedIn","display":{"en-us":"loggedIn","es":"conectado"}},
+      "loggedOut":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedOut","display":{"en-us":"loggedOut","es":"desconectado"}},
+      "moved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/moved","display":{"en-us":"moved","es":"movido"},"objects":["item"]},
+      "navigated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/navigated","display":{"en-us":"navigated","es":"navegado"},"objects":["location"]},
+      "opened":{"id":"https://github.com/UCM-FDI-JaXpi/lib/opened","display":{"en-us":"opened","es":"abierto"},"objects":["chest","door"]},
+      "paused":{"id":"https://github.com/UCM-FDI-JaXpi/lib/paused","display":{"en-us":"paused","es":"pausado"},"objects":["game"]},
+      "registered":{"id":"https://github.com/UCM-FDI-JaXpi/lib/registered","display":{"en-us":"registered","es":"registrado"}},
+      "rejected":{"id":"https://github.com/UCM-FDI-JaXpi/lib/rejected","display":{"en-us":"rejected","es":"rechazado"}},
+      "rotated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/rotated","display":{"en-us":"rotated","es":"rotado"}},
+      "shared":{"id":"https://github.com/UCM-FDI-JaXpi/lib/shared","display":{"en-us":"shared","es":"compartido"}},
+      "skipped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/skipped","display":{"en-us":"skipped","es":"omitido"},"objects":["dialog"]},
+      "solved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/solved","display":{"en-us":"solved","es":"resuelto"}},
+      "sprinted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/sprinted","display":{"en-us":"sprinted","es":"sprint"}},
+      "started":{"id":"https://github.com/UCM-FDI-JaXpi/lib/started","display":{"en-us":"started","es":"empezó"},"objects":["level"]},
+      "teleported":{"id":"https://github.com/UCM-FDI-JaXpi/lib/teleported","display":{"en-us":"teleported to","es":"teletransportado"},"objects":["location"]},
+      "unlocked":{"id":"https://github.com/UCM-FDI-JaXpi/lib/unlocked","display":{"en-us":"unlocked","es":"desbloqueado"},"objects":["chest","skill"]},
+      "upgraded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/upgraded","display":{"en-us":"upgraded","es":"mejorado"},"objects":["item"]},
+      "used":{"id":"https://github.com/UCM-FDI-JaXpi/lib/used","display":{"en-us":"used","es":"utilizado"},"objects":["chest","item"]},
+      "watched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/watched","display":{"en-us":"watched","es":"visto"}}
+  }
 
 
-
-  public object = {
+  public objects = {
     "achievement":{"id":"http://example.com/achievements/achievement","definition":{"type":"Achievement","name":{"en-us":"Achievement 1 completed","es":"Achievement 1 completado"},"description":{"en-us":"You completed achievement 1!","es":"¡Has completado el achievement 1!"}}},
       "award":{"id":"http://example.com/achievements/award","definition":{"type":"Special award","name":{"en-us":"Special award","es":"Premio especial"},"description":{"en-us":"Special award earned by achieving a significant milestone in the game","es":"Premio especial obtenido al alcanzar un hito significativo en el juego"}}},
       "character":{"id":"http://example.com/character","definition":{"type":"Playable character","name":{"en-us":"Mario","es":"Mario"},"description":{"en-us":"Mario is the main protagonist of the game","es":"Mario es el protagonista del juego"}}},
@@ -102,7 +104,7 @@ export class Jaxpi {
    * @param {string} player.mail - The mail of the player.
    * @param {string} url - The url of the server where statements will be sent.
    * @param {string} interval - Boolean that activates an interval to send statements. 
-   * @param {string} [time_interval] - Number of seconds an interval will try to send the statements to the server. 
+   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
    * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
    */ 
   constructor(player: generate.Player, url: string, interval: boolean, time_interval?: number, max_queue?: number) {
@@ -172,24 +174,26 @@ export class Jaxpi {
       }
     });
   }
-
+  /**
+   * Function to stop the interval to send the statements queue to the server
+   */
   public stopStatementInterval() {
     if (this.statementInterval)
       clearInterval(this.statementInterval); // Detiene el temporizador
   }
-
+  /**
+   * Function to start the interval to send the statements queue to the server
+   */ 
   public startSendingInterval(seconds: number) {
     if (this.statementInterval)
       clearInterval(this.statementInterval);
     this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
   }
 
-
+  /**
+   * Function to send the statements queue to the server, it also creates a backup if the sending fails
+   */ 
   public async flush() : Promise<void>{ //Si cliente quiere enviar las trazas encoladas
-    if (this.statementQueue.length) {
-      // Almacena la promesa devuelta por createWorker() en el array de promesas
-      this.promises.push(this.createWorker());
-    } 
     if(localStorage.length){
       for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
@@ -203,6 +207,10 @@ export class Jaxpi {
           this.promises.push(this.createWorkerLStorage(recovQueue, key))
       }
     }
+    if (this.statementQueue.length) {
+      // Almacena la promesa devuelta por createWorker() en el array de promesas
+      this.promises.push(this.createWorker());
+    } 
   }
 
   private createWorker() {
@@ -215,7 +223,7 @@ export class Jaxpi {
       aux = "queue" + this.QUEUE_ID.toString();
     }
 
-    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray()))
+    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray(),null,2))
 
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     let promise = new Promise<void>((resolve, reject) => {
@@ -238,7 +246,7 @@ export class Jaxpi {
           resolve();
         }
       });
-  });
+    });
 
     //Vacia la cola actual
     while (this.statementQueue.length != 0){
@@ -251,7 +259,7 @@ export class Jaxpi {
     });
   }
 
-  public createWorkerLStorage(queue: Queue<any>, key : string){ //Si cliente quiere enviar las trazas encoladas
+  private createWorkerLStorage(queue: Queue<any>, key : string){ //Si cliente quiere enviar las trazas encoladas
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     return new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
@@ -279,7 +287,14 @@ export class Jaxpi {
     });
   }
 
-  
+  /**
+   * Function to set the context field of the statement (class / association where it takes places)
+   * @param {string} name - Name of the instructor
+   * @param {string} mbox - Mail of the instructor
+   * @param {string} sessionId - Unique id of the session (class URI)
+   * @param {string} groupId - Unique id of the association (college URI)
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
+   */ 
   public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string,any]>){
     this.context = {
       instructor: {
@@ -298,36 +313,39 @@ export class Jaxpi {
         let parameter = "http://example.com/activities/" + key;
         (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
         }
-    }
-
+      }
     }
   }
 
-  // customVerbWithJson(verb: any, object: any) {
+/**
+ * Function to accept verbs / objects not contemplated in the library
+ * @param {string | object} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
+ * @param {string | object} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
+ * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
+ */ 
+  customVerb(verb: string | object, object: string | object, parameters?: Array<[string,any]>) {
 
-  //   if (checkObject(object) && checkVerb(verb)) {
-  //     //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verb, object) });
-  //     this.statementQueue.enqueue(generate.generateStatement(this.player, verb, object, undefined, this.context, undefined));
-  //     if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
-  //   }
+    if (checkObject(object)){
+      if (checkVerb(verb)){
+        const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
 
-  // }
+        //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
+        this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined));
+        if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
+      }
+      else
+        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb. or maintain the structure of this last one")
+    }
+    else
+      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object. or maintain the structure of this last one")
 
-  customVerb(verb: string, object: string, parameters: Array<[string,any]>) {
-
-    const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
-
-    //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
-    this.statementQueue.enqueue(generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined));
-    if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
-    
   }
 
 
 
 
 /**
- * accepted action.
+ * undefined
  * 
  */ 
 accepted(extraParameters?: Array<[string,any]>) { 
@@ -336,12 +354,9 @@ accepted(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      achievement: (name?:string, extraParameters?: Array<[string,any]>) => {
+      achievement: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.achievement, name)
-        else
-          object = generate.generateObject(this.object.achievement)
+        object = generate.generateObject(this.objects.achievement, name, description)
         
         
       
@@ -350,8 +365,14 @@ accepted(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accepted"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -359,12 +380,9 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      award: (name?:string, extraParameters?: Array<[string,any]>) => {
+      award: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.award, name)
-        else
-          object = generate.generateObject(this.object.award)
+        object = generate.generateObject(this.objects.award, name, description)
         
         
       
@@ -373,8 +391,14 @@ accepted(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accepted"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -382,12 +406,9 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      mission: (name?:string, extraParameters?: Array<[string,any]>) => {
+      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.mission, name)
-        else
-          object = generate.generateObject(this.object.mission)
+        object = generate.generateObject(this.objects.mission, name, description)
         
         
       
@@ -396,8 +417,14 @@ accepted(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accepted"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -405,12 +432,9 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      reward: (name?:string, extraParameters?: Array<[string,any]>) => {
+      reward: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.reward, name)
-        else
-          object = generate.generateObject(this.object.reward)
+        object = generate.generateObject(this.objects.reward, name, description)
         
         
       
@@ -419,8 +443,14 @@ accepted(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accepted"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -428,12 +458,9 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, extraParameters?: Array<[string,any]>) => {
+      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.task, name)
-        else
-          object = generate.generateObject(this.object.task)
+        object = generate.generateObject(this.objects.task, name, description)
         
         
       
@@ -442,8 +469,14 @@ accepted(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accepted"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -454,7 +487,7 @@ accepted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * accessed action.
+ * undefined
  * @param {number} visited_times - Number of times the object has been accessed
  */ 
 accessed(visited_times : number,extraParameters?: Array<[string,any]>) { 
@@ -463,12 +496,9 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
 
   return {
     
-      chest: (name?:string, extraParameters?: Array<[string,any]>) => {
+      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.chest, name)
-        else
-          object = generate.generateObject(this.object.chest)
+        object = generate.generateObject(this.objects.chest, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
   
@@ -478,8 +508,14 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accessed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -487,12 +523,9 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      door: (name?:string, extraParameters?: Array<[string,any]>) => {
+      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.door, name)
-        else
-          object = generate.generateObject(this.object.door)
+        object = generate.generateObject(this.objects.door, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
   
@@ -502,8 +535,14 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accessed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -511,12 +550,9 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      room: (name?:string, extraParameters?: Array<[string,any]>) => {
+      room: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.room, name)
-        else
-          object = generate.generateObject(this.object.room)
+        object = generate.generateObject(this.objects.room, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
   
@@ -526,8 +562,14 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("accessed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -538,7 +580,7 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * achieved action.
+ * undefined
  * 
  */ 
 achieved(extraParameters?: Array<[string,any]>) { 
@@ -547,12 +589,9 @@ achieved(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      achievement: (name?:string, extraParameters?: Array<[string,any]>) => {
+      achievement: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.achievement, name)
-        else
-          object = generate.generateObject(this.object.achievement)
+        object = generate.generateObject(this.objects.achievement, name, description)
         
         
       
@@ -561,8 +600,14 @@ achieved(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("achieved"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -570,12 +615,9 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      award: (name?:string, extraParameters?: Array<[string,any]>) => {
+      award: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.award, name)
-        else
-          object = generate.generateObject(this.object.award)
+        object = generate.generateObject(this.objects.award, name, description)
         
         
       
@@ -584,8 +626,14 @@ achieved(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("achieved"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -593,12 +641,9 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      game: (name?:string, extraParameters?: Array<[string,any]>) => {
+      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.game, name)
-        else
-          object = generate.generateObject(this.object.game)
+        object = generate.generateObject(this.objects.game, name, description)
         
         
       
@@ -607,8 +652,14 @@ achieved(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("achieved"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -616,12 +667,9 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      goal: (name?:string, extraParameters?: Array<[string,any]>) => {
+      goal: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.goal, name)
-        else
-          object = generate.generateObject(this.object.goal)
+        object = generate.generateObject(this.objects.goal, name, description)
         
         
       
@@ -630,8 +678,14 @@ achieved(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("achieved"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -639,12 +693,9 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, extraParameters?: Array<[string,any]>) => {
+      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.level, name)
-        else
-          object = generate.generateObject(this.object.level)
+        object = generate.generateObject(this.objects.level, name, description)
         
         
       
@@ -653,8 +704,14 @@ achieved(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("achieved"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -662,12 +719,9 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      reward: (name?:string, extraParameters?: Array<[string,any]>) => {
+      reward: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.reward, name)
-        else
-          object = generate.generateObject(this.object.reward)
+        object = generate.generateObject(this.objects.reward, name, description)
         
         
       
@@ -676,8 +730,14 @@ achieved(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("achieved"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -688,7 +748,7 @@ achieved(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * cancelled action.
+ * undefined
  * @param {string} reason - Reason of the cancelation
  */ 
 cancelled(reason : string,extraParameters?: Array<[string,any]>) { 
@@ -697,12 +757,9 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
 
   return {
     
-      mission: (name?:string, extraParameters?: Array<[string,any]>) => {
+      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.mission, name)
-        else
-          object = generate.generateObject(this.object.mission)
+        object = generate.generateObject(this.objects.mission, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/reason'] = reason;
   
@@ -712,8 +769,14 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("cancelled"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -721,12 +784,9 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, extraParameters?: Array<[string,any]>) => {
+      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.task, name)
-        else
-          object = generate.generateObject(this.object.task)
+        object = generate.generateObject(this.objects.task, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/reason'] = reason;
   
@@ -736,8 +796,14 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("cancelled"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -748,7 +814,7 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * chatted action.
+ * undefined
  * 
  */ 
 chatted(extraParameters?: Array<[string,any]>) { 
@@ -757,12 +823,9 @@ chatted(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      character: (name?:string, extraParameters?: Array<[string,any]>) => {
+      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.character, name)
-        else
-          object = generate.generateObject(this.object.character)
+        object = generate.generateObject(this.objects.character, name, description)
         
         
       
@@ -771,8 +834,14 @@ chatted(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("chatted"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.chatted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -783,7 +852,7 @@ chatted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * clicked action.
+ * undefined
  * 
  */ 
 clicked(extraParameters?: Array<[string,any]>) { 
@@ -796,7 +865,7 @@ clicked(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * climbed action.
+ * undefined
  * 
  */ 
 climbed(extraParameters?: Array<[string,any]>) { 
@@ -805,12 +874,9 @@ climbed(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -819,8 +885,14 @@ climbed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("climbed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.climbed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -831,7 +903,7 @@ climbed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * closed action.
+ * undefined
  * 
  */ 
 closed(extraParameters?: Array<[string,any]>) { 
@@ -840,12 +912,9 @@ closed(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      chest: (name?:string, extraParameters?: Array<[string,any]>) => {
+      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.chest, name)
-        else
-          object = generate.generateObject(this.object.chest)
+        object = generate.generateObject(this.objects.chest, name, description)
         
         
       
@@ -854,8 +923,14 @@ closed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("closed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.closed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -863,12 +938,9 @@ closed(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      door: (name?:string, extraParameters?: Array<[string,any]>) => {
+      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.door, name)
-        else
-          object = generate.generateObject(this.object.door)
+        object = generate.generateObject(this.objects.door, name, description)
         
         
       
@@ -877,8 +949,14 @@ closed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("closed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.closed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -889,7 +967,7 @@ closed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * combined action.
+ * undefined
  * 
  */ 
 combined(extraParameters?: Array<[string,any]>) { 
@@ -898,12 +976,9 @@ combined(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -912,8 +987,14 @@ combined(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("combined"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.combined, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -924,7 +1005,7 @@ combined(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * completed action.
+ * undefined
  * @param {number} score - Score reach with the completion
  */ 
 completed(score : number,extraParameters?: Array<[string,any]>) { 
@@ -933,12 +1014,9 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
 
   return {
     
-      achievement: (name?:string, extraParameters?: Array<[string,any]>) => {
+      achievement: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.achievement, name)
-        else
-          object = generate.generateObject(this.object.achievement)
+        object = generate.generateObject(this.objects.achievement, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
   
@@ -948,8 +1026,14 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("completed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -957,12 +1041,9 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      game: (name?:string, extraParameters?: Array<[string,any]>) => {
+      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.game, name)
-        else
-          object = generate.generateObject(this.object.game)
+        object = generate.generateObject(this.objects.game, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
   
@@ -972,8 +1053,14 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("completed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -981,12 +1068,9 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      goal: (name?:string, extraParameters?: Array<[string,any]>) => {
+      goal: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.goal, name)
-        else
-          object = generate.generateObject(this.object.goal)
+        object = generate.generateObject(this.objects.goal, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
   
@@ -996,8 +1080,14 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("completed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1005,12 +1095,9 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, extraParameters?: Array<[string,any]>) => {
+      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.level, name)
-        else
-          object = generate.generateObject(this.object.level)
+        object = generate.generateObject(this.objects.level, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
   
@@ -1020,8 +1107,14 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("completed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1029,12 +1122,9 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      mission: (name?:string, extraParameters?: Array<[string,any]>) => {
+      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.mission, name)
-        else
-          object = generate.generateObject(this.object.mission)
+        object = generate.generateObject(this.objects.mission, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
   
@@ -1044,8 +1134,14 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("completed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1053,12 +1149,9 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, extraParameters?: Array<[string,any]>) => {
+      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.task, name)
-        else
-          object = generate.generateObject(this.object.task)
+        object = generate.generateObject(this.objects.task, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
   
@@ -1068,8 +1161,14 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("completed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1080,7 +1179,7 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * connected action.
+ * undefined
  * 
  */ 
 connected(extraParameters?: Array<[string,any]>) { 
@@ -1093,7 +1192,7 @@ connected(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * crafted action.
+ * undefined
  * 
  */ 
 crafted(extraParameters?: Array<[string,any]>) { 
@@ -1102,12 +1201,9 @@ crafted(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -1116,8 +1212,14 @@ crafted(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("crafted"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.crafted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1128,7 +1230,7 @@ crafted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * dashed action.
+ * undefined
  * 
  */ 
 dashed(extraParameters?: Array<[string,any]>) { 
@@ -1137,12 +1239,9 @@ dashed(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      character: (name?:string, extraParameters?: Array<[string,any]>) => {
+      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.character, name)
-        else
-          object = generate.generateObject(this.object.character)
+        object = generate.generateObject(this.objects.character, name, description)
         
         
       
@@ -1151,8 +1250,14 @@ dashed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("dashed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.dashed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1163,7 +1268,7 @@ dashed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * defeated action.
+ * undefined
  * 
  */ 
 defeated(extraParameters?: Array<[string,any]>) { 
@@ -1172,12 +1277,9 @@ defeated(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      enemy: (name?:string, extraParameters?: Array<[string,any]>) => {
+      enemy: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.enemy, name)
-        else
-          object = generate.generateObject(this.object.enemy)
+        object = generate.generateObject(this.objects.enemy, name, description)
         
         
       
@@ -1186,8 +1288,14 @@ defeated(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("defeated"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.defeated, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1198,7 +1306,7 @@ defeated(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * destroyed action.
+ * undefined
  * 
  */ 
 destroyed(extraParameters?: Array<[string,any]>) { 
@@ -1207,12 +1315,9 @@ destroyed(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -1221,8 +1326,14 @@ destroyed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("destroyed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1233,7 +1344,7 @@ destroyed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * died action.
+ * undefined
  * 
  */ 
 died(extraParameters?: Array<[string,any]>) { 
@@ -1242,12 +1353,9 @@ died(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      character: (name?:string, extraParameters?: Array<[string,any]>) => {
+      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.character, name)
-        else
-          object = generate.generateObject(this.object.character)
+        object = generate.generateObject(this.objects.character, name, description)
         
         
       
@@ -1256,8 +1364,14 @@ died(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("died"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.died, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1265,12 +1379,9 @@ died(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -1279,8 +1390,14 @@ died(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("died"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.died, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1291,7 +1408,7 @@ died(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * discovered action.
+ * undefined
  * 
  */ 
 discovered(extraParameters?: Array<[string,any]>) { 
@@ -1300,12 +1417,9 @@ discovered(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      level: (name?:string, extraParameters?: Array<[string,any]>) => {
+      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.level, name)
-        else
-          object = generate.generateObject(this.object.level)
+        object = generate.generateObject(this.objects.level, name, description)
         
         
       
@@ -1314,8 +1428,14 @@ discovered(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("discovered"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1323,12 +1443,9 @@ discovered(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -1337,8 +1454,14 @@ discovered(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("discovered"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1349,7 +1472,7 @@ discovered(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * double jumped action.
+ * undefined
  * 
  */ 
 doubleJumped(extraParameters?: Array<[string,any]>) { 
@@ -1362,7 +1485,7 @@ doubleJumped(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * earned action.
+ * undefined
  * 
  */ 
 earned(extraParameters?: Array<[string,any]>) { 
@@ -1371,12 +1494,9 @@ earned(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      reward: (name?:string, extraParameters?: Array<[string,any]>) => {
+      reward: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.reward, name)
-        else
-          object = generate.generateObject(this.object.reward)
+        object = generate.generateObject(this.objects.reward, name, description)
         
         
       
@@ -1385,8 +1505,14 @@ earned(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("earned"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.earned, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1397,7 +1523,7 @@ earned(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * equipped action.
+ * undefined
  * 
  */ 
 equipped(extraParameters?: Array<[string,any]>) { 
@@ -1406,12 +1532,9 @@ equipped(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -1420,8 +1543,14 @@ equipped(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("equipped"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.equipped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1432,7 +1561,7 @@ equipped(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * examined action.
+ * undefined
  * 
  */ 
 examined(extraParameters?: Array<[string,any]>) { 
@@ -1441,12 +1570,9 @@ examined(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -1455,8 +1581,14 @@ examined(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("examined"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.examined, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1464,12 +1596,9 @@ examined(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      room: (name?:string, extraParameters?: Array<[string,any]>) => {
+      room: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.room, name)
-        else
-          object = generate.generateObject(this.object.room)
+        object = generate.generateObject(this.objects.room, name, description)
         
         
       
@@ -1478,8 +1607,14 @@ examined(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("examined"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.examined, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1490,7 +1625,7 @@ examined(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * exited action.
+ * undefined
  * 
  */ 
 exited(extraParameters?: Array<[string,any]>) { 
@@ -1499,12 +1634,9 @@ exited(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -1513,8 +1645,14 @@ exited(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("exited"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.exited, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1522,12 +1660,9 @@ exited(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      room: (name?:string, extraParameters?: Array<[string,any]>) => {
+      room: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.room, name)
-        else
-          object = generate.generateObject(this.object.room)
+        object = generate.generateObject(this.objects.room, name, description)
         
         
       
@@ -1536,8 +1671,14 @@ exited(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("exited"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.exited, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1548,7 +1689,7 @@ exited(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * explored action.
+ * undefined
  * 
  */ 
 explored(extraParameters?: Array<[string,any]>) { 
@@ -1557,12 +1698,9 @@ explored(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -1571,8 +1709,14 @@ explored(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("explored"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.explored, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1583,7 +1727,7 @@ explored(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * failed action.
+ * undefined
  * 
  */ 
 failed(extraParameters?: Array<[string,any]>) { 
@@ -1592,12 +1736,9 @@ failed(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      mission: (name?:string, extraParameters?: Array<[string,any]>) => {
+      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.mission, name)
-        else
-          object = generate.generateObject(this.object.mission)
+        object = generate.generateObject(this.objects.mission, name, description)
         
         
       
@@ -1606,8 +1747,14 @@ failed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("failed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.failed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1615,12 +1762,9 @@ failed(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, extraParameters?: Array<[string,any]>) => {
+      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.task, name)
-        else
-          object = generate.generateObject(this.object.task)
+        object = generate.generateObject(this.objects.task, name, description)
         
         
       
@@ -1629,8 +1773,14 @@ failed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("failed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.failed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1638,12 +1788,9 @@ failed(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, extraParameters?: Array<[string,any]>) => {
+      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.level, name)
-        else
-          object = generate.generateObject(this.object.level)
+        object = generate.generateObject(this.objects.level, name, description)
         
         
       
@@ -1652,8 +1799,14 @@ failed(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("failed"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.failed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1664,7 +1817,7 @@ failed(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * fell in action.
+ * undefined
  * 
  */ 
 fellIn(extraParameters?: Array<[string,any]>) { 
@@ -1673,12 +1826,9 @@ fellIn(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -1687,8 +1837,14 @@ fellIn(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("fellIn"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1699,7 +1855,7 @@ fellIn(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * jumped action.
+ * undefined
  * @param {number} distance - Number of units the object jumped
  * @param {string} units - Units in which the distance is expressed
  */ 
@@ -1709,12 +1865,9 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
 
   return {
     
-      character: (name?:string, extraParameters?: Array<[string,any]>) => {
+      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.character, name)
-        else
-          object = generate.generateObject(this.object.character)
+        object = generate.generateObject(this.objects.character, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
   object.definition.extensions['https://github.com/UCM-FDI-JaXpi/units'] = units;
@@ -1725,8 +1878,14 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("jumped"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1734,12 +1893,9 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      enemy: (name?:string, extraParameters?: Array<[string,any]>) => {
+      enemy: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.enemy, name)
-        else
-          object = generate.generateObject(this.object.enemy)
+        object = generate.generateObject(this.objects.enemy, name, description)
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
   object.definition.extensions['https://github.com/UCM-FDI-JaXpi/units'] = units;
@@ -1750,8 +1906,14 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("jumped"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1762,7 +1924,7 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * launched action.
+ * undefined
  * 
  */ 
 launched(extraParameters?: Array<[string,any]>) { 
@@ -1775,7 +1937,7 @@ launched(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * loggedIn action.
+ * undefined
  * 
  */ 
 loggedIn(extraParameters?: Array<[string,any]>) { 
@@ -1788,7 +1950,7 @@ loggedIn(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * loggedOut action.
+ * undefined
  * 
  */ 
 loggedOut(extraParameters?: Array<[string,any]>) { 
@@ -1801,7 +1963,7 @@ loggedOut(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * moved action.
+ * undefined
  * 
  */ 
 moved(extraParameters?: Array<[string,any]>) { 
@@ -1810,12 +1972,9 @@ moved(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -1824,8 +1983,14 @@ moved(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("moved"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.moved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1836,7 +2001,7 @@ moved(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * navigated action.
+ * undefined
  * 
  */ 
 navigated(extraParameters?: Array<[string,any]>) { 
@@ -1845,12 +2010,9 @@ navigated(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -1859,8 +2021,14 @@ navigated(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("navigated"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.navigated, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1871,7 +2039,7 @@ navigated(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * opened action.
+ * undefined
  * 
  */ 
 opened(extraParameters?: Array<[string,any]>) { 
@@ -1880,12 +2048,9 @@ opened(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      chest: (name?:string, extraParameters?: Array<[string,any]>) => {
+      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.chest, name)
-        else
-          object = generate.generateObject(this.object.chest)
+        object = generate.generateObject(this.objects.chest, name, description)
         
         
       
@@ -1894,8 +2059,14 @@ opened(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("opened"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.opened, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1903,12 +2074,9 @@ opened(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      door: (name?:string, extraParameters?: Array<[string,any]>) => {
+      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.door, name)
-        else
-          object = generate.generateObject(this.object.door)
+        object = generate.generateObject(this.objects.door, name, description)
         
         
       
@@ -1917,8 +2085,14 @@ opened(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("opened"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.opened, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1929,7 +2103,7 @@ opened(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * paused action.
+ * undefined
  * 
  */ 
 paused(extraParameters?: Array<[string,any]>) { 
@@ -1938,12 +2112,9 @@ paused(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      game: (name?:string, extraParameters?: Array<[string,any]>) => {
+      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.game, name)
-        else
-          object = generate.generateObject(this.object.game)
+        object = generate.generateObject(this.objects.game, name, description)
         
         
       
@@ -1952,8 +2123,14 @@ paused(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("paused"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.paused, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -1964,7 +2141,7 @@ paused(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * registered action.
+ * undefined
  * 
  */ 
 registered(extraParameters?: Array<[string,any]>) { 
@@ -1977,7 +2154,7 @@ registered(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * rejected action.
+ * undefined
  * 
  */ 
 rejected(extraParameters?: Array<[string,any]>) { 
@@ -1990,7 +2167,7 @@ rejected(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * rotated action.
+ * undefined
  * 
  */ 
 rotated(extraParameters?: Array<[string,any]>) { 
@@ -2003,7 +2180,7 @@ rotated(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * shared action.
+ * undefined
  * 
  */ 
 shared(extraParameters?: Array<[string,any]>) { 
@@ -2016,7 +2193,7 @@ shared(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * skipped action.
+ * undefined
  * 
  */ 
 skipped(extraParameters?: Array<[string,any]>) { 
@@ -2025,12 +2202,9 @@ skipped(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      dialog: (name?:string, extraParameters?: Array<[string,any]>) => {
+      dialog: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.dialog, name)
-        else
-          object = generate.generateObject(this.object.dialog)
+        object = generate.generateObject(this.objects.dialog, name, description)
         
         
       
@@ -2039,8 +2213,14 @@ skipped(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("skipped"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.skipped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2051,7 +2231,7 @@ skipped(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * solved action.
+ * undefined
  * 
  */ 
 solved(extraParameters?: Array<[string,any]>) { 
@@ -2064,7 +2244,7 @@ solved(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * sprinted action.
+ * undefined
  * 
  */ 
 sprinted(extraParameters?: Array<[string,any]>) { 
@@ -2077,7 +2257,7 @@ sprinted(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * started action.
+ * undefined
  * 
  */ 
 started(extraParameters?: Array<[string,any]>) { 
@@ -2086,12 +2266,9 @@ started(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      level: (name?:string, extraParameters?: Array<[string,any]>) => {
+      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.level, name)
-        else
-          object = generate.generateObject(this.object.level)
+        object = generate.generateObject(this.objects.level, name, description)
         
         
       
@@ -2100,8 +2277,14 @@ started(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("started"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.started, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2112,7 +2295,7 @@ started(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * teleported to action.
+ * undefined
  * 
  */ 
 teleported(extraParameters?: Array<[string,any]>) { 
@@ -2121,12 +2304,9 @@ teleported(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      location: (name?:string, extraParameters?: Array<[string,any]>) => {
+      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.location, name)
-        else
-          object = generate.generateObject(this.object.location)
+        object = generate.generateObject(this.objects.location, name, description)
         
         
       
@@ -2135,8 +2315,14 @@ teleported(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("teleported"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2147,7 +2333,7 @@ teleported(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * unlocked action.
+ * undefined
  * 
  */ 
 unlocked(extraParameters?: Array<[string,any]>) { 
@@ -2156,12 +2342,9 @@ unlocked(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      chest: (name?:string, extraParameters?: Array<[string,any]>) => {
+      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.chest, name)
-        else
-          object = generate.generateObject(this.object.chest)
+        object = generate.generateObject(this.objects.chest, name, description)
         
         
       
@@ -2170,8 +2353,14 @@ unlocked(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("unlocked"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2179,12 +2368,9 @@ unlocked(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      skill: (name?:string, extraParameters?: Array<[string,any]>) => {
+      skill: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.skill, name)
-        else
-          object = generate.generateObject(this.object.skill)
+        object = generate.generateObject(this.objects.skill, name, description)
         
         
       
@@ -2193,8 +2379,14 @@ unlocked(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("unlocked"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2205,7 +2397,7 @@ unlocked(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * upgraded action.
+ * undefined
  * 
  */ 
 upgraded(extraParameters?: Array<[string,any]>) { 
@@ -2214,12 +2406,9 @@ upgraded(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -2228,8 +2417,14 @@ upgraded(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("upgraded"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2240,7 +2435,7 @@ upgraded(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * used action.
+ * undefined
  * 
  */ 
 used(extraParameters?: Array<[string,any]>) { 
@@ -2249,12 +2444,9 @@ used(extraParameters?: Array<[string,any]>) {
 
   return {
     
-      chest: (name?:string, extraParameters?: Array<[string,any]>) => {
+      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.chest, name)
-        else
-          object = generate.generateObject(this.object.chest)
+        object = generate.generateObject(this.objects.chest, name, description)
         
         
       
@@ -2263,8 +2455,14 @@ used(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("used"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.used, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2272,12 +2470,9 @@ used(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      item: (name?:string, extraParameters?: Array<[string,any]>) => {
+      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
 
-        if (name)
-          object = generate.generateObject(this.object.item, name)
-        else
-          object = generate.generateObject(this.object.item)
+        object = generate.generateObject(this.objects.item, name, description)
         
         
       
@@ -2286,8 +2481,14 @@ used(extraParameters?: Array<[string,any]>) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
+
+        if (objectParameters && objectParameters.length > 0) {
+          objectParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
       
-        const statement = generate.generateStatement(this.player,this.verbMap.get("used"), object, undefined, this.context, undefined);
+        const statement = generate.generateStatement(this.player, this.verbs.used, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
         
@@ -2298,7 +2499,7 @@ used(extraParameters?: Array<[string,any]>) {
 }
 
 /**
- * watched action.
+ * undefined
  * 
  */ 
 watched(extraParameters?: Array<[string,any]>) { 

@@ -3,5 +3,7 @@
     "display": {
         "en-us": "clicked",
         "es": "clicado"
-    }
+    },
+    "objects": ["character","item","dialog","door"],
+    "description": "The player interact with an object"
 }

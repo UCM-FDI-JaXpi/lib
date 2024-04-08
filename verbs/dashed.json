@@ -4,5 +4,6 @@
         "en-us": "dashed",
         "es": "dash"
     },
-    "objects": ["character"]
+    "objects": ["character"],
+    "description": "The player dashes (no object? or himself?)"
 }

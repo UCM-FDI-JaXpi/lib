@@ -4,5 +4,6 @@
         "en-us": "unlocked",
         "es": "desbloqueado"
     },
-    "objects": ["chest","skill"]
+    "objects": ["chest","skill"],
+    "description": "The player unlocks an object like a chest or a skill"
 }

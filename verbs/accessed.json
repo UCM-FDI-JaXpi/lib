@@ -4,7 +4,8 @@
         "en-us": "accessed",
         "es": "accedido"
     },
-    "objects": ["chest","door","room"],
+    "objects": ["chest","door","room","location"],
+    "description": "The player access an object like a room or a new area",
     "extensions": {
         "https://example.com/game/visited_times": 3
     },

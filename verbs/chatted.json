@@ -4,5 +4,6 @@
         "en-us": "chatted",
         "es": "charló"
     },
-    "objects": ["character"]
+    "objects": ["character"],
+    "description": "The player opens a dialog with an object like a npc"
 }

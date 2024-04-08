@@ -71,6 +71,7 @@ jaxpi.accessed(0).door("Door 1")
 jaxpi.exited().room("Home")
 jaxpi.discovered().location("Paleta Town")
 jaxpi.died()
+jaxpi.customVerb(jaxpi.verbs.cancelled, jaxpi.objects.character)
 
 
 

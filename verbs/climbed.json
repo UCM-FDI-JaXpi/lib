@@ -4,5 +4,6 @@
         "en-us": "climbed",
         "es": "escalado"
     },
-    "objects": ["location"]
+    "objects": ["location"],
+    "description": "The player climbes an object like a wall"
 }

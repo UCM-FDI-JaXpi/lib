@@ -4,5 +4,12 @@
         "en-us": "combined",
         "es": "combinado"
     },
-    "objects": ["item"]
+    "objects": ["item"],
+    "description": "The player combines an object with something",
+    "extensions": {
+        "https://example.com/game/target": "Item in inventory"
+      },
+      "extensions-doc": {
+        "https://example.com/game/target": "Target of the combination"
+      }
 }

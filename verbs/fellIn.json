@@ -4,5 +4,6 @@
         "en-us": "fell in",
         "es": "cayó en"
     },
-    "objects": ["location"]
+    "objects": ["location"],
+    "description": "The player fells in an object like a pit"
 }

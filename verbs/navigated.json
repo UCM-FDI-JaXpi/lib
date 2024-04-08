@@ -4,5 +4,6 @@
         "en-us": "navigated",
         "es": "navegado"
     },
-    "objects": ["location"]
+    "objects": ["location"],
+    "description": "The player navigates a new location"
 }

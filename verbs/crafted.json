@@ -4,5 +4,6 @@
         "en-us": "crafted",
         "es": "elaborado"
     },
-    "objects": ["item"]
+    "objects": ["item"],
+    "description": "The player crafts an object like a new item"
 }

@@ -4,5 +4,6 @@
         "en-us": "started",
         "es": "empezó"
     },
-    "objects": ["level"]
+    "objects": ["level","game"],
+    "description": "The player starts a level or a new game"
 }

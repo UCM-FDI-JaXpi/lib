@@ -4,5 +4,6 @@
         "en-us": "examined",
         "es": "examinado"
     },
-    "objects": ["item","room"]
+    "objects": ["item","room"],
+    "description": "The player examines an object like an item or a room"
 }

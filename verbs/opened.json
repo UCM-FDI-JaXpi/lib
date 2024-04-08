@@ -4,5 +4,6 @@
         "en-us": "opened",
         "es": "abierto"
     },
-    "objects": ["chest","door"]
+    "objects": ["chest","door"],
+    "description": "The player opens an object like a door or a chest"
 }
