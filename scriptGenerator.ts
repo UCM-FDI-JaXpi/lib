@@ -396,7 +396,7 @@ export class Jaxpi {
       aux = "queue" + this.QUEUE_ID.toString();
     }
 
-    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray()))
+    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray(),null,2))
 
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     let promise = new Promise<void>((resolve, reject) => {
@@ -498,8 +498,8 @@ export class Jaxpi {
  */ 
   customVerb(verb: string | object, object: string | object, parameters?: Array<[string,any]>) {
 
-    if (checkObject(object)){
-      if (checkVerb(verb)){
+    if (checkObject(object) || typeof object === "string"){
+      if (checkVerb(verb) || typeof verb === "string"){
         const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
 
         //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
@@ -507,10 +507,10 @@ export class Jaxpi {
         if (this.statementQueue.length >= this.MAX_QUEUE_LENGTH) this.flush();
       }
       else
-        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb. or maintain the structure of this last one")
+        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
     }
     else
-      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object. or maintain the structure of this last one")
+      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
 
   }\n\n
 \n${methods.join('\n')}\n
