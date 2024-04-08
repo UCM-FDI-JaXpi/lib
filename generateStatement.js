@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateObject = exports.generateStatement = exports.generateStatementFromZero = void 0;
 function generateStatementFromZero(verbId, objectId, parameters) {
@@ -79,8 +90,8 @@ function generateObject(objectJson, name, description) {
         id: objectJson.id,
         definition: {
             type: objectJson.definition.type,
-            name: objectJson.definition.name,
-            description: objectJson.definition.description,
+            name: __assign({}, objectJson.definition.name), // Clono el campo de objectJason para evitar que me sobreescriba con una referencia
+            description: __assign({}, objectJson.definition.description),
             extensions: {}
         }
     };

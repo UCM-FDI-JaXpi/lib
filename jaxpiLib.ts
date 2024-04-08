@@ -25,6 +25,7 @@ export class Jaxpi {
   private promises: Promise<void>[] = [];
   private QUEUE_ID: number = 1;
   private MAX_QUEUE_LENGTH: number = 7;
+  private processQueueArray: string[] = [];
   private flagFlush: boolean = false;
   
   
@@ -196,7 +197,7 @@ export class Jaxpi {
    * Function to send the statements queue to the server, it also creates a backup if the sending fails
    */ 
   public async flush() : Promise<void>{ //Si cliente quiere enviar las trazas encoladas
-    
+
     while (this.flagFlush);
     this.flagFlush = true;
 
@@ -206,6 +207,9 @@ export class Jaxpi {
       for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           const value = localStorage.getItem(key);
+
+          if (this.processQueueArray.includes(key))
+            continue;
   
           let recovArray = JSON.parse(value)
           let recovQueue = new Queue<any>;
@@ -232,6 +236,7 @@ export class Jaxpi {
       aux = "queue" + this.QUEUE_ID.toString();
     }
 
+    this.processQueueArray.push(aux)
     localStorage.setItem(aux,JSON.stringify(queue.toArray(),null,2))
 
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
@@ -240,6 +245,7 @@ export class Jaxpi {
       worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux});
       worker.on('message', (message: any) => {
         if (message.error){
+          this.processQueueArray.splice(this.processQueueArray.indexOf(aux,1))
           reject(message.error);
         }
         else{
@@ -251,6 +257,7 @@ export class Jaxpi {
 
           // Destruye el worker generado una vez finalizada su tarea
           worker.terminate()
+          this.processQueueArray.splice(this.processQueueArray.indexOf(aux,1))
           // Resuelve la promesa una vez que se haya procesado la cola de trazas
           resolve();
         }

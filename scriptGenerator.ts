@@ -259,6 +259,8 @@ export class Jaxpi {
   private promises: Promise<void>[] = [];
   private QUEUE_ID: number = 1;
   private MAX_QUEUE_LENGTH: number = 7;
+  private processQueueArray: string[] = [];
+  private flagFlush: boolean = false;
   
   
 
@@ -367,10 +369,19 @@ export class Jaxpi {
    * Function to send the statements queue to the server, it also creates a backup if the sending fails
    */ 
   public async flush() : Promise<void>{ //Si cliente quiere enviar las trazas encoladas
+
+    while (this.flagFlush);
+    this.flagFlush = true;
+
+    let newQueue = this.statementQueue
+    this.statementQueue = new Queue<any>();
     if(localStorage.length){
       for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           const value = localStorage.getItem(key);
+
+          if (this.processQueueArray.includes(key))
+            continue;
   
           let recovArray = JSON.parse(value)
           let recovQueue = new Queue<any>;
@@ -380,13 +391,14 @@ export class Jaxpi {
           this.promises.push(this.createWorkerLStorage(recovQueue, key))
       }
     }
-    if (this.statementQueue.length) {
+    if (newQueue.length) {
       // Almacena la promesa devuelta por createWorker() en el array de promesas
-      this.promises.push(this.createWorker());
+      this.promises.push(this.createWorker(newQueue));
     } 
+    this.flagFlush = false
   }
 
-  private createWorker() {
+  private createWorker(queue: Queue<any>) {
     //Mandar al localstorage mando una cola con un id unico
     //Para evitar pisar colas en localstorage con el mismo id
     let aux = "queue" + this.QUEUE_ID.toString();
@@ -396,14 +408,16 @@ export class Jaxpi {
       aux = "queue" + this.QUEUE_ID.toString();
     }
 
-    localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray(),null,2))
+    this.processQueueArray.push(aux)
+    localStorage.setItem(aux,JSON.stringify(queue.toArray(),null,2))
 
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     let promise = new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
-      worker.postMessage({ url: this.url, statementQueue: this.statementQueue.toArray(), length: this.statementQueue.length, queue_id: aux});
+      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux});
       worker.on('message', (message: any) => {
         if (message.error){
+          this.processQueueArray.splice(this.processQueueArray.indexOf(aux,1))
           reject(message.error);
         }
         else{
@@ -415,16 +429,17 @@ export class Jaxpi {
 
           // Destruye el worker generado una vez finalizada su tarea
           worker.terminate()
+          this.processQueueArray.splice(this.processQueueArray.indexOf(aux,1))
           // Resuelve la promesa una vez que se haya procesado la cola de trazas
           resolve();
         }
       });
     });
 
-    //Vacia la cola actual
-    while (this.statementQueue.length != 0){
-      this.statementQueue.dequeue()
-    }
+    // //Vacia la cola actual
+    // while (this.statementQueue.length != 0){
+    //   this.statementQueue.dequeue()
+    // }
     
     return promise.catch((error) => {
       // Manejar el error rechazado aquí para evitar UnhandledPromiseRejectionWarning

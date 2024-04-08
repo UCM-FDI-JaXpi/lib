@@ -91,8 +91,8 @@ export function generateObject(objectJson: any, name?: string, description?: str
         id: objectJson.id,
         definition: {
             type: objectJson.definition.type,
-            name: objectJson.definition.name,
-            description: objectJson.definition.description,
+            name: {...objectJson.definition.name}, // Clono el campo de objectJason para evitar que me sobreescriba con una referencia
+            description: {...objectJson.definition.description},
             extensions: {}
         }
         
