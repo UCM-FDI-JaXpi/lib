@@ -93,13 +93,13 @@ async function executeActionsWithDelay() {
     jaxpi.exited().level("Level 1");
 
     await delay(2000);
-    jaxpi.loaded().level("Level 1");
+    jaxpi.loaded("Guardado 1").level("Level 1");
 
     await delay(2100);
     jaxpi.exited().level("Level 1");
 
     await delay(4000);
-    jaxpi.loaded().level("Level 1");
+    jaxpi.loaded("Guardado 1").level("Level 1");
 
     await delay(5000);
     jaxpi.completed(90).level("Level 1");
