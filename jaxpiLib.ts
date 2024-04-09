@@ -58,7 +58,7 @@ export class Jaxpi {
       "fellIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/fellIn","display":{"en-us":"fell in","es":"cayó en"},"objects":["location"],"description":"The player fells in an object like a pit"},
       "jumped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/jumped","display":{"en-us":"jumped","es":"saltado"},"objects":["character","enemy"],"description":"The player jumps (no object? or himself?)","extensions":{"https://github.com/UCM-FDI-JaXpi/distance":5,"https://github.com/UCM-FDI-JaXpi/units":"meters"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/distance":"Number of units the object jumped","https://github.com/UCM-FDI-JaXpi/units":"Units in which the distance is expressed"}},
       "launched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/launched","display":{"en-us":"launched","es":"ejecutado"}},
-      "loaded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loaded","display":{"en-us":"loaded","es":"cargado"},"objects":["game","level"],"description":"The player loads the game or a level"},
+      "loaded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loaded","display":{"en-us":"loaded","es":"cargado"},"objects":["game","level"],"description":"The player loads the game or a level","extensions":{"https://github.com/UCM-FDI-JaXpi/lib/id_load":"Name of the load id"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/lib/id_load":"Unique id of the load the players choose, if the player reloads the same save the id would also be the same"}},
       "loggedIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedIn","display":{"en-us":"loggedIn","es":"conectado"}},
       "loggedOut":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedOut","display":{"en-us":"loggedOut","es":"desconectado"}},
       "moved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/moved","display":{"en-us":"moved","es":"movido"},"objects":["item"],"description":"The player moves an object like a boulder"},
@@ -2085,9 +2085,9 @@ launched(extraParameters?: Array<[string,any]>) {
 
 /**
  * The player loads the game or a level
- * 
+ * @param {string} id_load - Unique id of the load the players choose, if the player reloads the same save the id would also be the same
  */ 
-loaded(extraParameters?: Array<[string,any]>) { 
+loaded(id_load : string,extraParameters?: Array<[string,any]>) { 
   
   let object: any;
 
@@ -2097,7 +2097,8 @@ loaded(extraParameters?: Array<[string,any]>) {
 
         object = generate.generateObject(this.objects.game, name, description)
         
-        
+        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
+  
       
         if (extraParameters && extraParameters.length > 0) {
           extraParameters.forEach((value) => {
@@ -2123,7 +2124,8 @@ loaded(extraParameters?: Array<[string,any]>) {
 
         object = generate.generateObject(this.objects.level, name, description)
         
-        
+        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
+  
       
         if (extraParameters && extraParameters.length > 0) {
           extraParameters.forEach((value) => {
