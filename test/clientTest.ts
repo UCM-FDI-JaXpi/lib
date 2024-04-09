@@ -85,49 +85,40 @@ function delay(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
   
-  async function executeActionsWithDelay() {
+async function executeActionsWithDelay() {
     await delay(2000);
     jaxpi.started().level("Level 1");
-    jaxpi.flush();
-    
+
     await delay(3000);
     jaxpi.exited().level("Level 1");
-    jaxpi.flush();
-  
+
     await delay(2000);
     jaxpi.loaded().level("Level 1");
-    jaxpi.flush();
-  
+
     await delay(2100);
     jaxpi.exited().level("Level 1");
-    jaxpi.flush();
-  
+
     await delay(4000);
     jaxpi.loaded().level("Level 1");
-    jaxpi.flush();
-  
+
     await delay(5000);
     jaxpi.completed(90).level("Level 1");
     jaxpi.started().level("Level 2");
-    jaxpi.flush();
-  
+
     await delay(2000);
     jaxpi.jumped(20, "meters").enemy();
     jaxpi.completed(98).level("Level 2");
-    jaxpi.flush();
-  
+
     await delay(5000);
     jaxpi.started().level("Level 1");
-    jaxpi.flush();
-  
+
     await delay(2000);
     jaxpi.completed(100).level("Level 1");
-    jaxpi.flush();
-  }
-  
-  executeActionsWithDelay();
-  
 
-//jaxpi.flush();
+    jaxpi.flush();
+
+}
+  
+executeActionsWithDelay();
 
 //process.exit(0)

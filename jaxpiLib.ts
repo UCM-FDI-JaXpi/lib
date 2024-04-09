@@ -173,7 +173,7 @@ export class Jaxpi {
           aux = "queue" + this.QUEUE_ID.toString();
         }
 
-        localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray()))
+        localStorage.setItem(aux,JSON.stringify(this.statementQueue.toArray(),null,2))
       }
     });
   }

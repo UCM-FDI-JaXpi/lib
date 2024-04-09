@@ -48,7 +48,8 @@ async function sendStatement(url: any, statement: any) {
           'Content-Type': 'application/json',
         }
     });
-    console.log('Respuesta del servidor:', response.data);
+    console.log(`Respuesta del servidor: ${response.status}\n para la traza ${statement.verb.display["en-us"]}.${statement.object.definition.name["en-us"]}`)
+    // console.log('Respuesta del servidor:', response.status);
   } catch (error) {
     // console.error('Error al enviar la traza:', error);
     throw error; // Propaga el error para manejarlo en el código principal si es necesario

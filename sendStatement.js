@@ -97,7 +97,7 @@ function sendStatement(url, statement) {
                         })];
                 case 1:
                     response = _a.sent();
-                    console.log('Respuesta del servidor:', response.data);
+                    console.log("Respuesta del servidor: ".concat(response.status, "\n para la traza ").concat(statement.verb.display["en-us"], ".").concat(statement.object.definition.name["en-us"]));
                     return [3 /*break*/, 3];
                 case 2:
                     error_2 = _a.sent();
