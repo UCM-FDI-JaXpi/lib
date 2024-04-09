@@ -5,5 +5,11 @@
         "es": "cargado"
     },
     "objects": ["game","level"],
-    "description": "The player loads the game or a level"
+    "description": "The player loads the game or a level",
+    "extensions": {
+        "https://github.com/UCM-FDI-JaXpi/lib/id_load": "Name of the load id"
+      },
+      "extensions-doc": {
+        "https://github.com/UCM-FDI-JaXpi/lib/id_load": "Unique id of the load the players choose, if the player reloads the same save the id would also be the same"
+      }
 }
