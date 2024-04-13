@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/enemy",
     "definition": {
-        "type": "Non-playable character",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Bowser",
-            "es": "Bowser"
+            "en-us": "Default enemy",
+            "es": "Enemigo por defecto"
         },
         "description": {
-            "en-us": "Bowser is the main antagonist of the game",
-            "es": "Bowser es el principal antagonista del juego"
+            "en-us": "A hostile individual or group opposing the protagonist in the game",
+            "es": "Un individuo o grupo hostil que se opone al protagonista del juego"
         }
     }
 }

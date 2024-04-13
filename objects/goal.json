@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/goals/goal",
     "definition": {
-        "type": "Goal",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Goal 1",
-            "es": "Objetivo 1"
+            "en-us": "Default goal",
+            "es": "Objetivo por defecto"
         },
         "description": {
-            "en-us": "You have achieved goal 1",
-            "es": "Has logrado el objetivo 1"
+            "en-us": "An objective or target to be achieved, providing direction and motivation in the game",
+            "es": "Un objetivo o meta a alcanzar, proporcionando dirección y motivación en el juego"
         }
     }
 }

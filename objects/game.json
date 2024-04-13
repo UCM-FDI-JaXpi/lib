@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/game",
     "definition": {
-        "type": "Game",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Game",
-            "es": "Juego"
+            "en-us": "Default saved game",
+            "es": "Juego guardado por defecto"
         },
         "description": {
-            "en-us": "Game you are playing.",
-            "es": "El juego que estas jugando."
+            "en-us": "A saved state or instance of a video game, representing progress made by the player",
+            "es": "Un estado guardado o instancia de un videojuego, que representa el progreso realizado por el jugador"
         }
     }
 }

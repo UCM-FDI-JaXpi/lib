@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/skill",
     "definition": {
-        "type": "Skill",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Skill",
-            "es": "Habilidad"
+            "en-us": "Default skill",
+            "es": "Habilidad por defecto"
         },
         "description": {
-            "en-us": "Character skill",
-            "es": "Habilidad del personaje"
+            "en-us": "A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game",
+            "es": "La capacidad o experiencia de un jugador para ejecutar acciones particulares, o un movimiento distinto que puede usar en combate y que mejora sus habilidades de combate o desbloquea avances en el juego"
         }
     }
 }

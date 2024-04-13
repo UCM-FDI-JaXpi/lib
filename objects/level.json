@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/level",
     "definition": {
-        "type": "Level",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Level 1 completed",
-            "es": "Nivel 1 completado"
+            "en-us": "Default level",
+            "es": "Nivel por defecto"
         },
         "description": {
-            "en-us": "You completed level 1!",
-            "es": "¡Has completado el nivel 1!"
+            "en-us": "A stage or section in the game",
+            "es": "Una etapa o sección del juego"
         }
     }
 }

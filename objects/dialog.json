@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/dialog",
     "definition": {
-        "type": "Dialog",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Dialog",
-            "es": "Dialogo"
+            "en-us": "Default dialog",
+            "es": "Dialogo por defecto"
         },
         "description": {
-            "en-us": "Dialog the player interacts with.",
-            "es": "Dialogo con el que el jugador interacciona."
+            "en-us": "Conversation between characters in the game, or a text box in the game providing information or choices to the player",
+            "es": "Conversación entre personajes del juego o un cuadro de texto en el juego que proporciona información u opciones al jugador"
         }
     }
 }

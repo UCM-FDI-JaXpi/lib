@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/objects/door",
     "definition": {
-        "type": "Door",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Door 1",
-            "es": "Puerta 1"
+            "en-us": "Default door",
+            "es": "Puerta por defecto"
         },
         "description": {
-            "en-us": "Door 1 has been closed",
-            "es": "La puerta 1 ha sido cerrada"
+            "en-us": "A movable barrier used to close off an entrance or exit from a room, building, or vehicle",
+            "es": "Una barrera móvil utilizada para cerrar una entrada o salida de una habitación, edificio o vehículo"
         }
     }
 }

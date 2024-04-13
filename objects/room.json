@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/rooms/room",
     "definition": {
-        "type": "Room",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Room 1",
-            "es": "Habitación 1"
+            "en-us": "Default room",
+            "es": "Habitación por defecto"
         },
         "description": {
-            "en-us": "You have accessed room 1",
-            "es": "Has accedido a la habitación 1"
+            "en-us": "A space within a building or structure like a house or a cave",
+            "es": "Un espacio dentro de un edificio o estructura como una casa o una cueva"
         }
     }
 }

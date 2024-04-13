@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/award",
     "definition": {
-        "type": "Special award",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Special award",
-            "es": "Premio especial"
+            "en-us": "Default award",
+            "es": "Premio por defecto"
         },
         "description": {
-            "en-us": "Special award earned by achieving a significant milestone in the game",
-            "es": "Premio especial obtenido al alcanzar un hito significativo en el juego"
+            "en-us": "A prize or honor given to the player for an achievement",
+            "es": "Un premio u honor otorgado al jugador por un logro"
         }
     }
 }

@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/location",
     "definition": {
-        "type": "Location",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Location",
-            "es": "Lugar"
+            "en-us": "Default ocation",
+            "es": "Lugar por defecto"
         },
         "description": {
-            "en-us": "Location in which action ocurrs",
-            "es": "Lugar donde ocurre la acción"
+            "en-us": "A specific place or position relevant to the action of the game",
+            "es": "Un lugar o posición específica relevante para la acción del juego"
         }
     }
 }

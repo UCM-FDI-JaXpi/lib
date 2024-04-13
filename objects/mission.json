@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/missions/mission",
     "definition": {
-        "type": "Mission",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Mission 1",
-            "es": "Misión 1"
+            "en-us": "Default mission",
+            "es": "Misión por defecto"
         },
         "description": {
-            "en-us": "You have accepted mission 1",
-            "es": "Has aceptado la misión 1"
+            "en-us": "A specific task or objective",
+            "es": "Una tarea u objetivo específico"
         }
     }
 }

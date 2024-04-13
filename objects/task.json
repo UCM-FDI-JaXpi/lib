@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/tasks/task",
     "definition": {
-        "type": "Task",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Task 1",
-            "es": "Tarea 1"
+            "en-us": "Default task",
+            "es": "Tarea por defecto"
         },
         "description": {
-            "en-us": "You have accepted task 1",
-            "es": "Has aceptado la tarea 1"
+            "en-us": "A piece of work to be done or undertaken, often part of a larger goal for the player",
+            "es": "Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador"
         }
     }
 }

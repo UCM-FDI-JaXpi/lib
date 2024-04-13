@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/item",
     "definition": {
-        "type": "Item",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Item",
-            "es": "Objeto"
+            "en-us": "Default item",
+            "es": "Objeto por defecto"
         },
         "description": {
-            "en-us": "Interactable item",
-            "es": "Objeto interactuable"
+            "en-us": "An object or thing of value, often collectible or usable in the game",
+            "es": "Un objeto o cosa de valor, a menudo coleccionable o utilizable en el juego"
         }
     }
 }

@@ -1,24 +1,14 @@
 {
     "id": "http://example.com/rewards/reward",
     "definition": {
-        "type": "Reward",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Reward 1",
-            "es": "Recompensa 1"
+            "en-us": "Default reward",
+            "es": "Recompensa por defecto"
         },
         "description": {
-            "en-us": "You have accepted reward 1",
-            "es": "Has aceptado la recompensa 1"
-        },
-        "extensions": {
-            "https://example.com/game/accepted_difficulty": "Easy",
-            "https://example.com/game/accepted_level": "1",
-            "https://example.com/game/accepted_type": "Exploration",
-            "https://example.com/game/accepted_importance": "Low",
-            "https://example.com/game/achieved_difficulty": "Easy",
-            "https://example.com/game/achieved_completion_time": "3 minutes",
-            "https://example.com/game/achieved_score": 70,
-            "https://example.com/game/achieved_date": "2024-03-07"
+            "en-us": "Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player",
+            "es": "Algo entregado en reconocimiento al servicio, esfuerzo o logro; A menudo se utiliza para incentivar el comportamiento deseado o la finalización de tareas del jugador"
         }
     }
 }

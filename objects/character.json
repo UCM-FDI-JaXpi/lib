@@ -1,14 +1,14 @@
 {
   "id": "http://example.com/character",
   "definition": {
-    "type": "Playable character",
+    "type": "https://github.com/UCM-FDI-JaXpi/object",
     "name": {
-      "en-us": "Mario",
-      "es": "Mario"
+      "en-us": "Default character",
+      "es": "Personaje por defecto"
     },
     "description": {
-      "en-us": "Mario is the main protagonist of the game",
-      "es": "Mario es el protagonista del juego"
+      "en-us": "A persona or figure in the game",
+      "es": "Una persona o figura en el juego"
     }
   }
 }

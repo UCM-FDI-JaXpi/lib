@@ -1,14 +1,14 @@
 {
     "id": "http://example.com/achievements/achievement",
     "definition": {
-        "type": "Achievement",
+        "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Achievement 1 completed",
-            "es": "Achievement 1 completado"
+            "en-us": "Default achievement",
+            "es": "Logro por defecto"
         },
         "description": {
-            "en-us": "You completed achievement 1!",
-            "es": "¡Has completado el achievement 1!"
+            "en-us": "A recognition or accomplishment gained by meeting certain criteria",
+            "es": "Un reconocimiento o logro obtenido al cumplir ciertos criterios"
         }
     }
 }
