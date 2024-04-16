@@ -27,6 +27,7 @@ export class Jaxpi {
   private MAX_QUEUE_LENGTH: number = 7;
   private processQueueArray: string[] = [];
   private flagFlush: boolean = false;
+  private lrs: boolean = false;
   
   
 
@@ -82,24 +83,25 @@ export class Jaxpi {
 
 
   public objects = {
-    "achievement":{"id":"http://example.com/achievements/achievement","definition":{"type":"Achievement","name":{"en-us":"Achievement 1 completed","es":"Achievement 1 completado"},"description":{"en-us":"You completed achievement 1!","es":"¡Has completado el achievement 1!"}}},
-      "award":{"id":"http://example.com/achievements/award","definition":{"type":"Special award","name":{"en-us":"Special award","es":"Premio especial"},"description":{"en-us":"Special award earned by achieving a significant milestone in the game","es":"Premio especial obtenido al alcanzar un hito significativo en el juego"}}},
-      "character":{"id":"http://example.com/character","definition":{"type":"Playable character","name":{"en-us":"Mario","es":"Mario"},"description":{"en-us":"Mario is the main protagonist of the game","es":"Mario es el protagonista del juego"}}},
-      "chest":{"id":"http://example.com/objects/chest","definition":{"type":"Chest","name":{"en-us":"Chest 1","es":"Cofre 1"},"description":{"en-us":"Chest 1 has been closed","es":"El cofre 1 ha sido cerrado"}}},
-      "dialog":{"id":"http://example.com/achievements/dialog","definition":{"type":"Dialog","name":{"en-us":"Dialog","es":"Dialogo"},"description":{"en-us":"Dialog the player interacts with.","es":"Dialogo con el que el jugador interacciona."}}},
-      "door":{"id":"http://example.com/objects/door","definition":{"type":"Door","name":{"en-us":"Door 1","es":"Puerta 1"},"description":{"en-us":"Door 1 has been closed","es":"La puerta 1 ha sido cerrada"}}},
-      "enemy":{"id":"http://example.com/enemy","definition":{"type":"Non-playable character","name":{"en-us":"Bowser","es":"Bowser"},"description":{"en-us":"Bowser is the main antagonist of the game","es":"Bowser es el principal antagonista del juego"}}},
-      "game":{"id":"http://example.com/achievements/game","definition":{"type":"Game","name":{"en-us":"Game","es":"Juego"},"description":{"en-us":"Game you are playing.","es":"El juego que estas jugando."}}},
-      "goal":{"id":"http://example.com/goals/goal","definition":{"type":"Goal","name":{"en-us":"Goal 1","es":"Objetivo 1"},"description":{"en-us":"You have achieved goal 1","es":"Has logrado el objetivo 1"}}},
-      "item":{"id":"http://example.com/achievements/item","definition":{"type":"Item","name":{"en-us":"Item","es":"Objeto"},"description":{"en-us":"Interactable item","es":"Objeto interactuable"}}},
-      "level":{"id":"http://example.com/achievements/level","definition":{"type":"Level","name":{"en-us":"Level 1 completed","es":"Nivel 1 completado"},"description":{"en-us":"You completed level 1!","es":"¡Has completado el nivel 1!"}}},
-      "location":{"id":"http://example.com/achievements/location","definition":{"type":"Location","name":{"en-us":"Location","es":"Lugar"},"description":{"en-us":"Location in which action ocurrs","es":"Lugar donde ocurre la acción"}}},
-      "mission":{"id":"http://example.com/missions/mission","definition":{"type":"Mission","name":{"en-us":"Mission 1","es":"Misión 1"},"description":{"en-us":"You have accepted mission 1","es":"Has aceptado la misión 1"}}},
-      "reward":{"id":"http://example.com/rewards/reward","definition":{"type":"Reward","name":{"en-us":"Reward 1","es":"Recompensa 1"},"description":{"en-us":"You have accepted reward 1","es":"Has aceptado la recompensa 1"},"extensions":{"https://example.com/game/accepted_difficulty":"Easy","https://example.com/game/accepted_level":"1","https://example.com/game/accepted_type":"Exploration","https://example.com/game/accepted_importance":"Low","https://example.com/game/achieved_difficulty":"Easy","https://example.com/game/achieved_completion_time":"3 minutes","https://example.com/game/achieved_score":70,"https://example.com/game/achieved_date":"2024-03-07"}}},
-      "room":{"id":"http://example.com/rooms/room","definition":{"type":"Room","name":{"en-us":"Room 1","es":"Habitación 1"},"description":{"en-us":"You have accessed room 1","es":"Has accedido a la habitación 1"}}},
-      "skill":{"id":"http://example.com/achievements/skill","definition":{"type":"Skill","name":{"en-us":"Skill","es":"Habilidad"},"description":{"en-us":"Character skill","es":"Habilidad del personaje"}}},
-      "task":{"id":"http://example.com/tasks/task","definition":{"type":"Task","name":{"en-us":"Task 1","es":"Tarea 1"},"description":{"en-us":"You have accepted task 1","es":"Has aceptado la tarea 1"}}}
+    "achievement":{"id":"http://example.com/achievements/achievement","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default achievement","es":"Logro por defecto"},"description":{"en-us":"A recognition or accomplishment gained by meeting certain criteria","es":"Un reconocimiento o logro obtenido al cumplir ciertos criterios"}}},
+      "award":{"id":"http://example.com/achievements/award","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default award","es":"Premio por defecto"},"description":{"en-us":"A prize or honor given to the player for an achievement","es":"Un premio u honor otorgado al jugador por un logro"}}},
+      "character":{"id":"http://example.com/character","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default character","es":"Personaje por defecto"},"description":{"en-us":"A persona or figure in the game","es":"Una persona o figura en el juego"}}},
+      "chest":{"id":"http://example.com/objects/chest","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default chest","es":"Cofre por defecto"},"description":{"en-us":"A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock","es":"Un contenedor de almacenamiento, que a menudo se usa para guardar artículos o recompensas, puede requerir una llave o mecanismo para desbloquearlo"}}},
+      "dialog":{"id":"http://example.com/achievements/dialog","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default dialog","es":"Dialogo por defecto"},"description":{"en-us":"Conversation between characters in the game, or a text box in the game providing information or choices to the player","es":"Conversación entre personajes del juego o un cuadro de texto en el juego que proporciona información u opciones al jugador"}}},
+      "door":{"id":"http://example.com/objects/door","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default door","es":"Puerta por defecto"},"description":{"en-us":"A movable barrier used to close off an entrance or exit from a room, building, or vehicle","es":"Una barrera móvil utilizada para cerrar una entrada o salida de una habitación, edificio o vehículo"}}},
+      "enemy":{"id":"http://example.com/enemy","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default enemy","es":"Enemigo por defecto"},"description":{"en-us":"A hostile individual or group opposing the protagonist in the game","es":"Un individuo o grupo hostil que se opone al protagonista del juego"}}},
+      "game":{"id":"http://example.com/achievements/game","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default saved game","es":"Juego guardado por defecto"},"description":{"en-us":"A saved state or instance of a video game, representing progress made by the player","es":"Un estado guardado o instancia de un videojuego, que representa el progreso realizado por el jugador"}}},
+      "goal":{"id":"http://example.com/goals/goal","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default goal","es":"Objetivo por defecto"},"description":{"en-us":"An objective or target to be achieved, providing direction and motivation in the game","es":"Un objetivo o meta a alcanzar, proporcionando dirección y motivación en el juego"}}},
+      "item":{"id":"http://example.com/achievements/item","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default item","es":"Objeto por defecto"},"description":{"en-us":"An object or thing of value, often collectible or usable in the game","es":"Un objeto o cosa de valor, a menudo coleccionable o utilizable en el juego"}}},
+      "level":{"id":"http://example.com/achievements/level","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default level","es":"Nivel por defecto"},"description":{"en-us":"A stage or section in the game","es":"Una etapa o sección del juego"}}},
+      "location":{"id":"http://example.com/achievements/location","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default ocation","es":"Lugar por defecto"},"description":{"en-us":"A specific place or position relevant to the action of the game","es":"Un lugar o posición específica relevante para la acción del juego"}}},
+      "mission":{"id":"http://example.com/missions/mission","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default mission","es":"Misión por defecto"},"description":{"en-us":"A specific task or objective","es":"Una tarea u objetivo específico"}}},
+      "reward":{"id":"http://example.com/rewards/reward","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default reward","es":"Recompensa por defecto"},"description":{"en-us":"Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player","es":"Algo entregado en reconocimiento al servicio, esfuerzo o logro; A menudo se utiliza para incentivar el comportamiento deseado o la finalización de tareas del jugador"}}},
+      "room":{"id":"http://example.com/rooms/room","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default room","es":"Habitación por defecto"},"description":{"en-us":"A space within a building or structure like a house or a cave","es":"Un espacio dentro de un edificio o estructura como una casa o una cueva"}}},
+      "skill":{"id":"http://example.com/achievements/skill","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default skill","es":"Habilidad por defecto"},"description":{"en-us":"A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game","es":"La capacidad o experiencia de un jugador para ejecutar acciones particulares, o un movimiento distinto que puede usar en combate y que mejora sus habilidades de combate o desbloquea avances en el juego"}}},
+      "task":{"id":"http://example.com/tasks/task","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-us":"Default task","es":"Tarea por defecto"},"description":{"en-us":"A piece of work to be done or undertaken, often part of a larger goal for the player","es":"Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador"}}}
   }
+  
 
   /**
    * @param {Object} player - Structure that contains player data.
@@ -242,7 +244,7 @@ export class Jaxpi {
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     let promise = new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
-      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux});
+      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux, lrs: this.lrs});
       worker.on('message', (message: any) => {
         if (message.error){
           this.processQueueArray.splice(this.processQueueArray.indexOf(aux,1))
@@ -279,7 +281,7 @@ export class Jaxpi {
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     return new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
-      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: key});
+      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: key, lrs: this.lrs});
       worker.on('message', (message: any) => {
         if (message.error){
           reject(message.error);
@@ -303,6 +305,9 @@ export class Jaxpi {
     });
   }
 
+  public set_lrs(dat: boolean){
+    this.lrs = dat;
+  }
   /**
    * Function to set the context field of the statement (class / association where it takes places)
    * @param {string} name - Name of the instructor
@@ -315,7 +320,7 @@ export class Jaxpi {
     this.context = {
       instructor: {
           name: name,
-          mbox: mbox
+          mbox: "mailto:" + mbox
       },
       contextActivities: {
           parent: { id: "http://example.com/activities/" + sessionId },
@@ -364,13 +369,19 @@ export class Jaxpi {
  * The player accepts an object like a task or a reward
  * 
  */ 
-accepted(extraParameters?: Array<[string,any]>) { 
+accepted() { 
   
   let object: any;
 
   return {
     
-      achievement: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A recognition or accomplishment gained by meeting certain criteria
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.achievement, name, description)
         
@@ -382,11 +393,11 @@ accepted(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -396,7 +407,13 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      award: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A prize or honor given to the player for an achievement
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      award: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.award, name, description)
         
@@ -408,11 +425,11 @@ accepted(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -422,7 +439,13 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific task or objective
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      mission: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
         
@@ -434,11 +457,11 @@ accepted(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -448,7 +471,13 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      reward: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      reward: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.reward, name, description)
         
@@ -460,11 +489,11 @@ accepted(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -474,7 +503,13 @@ accepted(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A piece of work to be done or undertaken, often part of a larger goal for the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      task: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.task, name, description)
         
@@ -486,11 +521,11 @@ accepted(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -506,13 +541,19 @@ accepted(extraParameters?: Array<[string,any]>) {
  * The player access an object like a room or a new area
  * @param {number} visited_times - Number of times the object has been accessed
  */ 
-accessed(visited_times : number,extraParameters?: Array<[string,any]>) { 
+accessed(visited_times : number,) { 
   
   let object: any;
 
   return {
     
-      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      chest: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
         
@@ -525,11 +566,11 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -539,7 +580,13 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      door: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.door, name, description)
         
@@ -552,11 +599,11 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -566,7 +613,13 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      room: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A space within a building or structure like a house or a cave
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      room: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.room, name, description)
         
@@ -579,11 +632,11 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -593,7 +646,13 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -606,11 +665,11 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -626,13 +685,19 @@ accessed(visited_times : number,extraParameters?: Array<[string,any]>) {
  * The player achieves something like a level up
  * 
  */ 
-achieved(extraParameters?: Array<[string,any]>) { 
+achieved() { 
   
   let object: any;
 
   return {
     
-      achievement: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A recognition or accomplishment gained by meeting certain criteria
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.achievement, name, description)
         
@@ -644,11 +709,11 @@ achieved(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -658,7 +723,13 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      award: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A prize or honor given to the player for an achievement
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      award: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.award, name, description)
         
@@ -670,11 +741,11 @@ achieved(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -684,7 +755,13 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A saved state or instance of a video game, representing progress made by the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      game: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.game, name, description)
         
@@ -696,11 +773,11 @@ achieved(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -710,7 +787,13 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      goal: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An objective or target to be achieved, providing direction and motivation in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      goal: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.goal, name, description)
         
@@ -722,11 +805,11 @@ achieved(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -736,7 +819,13 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A stage or section in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      level: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.level, name, description)
         
@@ -748,11 +837,11 @@ achieved(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -762,7 +851,13 @@ achieved(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      reward: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      reward: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.reward, name, description)
         
@@ -774,11 +869,11 @@ achieved(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -794,13 +889,19 @@ achieved(extraParameters?: Array<[string,any]>) {
  * The player cancels an object like a mission
  * @param {string} reason - Reason of the cancelation
  */ 
-cancelled(reason : string,extraParameters?: Array<[string,any]>) { 
+cancelled(reason : string,) { 
   
   let object: any;
 
   return {
     
-      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific task or objective
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      mission: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
         
@@ -813,11 +914,11 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -827,7 +928,13 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A piece of work to be done or undertaken, often part of a larger goal for the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      task: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.task, name, description)
         
@@ -840,11 +947,11 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -860,13 +967,19 @@ cancelled(reason : string,extraParameters?: Array<[string,any]>) {
  * The player opens a dialog with an object like a npc
  * 
  */ 
-chatted(extraParameters?: Array<[string,any]>) { 
+chatted() { 
   
   let object: any;
 
   return {
     
-      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A persona or figure in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      character: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.character, name, description)
         
@@ -878,11 +991,11 @@ chatted(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.chatted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -898,13 +1011,19 @@ chatted(extraParameters?: Array<[string,any]>) {
  * The player interact with an object
  * 
  */ 
-clicked(extraParameters?: Array<[string,any]>) { 
+clicked() { 
   
   let object: any;
 
   return {
     
-      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A persona or figure in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      character: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.character, name, description)
         
@@ -916,11 +1035,11 @@ clicked(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -930,7 +1049,13 @@ clicked(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -942,11 +1067,11 @@ clicked(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -956,7 +1081,13 @@ clicked(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      dialog: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * Conversation between characters in the game, or a text box in the game providing information or choices to the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      dialog: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.dialog, name, description)
         
@@ -968,11 +1099,11 @@ clicked(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -982,7 +1113,13 @@ clicked(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      door: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.door, name, description)
         
@@ -994,11 +1131,11 @@ clicked(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1014,13 +1151,19 @@ clicked(extraParameters?: Array<[string,any]>) {
  * The player climbes an object like a wall
  * 
  */ 
-climbed(extraParameters?: Array<[string,any]>) { 
+climbed() { 
   
   let object: any;
 
   return {
     
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -1032,11 +1175,11 @@ climbed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.climbed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1052,13 +1195,19 @@ climbed(extraParameters?: Array<[string,any]>) {
  * The player closes an object like a dialog or a door
  * 
  */ 
-closed(extraParameters?: Array<[string,any]>) { 
+closed() { 
   
   let object: any;
 
   return {
     
-      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      chest: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
         
@@ -1070,11 +1219,11 @@ closed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.closed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1084,7 +1233,13 @@ closed(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      door: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.door, name, description)
         
@@ -1096,11 +1251,11 @@ closed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.closed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1116,13 +1271,19 @@ closed(extraParameters?: Array<[string,any]>) {
  * The player combines an object with something
  * @param {string} target - Target of the combination
  */ 
-combined(target : string,extraParameters?: Array<[string,any]>) { 
+combined(target : string,) { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -1135,11 +1296,11 @@ combined(target : string,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.combined, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1155,13 +1316,19 @@ combined(target : string,extraParameters?: Array<[string,any]>) {
  * The player completes an object like a mission or the game
  * @param {number} score - Score reach with the completion
  */ 
-completed(score : number,extraParameters?: Array<[string,any]>) { 
+completed(score : number,) { 
   
   let object: any;
 
   return {
     
-      achievement: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A recognition or accomplishment gained by meeting certain criteria
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.achievement, name, description)
         
@@ -1174,11 +1341,11 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1188,7 +1355,13 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A saved state or instance of a video game, representing progress made by the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      game: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.game, name, description)
         
@@ -1201,11 +1374,11 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1215,7 +1388,13 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      goal: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An objective or target to be achieved, providing direction and motivation in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      goal: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.goal, name, description)
         
@@ -1228,11 +1407,11 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1242,7 +1421,13 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A stage or section in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      level: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.level, name, description)
         
@@ -1255,11 +1440,11 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1269,7 +1454,13 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific task or objective
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      mission: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
         
@@ -1282,11 +1473,11 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1296,7 +1487,13 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A piece of work to be done or undertaken, often part of a larger goal for the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      task: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.task, name, description)
         
@@ -1309,11 +1506,11 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1329,7 +1526,7 @@ completed(score : number,extraParameters?: Array<[string,any]>) {
  * The player connects an object with something
  * 
  */ 
-connected(extraParameters?: Array<[string,any]>) { 
+connected() { 
   
   let object: any;
 
@@ -1342,13 +1539,19 @@ connected(extraParameters?: Array<[string,any]>) {
  * The player crafts an object like a new item
  * 
  */ 
-crafted(extraParameters?: Array<[string,any]>) { 
+crafted() { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -1360,11 +1563,11 @@ crafted(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.crafted, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1380,13 +1583,19 @@ crafted(extraParameters?: Array<[string,any]>) {
  * The player dashes (no object? or himself?)
  * 
  */ 
-dashed(extraParameters?: Array<[string,any]>) { 
+dashed() { 
   
   let object: any;
 
   return {
     
-      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A persona or figure in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      character: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.character, name, description)
         
@@ -1398,11 +1607,11 @@ dashed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.dashed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1418,13 +1627,19 @@ dashed(extraParameters?: Array<[string,any]>) {
  * The player defeates an object like a boss
  * 
  */ 
-defeated(extraParameters?: Array<[string,any]>) { 
+defeated() { 
   
   let object: any;
 
   return {
     
-      enemy: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A hostile individual or group opposing the protagonist in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      enemy: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.enemy, name, description)
         
@@ -1436,11 +1651,11 @@ defeated(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.defeated, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1456,13 +1671,19 @@ defeated(extraParameters?: Array<[string,any]>) {
  * The player destroys an object like an old item
  * 
  */ 
-destroyed(extraParameters?: Array<[string,any]>) { 
+destroyed() { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -1474,11 +1695,11 @@ destroyed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1494,13 +1715,19 @@ destroyed(extraParameters?: Array<[string,any]>) {
  * The player dies (no object? or himself? or what killed him?)
  * 
  */ 
-died(extraParameters?: Array<[string,any]>) { 
+died() { 
   
   let object: any;
 
   return {
     
-      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A persona or figure in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      character: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.character, name, description)
         
@@ -1512,11 +1739,11 @@ died(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.died, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1526,7 +1753,13 @@ died(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -1538,11 +1771,11 @@ died(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.died, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1558,13 +1791,19 @@ died(extraParameters?: Array<[string,any]>) {
  * The player discoveres an object like a new location
  * 
  */ 
-discovered(extraParameters?: Array<[string,any]>) { 
+discovered() { 
   
   let object: any;
 
   return {
     
-      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A stage or section in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      level: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.level, name, description)
         
@@ -1576,11 +1815,11 @@ discovered(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.discovered, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1590,7 +1829,13 @@ discovered(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -1602,11 +1847,11 @@ discovered(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.discovered, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1622,7 +1867,7 @@ discovered(extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-doubleJumped(extraParameters?: Array<[string,any]>) { 
+doubleJumped() { 
   
   let object: any;
 
@@ -1635,13 +1880,19 @@ doubleJumped(extraParameters?: Array<[string,any]>) {
  * The player earns an object like a reward
  * 
  */ 
-earned(extraParameters?: Array<[string,any]>) { 
+earned() { 
   
   let object: any;
 
   return {
     
-      reward: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      reward: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.reward, name, description)
         
@@ -1653,11 +1904,11 @@ earned(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.earned, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1673,13 +1924,19 @@ earned(extraParameters?: Array<[string,any]>) {
  * The player equippes an object like a new item
  * 
  */ 
-equipped(extraParameters?: Array<[string,any]>) { 
+equipped() { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -1691,11 +1948,11 @@ equipped(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.equipped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1711,13 +1968,19 @@ equipped(extraParameters?: Array<[string,any]>) {
  * The player examines an object like an item or a room
  * 
  */ 
-examined(extraParameters?: Array<[string,any]>) { 
+examined() { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -1729,11 +1992,11 @@ examined(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.examined, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1743,7 +2006,13 @@ examined(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      room: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A space within a building or structure like a house or a cave
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      room: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.room, name, description)
         
@@ -1755,11 +2024,11 @@ examined(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.examined, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1775,13 +2044,19 @@ examined(extraParameters?: Array<[string,any]>) {
  * The player exits the game or level
  * 
  */ 
-exited(extraParameters?: Array<[string,any]>) { 
+exited() { 
   
   let object: any;
 
   return {
     
-      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A saved state or instance of a video game, representing progress made by the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      game: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.game, name, description)
         
@@ -1793,11 +2068,11 @@ exited(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.exited, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1807,7 +2082,13 @@ exited(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A stage or section in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      level: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.level, name, description)
         
@@ -1819,11 +2100,11 @@ exited(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.exited, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1839,13 +2120,19 @@ exited(extraParameters?: Array<[string,any]>) {
  * The player explors an object like a location
  * 
  */ 
-explored(extraParameters?: Array<[string,any]>) { 
+explored() { 
   
   let object: any;
 
   return {
     
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -1857,11 +2144,11 @@ explored(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.explored, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1877,13 +2164,19 @@ explored(extraParameters?: Array<[string,any]>) {
  * The player fails an object like a mission
  * 
  */ 
-failed(extraParameters?: Array<[string,any]>) { 
+failed() { 
   
   let object: any;
 
   return {
     
-      mission: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific task or objective
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      mission: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
         
@@ -1895,11 +2188,11 @@ failed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1909,7 +2202,13 @@ failed(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      task: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A piece of work to be done or undertaken, often part of a larger goal for the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      task: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.task, name, description)
         
@@ -1921,11 +2220,11 @@ failed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1935,7 +2234,13 @@ failed(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A stage or section in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      level: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.level, name, description)
         
@@ -1947,11 +2252,11 @@ failed(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -1967,13 +2272,19 @@ failed(extraParameters?: Array<[string,any]>) {
  * The player fells in an object like a pit
  * 
  */ 
-fellIn(extraParameters?: Array<[string,any]>) { 
+fellIn() { 
   
   let object: any;
 
   return {
     
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -1985,11 +2296,11 @@ fellIn(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2006,13 +2317,19 @@ fellIn(extraParameters?: Array<[string,any]>) {
  * @param {number} distance - Number of units the object jumped
  * @param {string} units - Units in which the distance is expressed
  */ 
-jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) { 
+jumped(distance : number,units : string,) { 
   
   let object: any;
 
   return {
     
-      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A persona or figure in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      character: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.character, name, description)
         
@@ -2026,11 +2343,11 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.jumped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2040,7 +2357,13 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      enemy: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A hostile individual or group opposing the protagonist in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      enemy: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.enemy, name, description)
         
@@ -2054,11 +2377,11 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.jumped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2074,7 +2397,7 @@ jumped(distance : number,units : string,extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-launched(extraParameters?: Array<[string,any]>) { 
+launched() { 
   
   let object: any;
 
@@ -2087,13 +2410,19 @@ launched(extraParameters?: Array<[string,any]>) {
  * The player loads the game or a level
  * @param {string} id_load - Unique id of the load the players choose, if the player reloads the same save the id would also be the same. Example: Save number_17 11-02-2024T14:23:00.140Z
  */ 
-loaded(id_load : string,extraParameters?: Array<[string,any]>) { 
+loaded(id_load : string,) { 
   
   let object: any;
 
   return {
     
-      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A saved state or instance of a video game, representing progress made by the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      game: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.game, name, description)
         
@@ -2106,11 +2435,11 @@ loaded(id_load : string,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.loaded, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2120,7 +2449,13 @@ loaded(id_load : string,extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A stage or section in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      level: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.level, name, description)
         
@@ -2133,11 +2468,11 @@ loaded(id_load : string,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.loaded, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2153,7 +2488,7 @@ loaded(id_load : string,extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-loggedIn(extraParameters?: Array<[string,any]>) { 
+loggedIn() { 
   
   let object: any;
 
@@ -2166,7 +2501,7 @@ loggedIn(extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-loggedOut(extraParameters?: Array<[string,any]>) { 
+loggedOut() { 
   
   let object: any;
 
@@ -2179,13 +2514,19 @@ loggedOut(extraParameters?: Array<[string,any]>) {
  * The player moves an object like a boulder
  * 
  */ 
-moved(extraParameters?: Array<[string,any]>) { 
+moved() { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -2197,11 +2538,11 @@ moved(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.moved, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2217,13 +2558,19 @@ moved(extraParameters?: Array<[string,any]>) {
  * The player navigates a new location
  * 
  */ 
-navigated(extraParameters?: Array<[string,any]>) { 
+navigated() { 
   
   let object: any;
 
   return {
     
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -2235,11 +2582,11 @@ navigated(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.navigated, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2255,13 +2602,19 @@ navigated(extraParameters?: Array<[string,any]>) {
  * The player opens an object like a door or a chest
  * 
  */ 
-opened(extraParameters?: Array<[string,any]>) { 
+opened() { 
   
   let object: any;
 
   return {
     
-      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      chest: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
         
@@ -2273,11 +2626,11 @@ opened(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.opened, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2287,7 +2640,13 @@ opened(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      door: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      door: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.door, name, description)
         
@@ -2299,11 +2658,11 @@ opened(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.opened, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2319,13 +2678,19 @@ opened(extraParameters?: Array<[string,any]>) {
  * The player pauses the game
  * 
  */ 
-paused(extraParameters?: Array<[string,any]>) { 
+paused() { 
   
   let object: any;
 
   return {
     
-      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A saved state or instance of a video game, representing progress made by the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      game: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.game, name, description)
         
@@ -2337,11 +2702,11 @@ paused(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.paused, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2357,7 +2722,7 @@ paused(extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-registered(extraParameters?: Array<[string,any]>) { 
+registered() { 
   
   let object: any;
 
@@ -2370,7 +2735,7 @@ registered(extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-rejected(extraParameters?: Array<[string,any]>) { 
+rejected() { 
   
   let object: any;
 
@@ -2383,7 +2748,7 @@ rejected(extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-rotated(extraParameters?: Array<[string,any]>) { 
+rotated() { 
   
   let object: any;
 
@@ -2396,7 +2761,7 @@ rotated(extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-shared(extraParameters?: Array<[string,any]>) { 
+shared() { 
   
   let object: any;
 
@@ -2409,13 +2774,19 @@ shared(extraParameters?: Array<[string,any]>) {
  * The player skips a dialog
  * 
  */ 
-skipped(extraParameters?: Array<[string,any]>) { 
+skipped() { 
   
   let object: any;
 
   return {
     
-      dialog: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * Conversation between characters in the game, or a text box in the game providing information or choices to the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      dialog: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.dialog, name, description)
         
@@ -2427,11 +2798,11 @@ skipped(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.skipped, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2447,7 +2818,7 @@ skipped(extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-solved(extraParameters?: Array<[string,any]>) { 
+solved() { 
   
   let object: any;
 
@@ -2460,7 +2831,7 @@ solved(extraParameters?: Array<[string,any]>) {
  * The player jumps (no object? or himself?)
  * 
  */ 
-sprinted(extraParameters?: Array<[string,any]>) { 
+sprinted() { 
   
   let object: any;
 
@@ -2473,13 +2844,19 @@ sprinted(extraParameters?: Array<[string,any]>) {
  * The player starts a level or a new game
  * 
  */ 
-started(extraParameters?: Array<[string,any]>) { 
+started() { 
   
   let object: any;
 
   return {
     
-      level: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A stage or section in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      level: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.level, name, description)
         
@@ -2491,11 +2868,11 @@ started(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.started, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2505,7 +2882,13 @@ started(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      game: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A saved state or instance of a video game, representing progress made by the player
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      game: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.game, name, description)
         
@@ -2517,11 +2900,11 @@ started(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.started, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2537,13 +2920,19 @@ started(extraParameters?: Array<[string,any]>) {
  * The player teleports to a location or a character
  * 
  */ 
-teleported(extraParameters?: Array<[string,any]>) { 
+teleported() { 
   
   let object: any;
 
   return {
     
-      location: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A specific place or position relevant to the action of the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      location: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.location, name, description)
         
@@ -2555,11 +2944,11 @@ teleported(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.teleported, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2569,7 +2958,13 @@ teleported(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      character: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A persona or figure in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      character: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.character, name, description)
         
@@ -2581,11 +2976,11 @@ teleported(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.teleported, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2601,13 +2996,19 @@ teleported(extraParameters?: Array<[string,any]>) {
  * The player unlocks an object like a chest or a skill
  * 
  */ 
-unlocked(extraParameters?: Array<[string,any]>) { 
+unlocked() { 
   
   let object: any;
 
   return {
     
-      chest: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      chest: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
         
@@ -2619,11 +3020,11 @@ unlocked(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2633,7 +3034,13 @@ unlocked(extraParameters?: Array<[string,any]>) {
       }
           
 ,
-      skill: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      skill: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.skill, name, description)
         
@@ -2645,11 +3052,11 @@ unlocked(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2665,13 +3072,19 @@ unlocked(extraParameters?: Array<[string,any]>) {
  * The player upgrades an item
  * 
  */ 
-upgraded(extraParameters?: Array<[string,any]>) { 
+upgraded() { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -2683,11 +3096,11 @@ upgraded(extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2703,13 +3116,19 @@ upgraded(extraParameters?: Array<[string,any]>) {
  * The player uses an item
  * @param {boolean} consumed - The item is consumed with the use or not
  */ 
-used(consumed : boolean,extraParameters?: Array<[string,any]>) { 
+used(consumed : boolean,) { 
   
   let object: any;
 
   return {
     
-      item: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * An object or thing of value, often collectible or usable in the game
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      item: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.item, name, description)
         
@@ -2722,11 +3141,11 @@ used(consumed : boolean,extraParameters?: Array<[string,any]>) {
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.used, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -2742,7 +3161,7 @@ used(consumed : boolean,extraParameters?: Array<[string,any]>) {
  * undefined
  * 
  */ 
-watched(extraParameters?: Array<[string,any]>) { 
+watched() { 
   
   let object: any;
 

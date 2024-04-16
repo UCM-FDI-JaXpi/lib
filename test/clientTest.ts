@@ -86,34 +86,10 @@ function delay(ms: number) {
   }
   
 async function executeActionsWithDelay() {
-    await delay(2000);
+    //jaxpi.set_lrs(true)
+
     jaxpi.started().level("Level 1");
 
-    await delay(3000);
-    jaxpi.exited().level("Level 1");
-
-    await delay(2000);
-    jaxpi.loaded("Guardado 1").level("Level 1");
-
-    await delay(2100);
-    jaxpi.exited().level("Level 1");
-
-    await delay(4000);
-    jaxpi.loaded("Guardado 1").level("Level 1");
-
-    await delay(5000);
-    jaxpi.completed(90).level("Level 1");
-    jaxpi.started().level("Level 2");
-
-    await delay(2000);
-    jaxpi.jumped(20, "meters").enemy();
-    jaxpi.completed(98).level("Level 2");
-
-    await delay(5000);
-    jaxpi.started().level("Level 1");
-
-    await delay(2000);
-    jaxpi.completed(100).level("Level 1");
 
     jaxpi.flush();
 

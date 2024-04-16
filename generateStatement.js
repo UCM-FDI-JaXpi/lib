@@ -57,7 +57,7 @@ exports.generateStatementFromZero = generateStatementFromZero;
 function generateStatement(player, verb, object, result, context, authority) {
     var statement = {
         actor: {
-            mbox: player.mail,
+            mbox: "mailto:" + player.mail,
             name: player.name,
         },
         verb: {

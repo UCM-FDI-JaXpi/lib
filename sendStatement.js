@@ -37,18 +37,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var queue_typescript_1 = require("queue-typescript");
+var TinCan = require('tincanjs');
 var axios = require('axios');
 var parentPort = require('worker_threads').parentPort;
 var queue = new queue_typescript_1.Queue();
 // Escuchar mensajes del hilo principal
 parentPort.on('message', function (message) { return __awaiter(void 0, void 0, void 0, function () {
-    var url, statementQueue, length, queue_id, i, error_1;
+    var url, statementQueue, length, queue_id, lrs, i, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                url = message.url, statementQueue = message.statementQueue, length = message.length, queue_id = message.queue_id;
-                // console.log('Tipo de statementQueue:', typeof statementQueue)
-                // console.log('cola:', statementQueue)
+                url = message.url, statementQueue = message.statementQueue, length = message.length, queue_id = message.queue_id, lrs = message.lrs;
                 statementQueue.forEach(function (item) {
                     queue.enqueue(item);
                 });
@@ -59,10 +58,8 @@ parentPort.on('message', function (message) { return __awaiter(void 0, void 0, v
                 _a.label = 2;
             case 2:
                 if (!(i < length)) return [3 /*break*/, 5];
-                // console.log(queue.head)
-                return [4 /*yield*/, sendStatement(url, queue.head)];
+                return [4 /*yield*/, sendStatement(url, queue.head, lrs, queue_id)];
             case 3:
-                // console.log(queue.head)
                 _a.sent();
                 queue.removeHead();
                 _a.label = 4;
@@ -70,40 +67,69 @@ parentPort.on('message', function (message) { return __awaiter(void 0, void 0, v
                 i++;
                 return [3 /*break*/, 2];
             case 5:
-                // console.log("El envío ha terminado, todas las trazas han sido enviadas");
-                parentPort.postMessage({ log: 'Todas las trazas han sido enviadas', queue_id: queue_id });
+                if (!lrs)
+                    parentPort.postMessage({ log: 'Todas las trazas han sido enviadas', queue_id: queue_id });
                 return [3 /*break*/, 7];
             case 6:
                 error_1 = _a.sent();
-                console.error("Error al enviar las trazas:", error_1.code);
-                //parentPort.error(error)
+                console.error("Error al enviar las trazas:", error_1);
                 parentPort.postMessage({ error: error_1.code }); // Propaga el error para manejarlo en el código principal si es necesario
                 return [3 /*break*/, 7];
             case 7: return [2 /*return*/];
         }
     });
 }); });
-function sendStatement(url, statement) {
+function sendStatement(url, statement, use_lrs, queue_id) {
     return __awaiter(this, void 0, void 0, function () {
-        var response, error_2;
+        var config, lrs, response, error_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, axios.post(url, statement, {
-                            headers: {
-                                'Content-Type': 'application/json',
+                    _a.trys.push([0, 4, , 5]);
+                    if (!use_lrs) return [3 /*break*/, 1];
+                    config = {
+                        endpoint: 'https://jaxpi.lrs.io/xapi/', // URL del endpoint xAPI
+                        username: 'pinnak', // Usuario para autenticación básica
+                        password: 'ilufit', // Contraseña para autenticación básica
+                        statement: statement
+                    };
+                    lrs = new TinCan.LRS(config);
+                    // Envia la declaración (statement)
+                    lrs.saveStatement(new TinCan.Statement(config.statement), {
+                        callback: function (err, xhr) {
+                            if (err !== null) {
+                                parentPort.postMessage({ error: "Error enviando la declaraci\u00F3n: ".concat(err) });
+                                console.log('Error enviando la declaración:', err);
+                                return;
                             }
-                        })];
-                case 1:
+                            parentPort.postMessage({ log: 'Todas las trazas han sido enviadas', queue_id: queue_id });
+                            // if (use_lrs)  console.log('Declaración enviada exitosamente:', xhr);
+                            // else  console.log(`Respuesta del servidor: Traza ${statement.verb.display["en-us"]}.${statement.object.definition.name["en-us"]}`)
+                        }
+                    });
+                    return [3 /*break*/, 3];
+                case 1: return [4 /*yield*/, axios.post(url, statement, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                        // const response = await axios.post("https://lrs.adlnet.gov/statementvalidator", statement, { 
+                        //       headers: {
+                        //         'Content-Type': 'application/json',
+                        //       }
+                    })];
+                case 2:
                     response = _a.sent();
                     console.log("Respuesta del servidor: ".concat(response.status, "\n para la traza ").concat(statement.verb.display["en-us"], ".").concat(statement.object.definition.name["en-us"]));
-                    return [3 /*break*/, 3];
-                case 2:
+                    console.log('Respuesta del servidor:', response.status);
+                    _a.label = 3;
+                case 3: return [3 /*break*/, 5];
+                case 4:
                     error_2 = _a.sent();
                     // console.error('Error al enviar la traza:', error);
-                    throw error_2; // Propaga el error para manejarlo en el código principal si es necesario
-                case 3: return [2 /*return*/];
+                    console.error("Error al enviar las trazas:", error_2);
+                    parentPort.postMessage({ error: error_2.code }); // Propaga el error para manejarlo en el código principal si es necesario
+                    return [3 /*break*/, 5];
+                case 5: return [2 /*return*/];
             }
         });
     });

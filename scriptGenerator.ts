@@ -5,54 +5,6 @@ import axios from 'axios';
 import {checkVerb,checkObject} from './validateStatement';
 
 
-const verbObjectRelation: Map<string, string[]> = new Map([
-  ["accepted", ["award", "mission", "reward", "task"]],
-  ["accessed", ["chest", "door", "room"]],
-  ["achieved", ["award", "character", "enemy", "gameCompletion", "goal", "level", "reward"]],
-  ["cancelled", ["character", "enemy", "mission", "task"]],    
-  ["chatted", ["character", "enemy"]],
-  ["clicked", [""]],
-  ["climbed", [""]],
-  ["closed", ["chest", "door"]],
-  ["combined", [""]],
-  ["completed", ["gameCompletion", "goal", "level", "mission", "task"]],
-  ["connected", [""]],
-  ["crafted", [""]],
-  ["dashed", [""]],
-  ["defeated", ["character", "enemy"]],
-  ["died", [""]],
-  ["discovered", [""]],
-  ["doubleJumped", [""]],
-  ["earned", [""]],
-  ["equipped", [""]],
-  ["examined", [""]],
-  ["exited", ["room"]],
-  ["explored", [""]],
-  ["failed", ["mission"]],
-  ["fell", [""]],
-  ["jumped", ["character", "enemy"]],
-  ["launched", [""]],
-  ["loggedIn", [""]],
-  ["loggedOut", [""]],
-  ["moved", [""]],
-  ["navigated", [""]],
-  ["opened", ["chest", "door"]],
-  ["paused", [""]],
-  ["registered", [""]],
-  ["rejected", [""]],
-  ["rotated", [""]],
-  ["shared", [""]],
-  ["skipped", [""]],
-  ["solvedAPuzzle", [""]],
-  ["sprinted", [""]],
-  ["started", ["level"]],
-  ["teleported", [""]],
-  ["unlocked", ["chest"]],
-  ["upgraded", [""]],
-  ["used", ["chest"]],
-  ["watched", [""]],
-]);
-
 async function getDataFromURL(url: string) {
   try {
       const response = await fetch(url);
@@ -67,27 +19,6 @@ async function getDataFromURL(url: string) {
   } catch (error) {
       console.error('Error al obtener datos de la url:', error);
       return null;
-  }
-}
-
-async function getParameters(verb: any, object: any){
-  try{
-    let parameters = "";
-
-    if(object === undefined) return parameters;
-    if (object.definition.extensions !== undefined) {     //Si existen parametros estos estan en el campo extension de json.object
-      for (let field in object.definition.extensions) {
-        if (field.substring(field.lastIndexOf("/") + 1).split("_")[0] == verb.id.substring(verb.id.lastIndexOf("/") + 1))   //Comprueba si el parametro de extension es relevante para el verbo
-          parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
-            + typeof object.definition.extensions[field] + ",";
-      }
-      //parameters = parameters.slice(0, -1);
-    }
-
-    return parameters;
-  }catch(error) {
-    console.error('Error en getParameters:', error);
-    throw error;
   }
 }
 
@@ -111,37 +42,6 @@ function setStatement(parameters: string): string {
   }
 }
 
-
-// Función para obtener el JSON del objeto relacionado con un verbo
-async function getObjectRelatedToVerb(verb: string): Promise<any | undefined> {
-  const objects = verbObjectRelation.get(verb);
-  if (objects === undefined || !objects[0]) {
-    return undefined;
-  }
-
-  try {
-    const response = await axios.get(githubApiUrlObjects);
-    const files = response.data;
-
-    // Filtra y obtiene solo los archivos JSON de la lista de archivos
-    const JSONFiles = files.filter((file: any) => file.name.endsWith('.json'));
-
-    // Busca el objeto relacionado con el verbo para obtener su JSON
-    for (const file of JSONFiles) {
-      if (file.name === objects[0] + ".json") {
-        const object = await getDataFromURL(file.download_url);
-        return object;
-      }
-    }
-
-  } catch (error) {
-    console.error('Error al obtener datos del repositorio Git:', error);
-    throw error; // Propaga el error para que sea manejado externamente
-  }
-
-  return undefined;
-}
-
 function getExtensionName(extension: string) : string{
   return extension.substring(extension.lastIndexOf("/") + 1);
 }
@@ -155,7 +55,7 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
       
       let parameters = ""
       
-      if (value.extensions !== undefined) {     //Si existen parametros estos estan en el campo extension de json.object
+      if (value.extensions !== undefined) {     //Si existen parametros estos estan en el campo extension del json verb
         for (let field in value.extensions) {
           parameters += field.substring(field.lastIndexOf("/") + 1) + " : " 
             + typeof value.extensions[field] + ",";
@@ -179,7 +79,13 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
       if (value.objects)
         value.objects.forEach((element: string) => {
           object.push(`
-      ${element}: (name?:string, description?:string, objectParameters?: Array<[string,any]>) => {
+      /**
+        * ${objects.get(element).definition.description["en-us"]}
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+        */ 
+      ${element}: (name:string, description?:string, extraParameters?: Array<[string,any]>) => {
 
         object = generate.generateObject(this.objects.${element}, name, description)
         
@@ -191,11 +97,11 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
           });
         }
 
-        if (objectParameters && objectParameters.length > 0) {
-          objectParameters.forEach((value) => {
-              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-          });
-        }
+        // if (objectParameters && objectParameters.length > 0) {
+        //   objectParameters.forEach((value) => {
+        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+        //   });
+        // }
       
         const statement = generate.generateStatement(this.player, this.verbs.${key}, object, undefined, this.context, undefined);
         this.statementQueue.enqueue(statement);
@@ -212,7 +118,7 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
  * ${value.description}
  * ${params.join("\n * ")}
  */ 
-${key}(${parameters}extraParameters?: Array<[string,any]>) { 
+${key}(${parameters}) { 
   
   let object: any;
 
@@ -261,6 +167,7 @@ export class Jaxpi {
   private MAX_QUEUE_LENGTH: number = 7;
   private processQueueArray: string[] = [];
   private flagFlush: boolean = false;
+  private lrs: boolean = false;
   
   
 
@@ -414,7 +321,7 @@ export class Jaxpi {
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     let promise = new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
-      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux});
+      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux, lrs: this.lrs});
       worker.on('message', (message: any) => {
         if (message.error){
           this.processQueueArray.splice(this.processQueueArray.indexOf(aux,1))
@@ -451,7 +358,7 @@ export class Jaxpi {
     //Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
     return new Promise<void>((resolve, reject) => {
       var worker = new Worker(workerPath);
-      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: key});
+      worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: key, lrs: this.lrs});
       worker.on('message', (message: any) => {
         if (message.error){
           reject(message.error);
@@ -487,7 +394,7 @@ export class Jaxpi {
     this.context = {
       instructor: {
           name: name,
-          mbox: mbox
+          mbox: "mailto:" + mbox
       },
       contextActivities: {
           parent: { id: "http://example.com/activities/" + sessionId },
