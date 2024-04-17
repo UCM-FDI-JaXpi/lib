@@ -3,11 +3,11 @@ import { Queue } from "queue-typescript";
 
 const TinCan = require('tincanjs');
 const axios = require('axios');
-const { parentPort } = require('worker_threads');
+// const { parentPort } = require('worker_threads');
 let queue = new Queue<any>();
 
 // Escuchar mensajes del hilo principal
-parentPort.on('message', async (message: any) => {
+onmessage = async (message: any) => {
   const { url, statementQueue, length, queue_id, lrs } = message;
 
   statementQueue.forEach((item: number) => {
@@ -22,12 +22,12 @@ parentPort.on('message', async (message: any) => {
       await sendStatement(url, queue.head, lrs, queue_id);
       queue.removeHead();
     }
-    if (!lrs) parentPort.postMessage({log : 'Todas las trazas han sido enviadas', queue_id : queue_id});
+    if (!lrs) postMessage({log : 'Todas las trazas han sido enviadas', queue_id : queue_id});
   } catch (error) {
     console.error("Error al enviar las trazas:", (error as AxiosError));
-    parentPort.postMessage({error: (error as AxiosError).code}); // Propaga el error para manejarlo en el código principal si es necesario
+    postMessage({error: (error as AxiosError).code}); // Propaga el error para manejarlo en el código principal si es necesario
   }
-});
+};
 
 async function sendStatement(url: any, statement: any, use_lrs: boolean, queue_id: string) {
   // Lógica para enviar una traza usando axios
@@ -49,12 +49,12 @@ async function sendStatement(url: any, statement: any, use_lrs: boolean, queue_i
       lrs.saveStatement(new TinCan.Statement(config.statement), {
         callback: function (err: null, xhr: any) {
           if (err !== null) {
-            parentPort.postMessage({error:`Error enviando la declaración: ${err}`});
+            postMessage({error:`Error enviando la declaración: ${err}`});
             console.log('Error enviando la declaración:', err);
             return;
           }
 
-          parentPort.postMessage({log : 'Todas las trazas han sido enviadas', queue_id : queue_id});
+          postMessage({log : 'Todas las trazas han sido enviadas', queue_id : queue_id});
           // if (use_lrs)  console.log('Declaración enviada exitosamente:', xhr);
           // else  console.log(`Respuesta del servidor: Traza ${statement.verb.display["en-us"]}.${statement.object.definition.name["en-us"]}`)
         }
@@ -79,7 +79,7 @@ async function sendStatement(url: any, statement: any, use_lrs: boolean, queue_i
   } catch (error) {
     // console.error('Error al enviar la traza:', error);
     console.error("Error al enviar las trazas:", (error as AxiosError));
-    parentPort.postMessage({error: (error as AxiosError).code}); // Propaga el error para manejarlo en el código principal si es necesario
+    postMessage({error: (error as AxiosError).code}); // Propaga el error para manejarlo en el código principal si es necesario
     //throw error; // Propaga el error para manejarlo en el código principal si es necesario
   }
 }

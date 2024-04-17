@@ -3,9 +3,10 @@ import path = require('path');
 import * as generate from './generateStatement';
 import { checkObject, checkVerb } from './validateStatement';
 import { Queue } from 'queue-typescript';
+import * as process from 'process';
 
-const { Worker } = require('worker_threads');
-const { LocalStorage } = require('node-localstorage');
+// const { Worker } = require('worker_threads');
+// const { LocalStorage } = require('node-localstorage');
 
 
 const TIME_INTERVAL_SEND = 5;
@@ -246,8 +247,9 @@ export class Jaxpi {
 		//Crea una promesa que se resuelve cuando el hilo termina la ejecucion o en caso de error se rechaza
 		let promise = new Promise<void>((resolve, reject) => {
 			var worker = new Worker(workerPath);
+			console.log(this.url, queue.toArray(), queue.length, aux, this.lrs);
 			worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: aux, lrs: this.lrs });
-			worker.on('message', (message: any) => {
+			worker.onmessage = (message: any) => {
 				if (message.error) {
 					this.processQueueArray.splice(this.processQueueArray.indexOf(aux, 1))
 					reject(message.error);
@@ -265,7 +267,7 @@ export class Jaxpi {
 					// Resuelve la promesa una vez que se haya procesado la cola de trazas
 					resolve();
 				}
-			});
+			};
 		});
 
 		// //Vacia la cola actual
@@ -284,7 +286,7 @@ export class Jaxpi {
 		return new Promise<void>((resolve, reject) => {
 			var worker = new Worker(workerPath);
 			worker.postMessage({ url: this.url, statementQueue: queue.toArray(), length: queue.length, queue_id: key, lrs: this.lrs });
-			worker.on('message', (message: any) => {
+			worker.onmessage = (message: any) => {
 				if (message.error) {
 					reject(message.error);
 				}
@@ -300,7 +302,7 @@ export class Jaxpi {
 					// Resuelve la promesa una vez que se haya procesado la cola de trazas
 					resolve();
 				}
-			});
+			};
 		}).catch((error) => {
 			// Manejar el error rechazado aquí para evitar UnhandledPromiseRejectionWarning
 			console.error('Error rechazado no capturado:', error);

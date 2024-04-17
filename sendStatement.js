@@ -39,10 +39,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var queue_typescript_1 = require("queue-typescript");
 var TinCan = require('tincanjs');
 var axios = require('axios');
-var parentPort = require('worker_threads').parentPort;
+// const { parentPort } = require('worker_threads');
 var queue = new queue_typescript_1.Queue();
 // Escuchar mensajes del hilo principal
-parentPort.on('message', function (message) { return __awaiter(void 0, void 0, void 0, function () {
+onmessage = function (message) { return __awaiter(void 0, void 0, void 0, function () {
     var url, statementQueue, length, queue_id, lrs, i, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -68,17 +68,17 @@ parentPort.on('message', function (message) { return __awaiter(void 0, void 0, v
                 return [3 /*break*/, 2];
             case 5:
                 if (!lrs)
-                    parentPort.postMessage({ log: 'Todas las trazas han sido enviadas', queue_id: queue_id });
+                    postMessage({ log: 'Todas las trazas han sido enviadas', queue_id: queue_id });
                 return [3 /*break*/, 7];
             case 6:
                 error_1 = _a.sent();
                 console.error("Error al enviar las trazas:", error_1);
-                parentPort.postMessage({ error: error_1.code }); // Propaga el error para manejarlo en el código principal si es necesario
+                postMessage({ error: error_1.code }); // Propaga el error para manejarlo en el código principal si es necesario
                 return [3 /*break*/, 7];
             case 7: return [2 /*return*/];
         }
     });
-}); });
+}); };
 function sendStatement(url, statement, use_lrs, queue_id) {
     return __awaiter(this, void 0, void 0, function () {
         var config, lrs, response, error_2;
@@ -98,11 +98,11 @@ function sendStatement(url, statement, use_lrs, queue_id) {
                     lrs.saveStatement(new TinCan.Statement(config.statement), {
                         callback: function (err, xhr) {
                             if (err !== null) {
-                                parentPort.postMessage({ error: "Error enviando la declaraci\u00F3n: ".concat(err) });
+                                postMessage({ error: "Error enviando la declaraci\u00F3n: ".concat(err) });
                                 console.log('Error enviando la declaración:', err);
                                 return;
                             }
-                            parentPort.postMessage({ log: 'Todas las trazas han sido enviadas', queue_id: queue_id });
+                            postMessage({ log: 'Todas las trazas han sido enviadas', queue_id: queue_id });
                             // if (use_lrs)  console.log('Declaración enviada exitosamente:', xhr);
                             // else  console.log(`Respuesta del servidor: Traza ${statement.verb.display["en-us"]}.${statement.object.definition.name["en-us"]}`)
                         }
@@ -127,7 +127,7 @@ function sendStatement(url, statement, use_lrs, queue_id) {
                     error_2 = _a.sent();
                     // console.error('Error al enviar la traza:', error);
                     console.error("Error al enviar las trazas:", error_2);
-                    parentPort.postMessage({ error: error_2.code }); // Propaga el error para manejarlo en el código principal si es necesario
+                    postMessage({ error: error_2.code }); // Propaga el error para manejarlo en el código principal si es necesario
                     return [3 /*break*/, 5];
                 case 5: return [2 /*return*/];
             }
