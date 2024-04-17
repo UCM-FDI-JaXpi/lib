@@ -1,6 +1,6 @@
 import {Jaxpi} from '../jaxpiLib';
 
-let jaxpi = new Jaxpi({name: "Jugador1", mail: "mail@test.com", userId:"a", sessionId:"hang-gliding-class-a"},"http://localhost:3000/records", false);
+let jaxpi = new Jaxpi({name: "maria", mail: "mailto:maria@gmail.com", userId:"a", sessionId:"hang-gliding-class-a"},"http://localhost:3000/records", false);
 
 let object = {
     "id": "http://example.com/Mario",
@@ -86,13 +86,43 @@ function delay(ms: number) {
   }
   
 async function executeActionsWithDelay() {
-    //jaxpi.set_lrs(true)
-
+    await delay(2000);
     jaxpi.started().level("Level 1");
 
+    await delay(3000);
+    jaxpi.exited().level("Level 1");
+
+    await delay(2000);
+    jaxpi.loaded("Guardado 1").level("Level 1");
+
+    await delay(2100);
+    jaxpi.exited().level("Level 1");
+
+    await delay(4000);
+    jaxpi.loaded("Guardado 1").level("Level 1");
+
+    await delay(5000);
+    jaxpi.completed(90).level("Level 1");
+    jaxpi.started().level("Level 2");
+
+    await delay(2000);
+    jaxpi.jumped(20, "meters").enemy("Enemy 1");
+    jaxpi.completed(98).level("Level 2");
+
+    await delay(5000);
+    jaxpi.started().level("Level 1");
+
+    await delay(5000);
+    jaxpi.started().level("Level 1");
+
+    await delay(2000);
+    jaxpi.completed(100).level("Level 1");
 
     jaxpi.flush();
 
+    // jaxpi.set_lrs(true)
+    // jaxpi.accepted().achievement("a1")
+    // jaxpi.flush()
 }
   
 executeActionsWithDelay();
