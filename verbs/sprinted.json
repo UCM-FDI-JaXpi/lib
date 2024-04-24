@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/sprinted",
     "display": {
-        "en-us": "sprinted",
+        "en-US": "sprinted",
         "es": "sprint"
     },
     "description": "The player jumps (no object? or himself?)"

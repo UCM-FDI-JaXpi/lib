@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/discovered",
     "display": {
-        "en-us": "discovered",
+        "en-US": "discovered",
         "es": "descubierto"
     },
     "objects": ["level","location"],

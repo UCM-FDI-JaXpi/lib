@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default enemy",
+            "en-US": "Default enemy",
             "es": "Enemigo por defecto"
         },
         "description": {
-            "en-us": "A hostile individual or group opposing the protagonist in the game",
+            "en-US": "A hostile individual or group opposing the protagonist in the game",
             "es": "Un individuo o grupo hostil que se opone al protagonista del juego"
         }
     }

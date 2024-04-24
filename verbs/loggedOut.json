@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/loggedOut",
     "display": {
-        "en-us": "loggedOut",
+        "en-US": "loggedOut",
         "es": "desconectado"
     }
 }

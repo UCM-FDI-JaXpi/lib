@@ -1,12 +1,4 @@
-dist/
 node_modules/
 scratch/
-jaxpiLib.ts
-jaxpiLib.js
-clientTest.js
-scriptGenerator.js
-validateStatement.js
-generateStatement.js
-xAPIschema.js
-test.ts
-test.js
+package-lock.json
+jaxpi-1.0.0.tgz

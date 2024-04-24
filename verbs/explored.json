@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/explored",
     "display": {
-        "en-us": "explored",
+        "en-US": "explored",
         "es": "explorado"
     },
     "objects": ["location"],

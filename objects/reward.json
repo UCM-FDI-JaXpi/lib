@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default reward",
+            "en-US": "Default reward",
             "es": "Recompensa por defecto"
         },
         "description": {
-            "en-us": "Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player",
+            "en-US": "Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player",
             "es": "Algo entregado en reconocimiento al servicio, esfuerzo o logro; A menudo se utiliza para incentivar el comportamiento deseado o la finalización de tareas del jugador"
         }
     }

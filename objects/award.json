@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default award",
+            "en-US": "Default award",
             "es": "Premio por defecto"
         },
         "description": {
-            "en-us": "A prize or honor given to the player for an achievement",
+            "en-US": "A prize or honor given to the player for an achievement",
             "es": "Un premio u honor otorgado al jugador por un logro"
         }
     }

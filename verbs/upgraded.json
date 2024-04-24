@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/upgraded",
     "display": {
-        "en-us": "upgraded",
+        "en-US": "upgraded",
         "es": "mejorado"
     },
     "objects": ["item"],

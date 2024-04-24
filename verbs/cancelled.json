@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/cancelled",
     "display": {
-        "en-us": "cancelled",
+        "en-US": "cancelled",
         "es": "cancelado"
     },
     "objects": ["mission","task"],

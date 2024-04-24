@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/equipped",
     "display": {
-        "en-us": "equipped",
+        "en-US": "equipped",
         "es": "equipado"
     },
     "objects": ["item"],

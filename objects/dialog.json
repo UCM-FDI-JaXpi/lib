@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default dialog",
+            "en-US": "Default dialog",
             "es": "Dialogo por defecto"
         },
         "description": {
-            "en-us": "Conversation between characters in the game, or a text box in the game providing information or choices to the player",
+            "en-US": "Conversation between characters in the game, or a text box in the game providing information or choices to the player",
             "es": "Conversación entre personajes del juego o un cuadro de texto en el juego que proporciona información u opciones al jugador"
         }
     }

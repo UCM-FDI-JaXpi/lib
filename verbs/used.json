@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/used",
     "display": {
-        "en-us": "used",
+        "en-US": "used",
         "es": "utilizado"
     },
     "objects": ["item"],

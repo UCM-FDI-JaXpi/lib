@@ -1,0 +1,3001 @@
+// index.ts
+import './worker.js';
+import { Queue } from './queue.js';
+import * as generate from './scripts/generateStatement.js';
+import { checkObject, checkVerb } from './scripts/validateStatement.js';
+const TIME_INTERVAL_SEND = 5;
+const MAX_QUEUE_LENGTH = 5;
+let instance = null;
+export default class Jaxpi {
+    serverUrl;
+    interval;
+    time_interval;
+    max_queue;
+    worker;
+    statementQueue = new Queue();
+    player;
+    context;
+    max_queue_length;
+    stat_id = 1;
+    promises;
+    statementInterval;
+    verbs = {
+        "accepted": { "id": "https://github.com/UCM-FDI-JaXpi/lib/accepted", "display": { "en-US": "accepted", "es": "aceptado" }, "objects": ["achievement", "award", "mission", "reward", "task"], "description": "The player accepts an object like a task or a reward" },
+        "accessed": { "id": "https://github.com/UCM-FDI-JaXpi/lib/accessed", "display": { "en-US": "accessed", "es": "accedido" }, "objects": ["chest", "door", "room", "location"], "description": "The player access an object like a room or a new area", "extensions": { "https://example.com/game/visited_times": 3 }, "extensions-doc": { "https://example.com/game/visited_times": "Number of times the object has been accessed" } },
+        "achieved": { "id": "https://github.com/UCM-FDI-JaXpi/lib/achieved", "display": { "en-US": "achieved", "es": "logrado" }, "objects": ["achievement", "award", "game", "goal", "level", "reward"], "description": "The player achieves something like a level up" },
+        "cancelled": { "id": "https://github.com/UCM-FDI-JaXpi/lib/cancelled", "display": { "en-US": "cancelled", "es": "cancelado" }, "objects": ["mission", "task"], "description": "The player cancels an object like a mission", "extensions": { "https://example.com/game/reason": "Obstacle ahead" }, "extensions-doc": { "https://example.com/game/reason": "Reason of the cancelation" } },
+        "chatted": { "id": "https://github.com/UCM-FDI-JaXpi/lib/chatted", "display": { "en-US": "chatted", "es": "charló" }, "objects": ["character"], "description": "The player opens a dialog with an object like a npc" },
+        "clicked": { "id": "https://github.com/UCM-FDI-JaXpi/lib/clicked", "display": { "en-US": "clicked", "es": "clicado" }, "objects": ["character", "item", "dialog", "door"], "description": "The player interact with an object" },
+        "climbed": { "id": "https://github.com/UCM-FDI-JaXpi/lib/climbed", "display": { "en-US": "climbed", "es": "escalado" }, "objects": ["location"], "description": "The player climbes an object like a wall" },
+        "closed": { "id": "https://w3id.org/xapi/adl/verbs/closed", "display": { "en-US": "closed", "es": "cerrado" }, "objects": ["chest", "door"], "description": "The player closes an object like a dialog or a door" },
+        "combined": { "id": "https://github.com/UCM-FDI-JaXpi/lib/combined", "display": { "en-US": "combined", "es": "combinado" }, "objects": ["item"], "description": "The player combines an object with something", "extensions": { "https://example.com/game/target": "Item in inventory" }, "extensions-doc": { "https://example.com/game/target": "Target of the combination" } },
+        "completed": { "id": "https://github.com/UCM-FDI-JaXpi/lib/completed", "display": { "en-US": "completed", "es": "completado" }, "objects": ["achievement", "game", "goal", "level", "mission", "task"], "description": "The player completes an object like a mission or the game", "extensions": { "https://example.com/game/score": 500 }, "extensions-doc": { "https://example.com/game/score": "Score reach with the completion" } },
+        "connected": { "id": "https://github.com/UCM-FDI-JaXpi/lib/connected", "display": { "en-US": "connected", "es": "conectado" }, "description": "The player connects an object with something" },
+        "crafted": { "id": "https://github.com/UCM-FDI-JaXpi/lib/crafted", "display": { "en-US": "crafted", "es": "elaborado" }, "objects": ["item"], "description": "The player crafts an object like a new item" },
+        "dashed": { "id": "https://github.com/UCM-FDI-JaXpi/lib/dashed", "display": { "en-US": "dashed", "es": "dash" }, "objects": ["character"], "description": "The player dashes (no object? or himself?)" },
+        "defeated": { "id": "https://github.com/UCM-FDI-JaXpi/lib/defeated", "display": { "en-US": "defeated", "es": "derrotado" }, "objects": ["enemy"], "description": "The player defeates an object like a boss" },
+        "destroyed": { "id": "https://github.com/UCM-FDI-JaXpi/lib/destroyed", "display": { "en-US": "destroyed", "es": "destruido" }, "objects": ["item"], "description": "The player destroys an object like an old item" },
+        "died": { "id": "https://github.com/UCM-FDI-JaXpi/lib/died", "display": { "en-US": "died", "es": "muerto" }, "objects": ["character", "location"], "description": "The player dies (no object? or himself? or what killed him?)" },
+        "discovered": { "id": "https://github.com/UCM-FDI-JaXpi/lib/discovered", "display": { "en-US": "discovered", "es": "descubierto" }, "objects": ["level", "location"], "description": "The player discoveres an object like a new location" },
+        "doubleJumped": { "id": "https://github.com/UCM-FDI-JaXpi/lib/double-jumped", "display": { "en-US": "double jumped", "es": "doble salto" } },
+        "earned": { "id": "https://github.com/UCM-FDI-JaXpi/lib/earned", "display": { "en-US": "earned", "es": "ganado" }, "objects": ["reward"], "description": "The player earns an object like a reward" },
+        "equipped": { "id": "https://github.com/UCM-FDI-JaXpi/lib/equipped", "display": { "en-US": "equipped", "es": "equipado" }, "objects": ["item"], "description": "The player equippes an object like a new item" },
+        "examined": { "id": "https://github.com/UCM-FDI-JaXpi/lib/examined", "display": { "en-US": "examined", "es": "examinado" }, "objects": ["item", "room"], "description": "The player examines an object like an item or a room" },
+        "exited": { "id": "https://github.com/UCM-FDI-JaXpi/lib/exited", "display": { "en-US": "exited", "es": "salió" }, "objects": ["game", "level"], "description": "The player exits the game or level" },
+        "explored": { "id": "https://github.com/UCM-FDI-JaXpi/lib/explored", "display": { "en-US": "explored", "es": "explorado" }, "objects": ["location"], "description": "The player explors an object like a location" },
+        "failed": { "id": "https://github.com/UCM-FDI-JaXpi/lib/failed", "display": { "en-US": "failed", "es": "falló" }, "objects": ["mission", "task", "level"], "description": "The player fails an object like a mission" },
+        "fellIn": { "id": "https://github.com/UCM-FDI-JaXpi/lib/fellIn", "display": { "en-US": "fell in", "es": "cayó en" }, "objects": ["location"], "description": "The player fells in an object like a pit" },
+        "jumped": { "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped", "display": { "en-US": "jumped", "es": "saltado" }, "objects": ["character", "enemy"], "description": "The player jumps (no object? or himself?)", "extensions": { "https://github.com/UCM-FDI-JaXpi/distance": 5, "https://github.com/UCM-FDI-JaXpi/units": "meters" }, "extensions-doc": { "https://github.com/UCM-FDI-JaXpi/distance": "Number of units the object jumped", "https://github.com/UCM-FDI-JaXpi/units": "Units in which the distance is expressed" } },
+        "launched": { "id": "https://github.com/UCM-FDI-JaXpi/lib/launched", "display": { "en-US": "launched", "es": "ejecutado" } },
+        "loaded": { "id": "https://github.com/UCM-FDI-JaXpi/lib/loaded", "display": { "en-US": "loaded", "es": "cargado" }, "objects": ["game", "level"], "description": "The player loads the game or a level", "extensions": { "https://github.com/UCM-FDI-JaXpi/lib/id_load": "Save number_17 11-02-2024T14:23:00.140Z" }, "extensions-doc": { "https://github.com/UCM-FDI-JaXpi/lib/id_load": "Unique id of the load the players choose, if the player reloads the same save the id would also be the same. Example: Save number_17 11-02-2024T14:23:00.140Z" } },
+        "loggedIn": { "id": "https://github.com/UCM-FDI-JaXpi/lib/loggedIn", "display": { "en-US": "loggedIn", "es": "conectado" } },
+        "loggedOut": { "id": "https://github.com/UCM-FDI-JaXpi/lib/loggedOut", "display": { "en-US": "loggedOut", "es": "desconectado" } },
+        "moved": { "id": "https://github.com/UCM-FDI-JaXpi/lib/moved", "display": { "en-US": "moved", "es": "movido" }, "objects": ["item"], "description": "The player moves an object like a boulder" },
+        "navigated": { "id": "https://github.com/UCM-FDI-JaXpi/lib/navigated", "display": { "en-US": "navigated", "es": "navegado" }, "objects": ["location"], "description": "The player navigates a new location" },
+        "opened": { "id": "https://github.com/UCM-FDI-JaXpi/lib/opened", "display": { "en-US": "opened", "es": "abierto" }, "objects": ["chest", "door"], "description": "The player opens an object like a door or a chest" },
+        "overloaded": { "id": "https://github.com/UCM-FDI-JaXpi/lib/overloaded", "display": { "en-US": "overloaded", "es": "sobrecargado" }, "objects": ["game", "level"], "description": "The player loads the game or a level overriding an old one", "extensions": { "https://github.com/UCM-FDI-JaXpi/lib/id_load": "Save number_17 11-02-2024T14:23:00.140Z" }, "extensions-doc": { "https://github.com/UCM-FDI-JaXpi/lib/id_load": "Unique id of the load the players choose, if the player reloads the same save the id would also be the same. Example: Save number_17 11-02-2024T14:23:00.140Z" } },
+        "paused": { "id": "https://github.com/UCM-FDI-JaXpi/lib/paused", "display": { "en-US": "paused", "es": "pausado" }, "objects": ["game"], "description": "The player pauses the game" },
+        "registered": { "id": "https://github.com/UCM-FDI-JaXpi/lib/registered", "display": { "en-US": "registered", "es": "registrado" } },
+        "rejected": { "id": "https://github.com/UCM-FDI-JaXpi/lib/rejected", "display": { "en-US": "rejected", "es": "rechazado" } },
+        "rotated": { "id": "https://github.com/UCM-FDI-JaXpi/lib/rotated", "display": { "en-US": "rotated", "es": "rotado" } },
+        "shared": { "id": "https://github.com/UCM-FDI-JaXpi/lib/shared", "display": { "en-US": "shared", "es": "compartido" } },
+        "skipped": { "id": "https://github.com/UCM-FDI-JaXpi/lib/skipped", "display": { "en-US": "skipped", "es": "omitido" }, "objects": ["dialog"], "description": "The player skips a dialog" },
+        "solved": { "id": "https://github.com/UCM-FDI-JaXpi/lib/solved", "display": { "en-US": "solved", "es": "resuelto" } },
+        "sprinted": { "id": "https://github.com/UCM-FDI-JaXpi/lib/sprinted", "display": { "en-US": "sprinted", "es": "sprint" }, "description": "The player jumps (no object? or himself?)" },
+        "started": { "id": "https://github.com/UCM-FDI-JaXpi/lib/started", "display": { "en-US": "started", "es": "empezó" }, "objects": ["level", "game"], "description": "The player starts a level or a new game" },
+        "teleported": { "id": "https://github.com/UCM-FDI-JaXpi/lib/teleported", "display": { "en-US": "teleported to", "es": "teletransportado" }, "objects": ["location", "character"], "description": "The player teleports to a location or a character" },
+        "unlocked": { "id": "https://github.com/UCM-FDI-JaXpi/lib/unlocked", "display": { "en-US": "unlocked", "es": "desbloqueado" }, "objects": ["chest", "skill"], "description": "The player unlocks an object like a chest or a skill" },
+        "upgraded": { "id": "https://github.com/UCM-FDI-JaXpi/lib/upgraded", "display": { "en-US": "upgraded", "es": "mejorado" }, "objects": ["item"], "description": "The player upgrades an item" },
+        "used": { "id": "https://github.com/UCM-FDI-JaXpi/lib/used", "display": { "en-US": "used", "es": "utilizado" }, "objects": ["item"], "description": "The player uses an item", "extensions": { "https://github.com/UCM-FDI-JaXpi/consumed": false }, "extensions-doc": { "https://github.com/UCM-FDI-JaXpi/consumed": "The item is consumed with the use or not" } },
+        "watched": { "id": "https://github.com/UCM-FDI-JaXpi/lib/watched", "display": { "en-US": "watched", "es": "visto" } }
+    };
+    objects = {
+        "achievement": { "id": "http://example.com/achievements/achievement", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default achievement", "es": "Logro por defecto" }, "description": { "en-US": "A recognition or accomplishment gained by meeting certain criteria", "es": "Un reconocimiento o logro obtenido al cumplir ciertos criterios" } } },
+        "award": { "id": "http://example.com/achievements/award", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default award", "es": "Premio por defecto" }, "description": { "en-US": "A prize or honor given to the player for an achievement", "es": "Un premio u honor otorgado al jugador por un logro" } } },
+        "character": { "id": "http://example.com/character", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default character", "es": "Personaje por defecto" }, "description": { "en-US": "A persona or figure in the game", "es": "Una persona o figura en el juego" } } },
+        "chest": { "id": "http://example.com/objects/chest", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default chest", "es": "Cofre por defecto" }, "description": { "en-US": "A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock", "es": "Un contenedor de almacenamiento, que a menudo se usa para guardar artículos o recompensas, puede requerir una llave o mecanismo para desbloquearlo" } } },
+        "dialog": { "id": "http://example.com/achievements/dialog", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default dialog", "es": "Dialogo por defecto" }, "description": { "en-US": "Conversation between characters in the game, or a text box in the game providing information or choices to the player", "es": "Conversación entre personajes del juego o un cuadro de texto en el juego que proporciona información u opciones al jugador" } } },
+        "door": { "id": "http://example.com/objects/door", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default door", "es": "Puerta por defecto" }, "description": { "en-US": "A movable barrier used to close off an entrance or exit from a room, building, or vehicle", "es": "Una barrera móvil utilizada para cerrar una entrada o salida de una habitación, edificio o vehículo" } } },
+        "enemy": { "id": "http://example.com/enemy", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default enemy", "es": "Enemigo por defecto" }, "description": { "en-US": "A hostile individual or group opposing the protagonist in the game", "es": "Un individuo o grupo hostil que se opone al protagonista del juego" } } },
+        "game": { "id": "http://example.com/achievements/game", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default saved game", "es": "Juego guardado por defecto" }, "description": { "en-US": "A saved state or instance of a video game, representing progress made by the player", "es": "Un estado guardado o instancia de un videojuego, que representa el progreso realizado por el jugador" } } },
+        "goal": { "id": "http://example.com/goals/goal", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default goal", "es": "Objetivo por defecto" }, "description": { "en-US": "An objective or target to be achieved, providing direction and motivation in the game", "es": "Un objetivo o meta a alcanzar, proporcionando dirección y motivación en el juego" } } },
+        "item": { "id": "http://example.com/achievements/item", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default item", "es": "Objeto por defecto" }, "description": { "en-US": "An object or thing of value, often collectible or usable in the game", "es": "Un objeto o cosa de valor, a menudo coleccionable o utilizable en el juego" } } },
+        "level": { "id": "http://example.com/achievements/level", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default level", "es": "Nivel por defecto" }, "description": { "en-US": "A stage or section in the game", "es": "Una etapa o sección del juego" } } },
+        "location": { "id": "http://example.com/achievements/location", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default ocation", "es": "Lugar por defecto" }, "description": { "en-US": "A specific place or position relevant to the action of the game", "es": "Un lugar o posición específica relevante para la acción del juego" } } },
+        "mission": { "id": "http://example.com/missions/mission", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default mission", "es": "Misión por defecto" }, "description": { "en-US": "A specific task or objective", "es": "Una tarea u objetivo específico" } } },
+        "reward": { "id": "http://example.com/rewards/reward", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default reward", "es": "Recompensa por defecto" }, "description": { "en-US": "Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player", "es": "Algo entregado en reconocimiento al servicio, esfuerzo o logro; A menudo se utiliza para incentivar el comportamiento deseado o la finalización de tareas del jugador" } } },
+        "room": { "id": "http://example.com/rooms/room", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default room", "es": "Habitación por defecto" }, "description": { "en-US": "A space within a building or structure like a house or a cave", "es": "Un espacio dentro de un edificio o estructura como una casa o una cueva" } } },
+        "skill": { "id": "http://example.com/achievements/skill", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default skill", "es": "Habilidad por defecto" }, "description": { "en-US": "A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game", "es": "La capacidad o experiencia de un jugador para ejecutar acciones particulares, o un movimiento distinto que puede usar en combate y que mejora sus habilidades de combate o desbloquea avances en el juego" } } },
+        "task": { "id": "http://example.com/tasks/task", "definition": { "type": "https://github.com/UCM-FDI-JaXpi/object", "name": { "en-US": "Default task", "es": "Tarea por defecto" }, "description": { "en-US": "A piece of work to be done or undertaken, often part of a larger goal for the player", "es": "Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador" } } }
+    };
+    /**
+       * @param {Object} player - Structure that contains player data.
+       * @param {string} player.name - The name of the player.
+       * @param {string} player.mail - The mail of the player.
+       * @param {string} url - The url of the server where statements will be sent.
+       * @param {string} interval - Boolean that activates an interval to send statements.
+       * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server.
+       * @param {string} [max_queue=7] - Maximum number of statement per queue before sending.
+       */
+    constructor(player, serverUrl, interval, time_interval, max_queue) {
+        this.serverUrl = serverUrl;
+        this.interval = interval;
+        this.time_interval = time_interval;
+        this.max_queue = max_queue;
+        console.log("constructor library");
+        localStorage.clear();
+        this.context = undefined;
+        this.player = player;
+        this.worker = new Worker(new URL('./worker.js', import.meta.url));
+        this.promises = [];
+        // Inicia el tamaño de la cola de trazas. Por defecto MAX_QUEUE_LENGTH
+        if (this.max_queue)
+            this.max_queue_length = this.max_queue;
+        else
+            this.max_queue_length = MAX_QUEUE_LENGTH;
+        // Inicia el intervalo de envios de traza. Pod defecto TIME_INTERVAL_SEND
+        if (this.interval)
+            if (this.time_interval !== undefined)
+                this.statementInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval);
+            else
+                this.statementInterval = setInterval(this.flush.bind(this), 1000 * TIME_INTERVAL_SEND);
+        const self = this;
+        // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
+        if (localStorage.length) {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                this.statementQueue.enqueue(JSON.parse(value));
+            }
+        }
+        if (typeof window !== undefined) {
+            let isListening = false;
+            async function handleSIGINT() {
+                console.log('SIGINT received');
+                self.flush();
+                await Promise.all(self.promises)
+                    .then(() => {
+                    console.log('Promesas resueltas, cerrando la ventana...');
+                    window.close(); // Cierra la ventana del navegador
+                    return; // Detiene la ejecución del script
+                })
+                    .catch((error) => {
+                    console.error("Se produjo un error al resolver las promesas:", error);
+                });
+            }
+            function startListening() {
+                if (!isListening) {
+                    isListening = true;
+                    window.addEventListener('beforeunload', handleSIGINT);
+                }
+            }
+            function stopListening() {
+                if (isListening) {
+                    isListening = false;
+                    window.removeEventListener('beforeunload', handleSIGINT);
+                }
+            }
+            // Iniciar la escucha
+            startListening();
+        }
+        if (instance) {
+            return instance;
+        }
+        instance = this;
+    }
+    /**
+       * Function to send the statements queue to the server, it also creates a backup if the sending fails
+       */
+    async flush() {
+        this.processQueue();
+    }
+    async processQueue() {
+        const traces = this.statementQueue.toArray();
+        console.log(traces);
+        if (traces.length > 0) {
+            const promise = this.sendTraces(traces);
+            this.promises.push(promise);
+            try {
+                await promise;
+                //await this.promises.push(this.sendTraces(traces));
+                this.statementQueue = new Queue(); // Limpiar la cola después de enviar
+            }
+            catch (error) {
+                console.error('Error al enviar trazas:', error);
+            }
+        }
+    }
+    async sendTraces(traces) {
+        return new Promise((resolve, reject) => {
+            this.worker.postMessage({ type: 'SEND_TRACES', traces, serverUrl: this.serverUrl });
+            const timeout = setTimeout(() => {
+                reject(new Error('Timeout al enviar trazas'));
+            }, 5000);
+            this.worker.addEventListener('message', (event) => {
+                clearTimeout(timeout);
+                const data = event.data;
+                if (data.type === 'RESPONSE') {
+                    resolve();
+                }
+                else if (data.type === 'ERROR') {
+                    reject(data.error);
+                }
+                else if (data.type === 'DEQUEUE') {
+                    // Quitar de localStorage la traza enviada
+                    localStorage.removeItem(data.stat_id);
+                }
+            });
+        });
+    }
+    statementIdCalc() {
+        while (localStorage.getItem(`stat${this.stat_id}`) !== null)
+            this.stat_id++;
+        return `stat${this.stat_id}`;
+    }
+    /**
+       * Function to stop the interval to send the statements queue to the server
+       */
+    stopStatementInterval() {
+        if (this.statementInterval)
+            clearInterval(this.statementInterval); // Detiene el temporizador
+    }
+    /**
+     * Function to start the interval to send the statements queue to the server
+     */
+    startSendingInterval(seconds) {
+        if (this.statementInterval)
+            clearInterval(this.statementInterval);
+        this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
+    }
+    /**
+     * Function to set the context field of the statement (class / association where it takes places)
+     * @param {string} name - Name of the instructor
+     * @param {string} mbox - Mail of the instructor
+     * @param {string} sessionId - Unique id of the session (class URI)
+     * @param {string} groupId - Unique id of the association (college URI)
+     * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
+     */
+    setContext(name, mbox, sessionId, groupId, parameters) {
+        this.context = {
+            instructor: {
+                name: name,
+                mbox: "mailto:" + mbox
+            },
+            contextActivities: {
+                parent: { id: "http://example.com/activities/" + sessionId },
+                grouping: { id: 'http://example.com/activities/' + groupId }
+            },
+            extensions: {}
+        };
+        if (parameters) {
+            for (let [key, value] of parameters) {
+                if (this.context.extensions !== undefined) {
+                    let parameter = "http://example.com/activities/" + key;
+                    this.context.extensions[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
+                }
+            }
+        }
+    }
+    /**
+     * Function to accept verbs / objects not contemplated in the library
+     * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
+     * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
+     * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
+     * @param {any} [context] - Adds a field context for the statement
+     * @param {any} [result] - Adds a field result for the statement
+     * @param {any} [authority] - Adds a field authority for the statement
+     */
+    customVerb(verb, object, parameters, result, context, authority) {
+        if (checkObject(object) || typeof object === "string") {
+            if (checkVerb(verb) || typeof verb === "string") {
+                const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
+                //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
+                let statement = generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accepted/achievement', data: statement, id: id });
+                //this.statementQueue.enqueue({type: 'custom', data: statement});
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+            else
+                console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one");
+        }
+        else
+            console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one");
+    }
+    /**
+     * The player accepts an object like a task or a reward
+     *
+     */
+    accepted() {
+        let object;
+        return {
+            /**
+              * A recognition or accomplishment gained by meeting certain criteria
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            achievement: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.achievement, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accepted/achievement statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accepted/achievement', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A prize or honor given to the player for an achievement
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            award: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.award, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accepted/award statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accepted/award', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A specific task or objective
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            mission: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.mission, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accepted/mission statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accepted/mission', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            reward: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.reward, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accepted/reward statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accepted/reward', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A piece of work to be done or undertaken, often part of a larger goal for the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            task: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.task, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accepted/task statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accepted/task', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player access an object like a room or a new area
+     * @param {number} visited_times - Number of times the object has been accessed
+     */
+    accessed(visited_times) {
+        let object;
+        return {
+            /**
+              * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            chest: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.chest, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accessed/chest statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accessed/chest', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            door: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.door, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accessed/door statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accessed/door', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A space within a building or structure like a house or a cave
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            room: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.room, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accessed/room statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accessed/room', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi accessed/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'accessed/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player achieves something like a level up
+     *
+     */
+    achieved() {
+        let object;
+        return {
+            /**
+              * A recognition or accomplishment gained by meeting certain criteria
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            achievement: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.achievement, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi achieved/achievement statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'achieved/achievement', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A prize or honor given to the player for an achievement
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            award: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.award, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi achieved/award statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'achieved/award', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A saved state or instance of a video game, representing progress made by the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            game: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.game, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi achieved/game statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'achieved/game', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * An objective or target to be achieved, providing direction and motivation in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            goal: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.goal, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi achieved/goal statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'achieved/goal', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi achieved/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'achieved/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            reward: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.reward, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi achieved/reward statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'achieved/reward', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player cancels an object like a mission
+     * @param {string} reason - Reason of the cancelation
+     */
+    cancelled(reason) {
+        let object;
+        return {
+            /**
+              * A specific task or objective
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            mission: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.mission, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/reason'] = reason;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi cancelled/mission statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'cancelled/mission', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A piece of work to be done or undertaken, often part of a larger goal for the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            task: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.task, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/reason'] = reason;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi cancelled/task statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'cancelled/task', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player opens a dialog with an object like a npc
+     *
+     */
+    chatted() {
+        let object;
+        return {
+            /**
+              * A persona or figure in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            character: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.character, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi chatted/character statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.chatted, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'chatted/character', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player interact with an object
+     *
+     */
+    clicked() {
+        let object;
+        return {
+            /**
+              * A persona or figure in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            character: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.character, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi clicked/character statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'clicked/character', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi clicked/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'clicked/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * Conversation between characters in the game, or a text box in the game providing information or choices to the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            dialog: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.dialog, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi clicked/dialog statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'clicked/dialog', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            door: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.door, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi clicked/door statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'clicked/door', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player climbes an object like a wall
+     *
+     */
+    climbed() {
+        let object;
+        return {
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi climbed/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.climbed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'climbed/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player closes an object like a dialog or a door
+     *
+     */
+    closed() {
+        let object;
+        return {
+            /**
+              * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            chest: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.chest, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi closed/chest statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'closed/chest', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            door: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.door, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi closed/door statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'closed/door', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player combines an object with something
+     * @param {string} target - Target of the combination
+     */
+    combined(target) {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/target'] = target;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi combined/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.combined, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'combined/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player completes an object like a mission or the game
+     * @param {number} score - Score reach with the completion
+     */
+    completed(score) {
+        let object;
+        return {
+            /**
+              * A recognition or accomplishment gained by meeting certain criteria
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            achievement: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.achievement, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi completed/achievement statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'completed/achievement', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A saved state or instance of a video game, representing progress made by the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            game: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.game, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi completed/game statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'completed/game', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * An objective or target to be achieved, providing direction and motivation in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            goal: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.goal, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi completed/goal statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'completed/goal', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi completed/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'completed/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A specific task or objective
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            mission: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.mission, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi completed/mission statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'completed/mission', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A piece of work to be done or undertaken, often part of a larger goal for the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            task: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.task, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi completed/task statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'completed/task', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player connects an object with something
+     *
+     */
+    connected() {
+        let object;
+        return {};
+    }
+    /**
+     * The player crafts an object like a new item
+     *
+     */
+    crafted() {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi crafted/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.crafted, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'crafted/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player dashes (no object? or himself?)
+     *
+     */
+    dashed() {
+        let object;
+        return {
+            /**
+              * A persona or figure in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            character: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.character, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi dashed/character statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.dashed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'dashed/character', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player defeates an object like a boss
+     *
+     */
+    defeated() {
+        let object;
+        return {
+            /**
+              * A hostile individual or group opposing the protagonist in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            enemy: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.enemy, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi defeated/enemy statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.defeated, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'defeated/enemy', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player destroys an object like an old item
+     *
+     */
+    destroyed() {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi destroyed/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'destroyed/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player dies (no object? or himself? or what killed him?)
+     *
+     */
+    died() {
+        let object;
+        return {
+            /**
+              * A persona or figure in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            character: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.character, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi died/character statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'died/character', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi died/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'died/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player discoveres an object like a new location
+     *
+     */
+    discovered() {
+        let object;
+        return {
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi discovered/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'discovered/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi discovered/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'discovered/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * undefined
+     *
+     */
+    doubleJumped() {
+        let object;
+        return {};
+    }
+    /**
+     * The player earns an object like a reward
+     *
+     */
+    earned() {
+        let object;
+        return {
+            /**
+              * Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            reward: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.reward, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi earned/reward statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.earned, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'earned/reward', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player equippes an object like a new item
+     *
+     */
+    equipped() {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi equipped/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.equipped, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'equipped/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player examines an object like an item or a room
+     *
+     */
+    examined() {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi examined/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'examined/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A space within a building or structure like a house or a cave
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            room: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.room, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi examined/room statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'examined/room', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player exits the game or level
+     *
+     */
+    exited() {
+        let object;
+        return {
+            /**
+              * A saved state or instance of a video game, representing progress made by the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            game: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.game, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi exited/game statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'exited/game', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi exited/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'exited/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player explors an object like a location
+     *
+     */
+    explored() {
+        let object;
+        return {
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi explored/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.explored, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'explored/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player fails an object like a mission
+     *
+     */
+    failed() {
+        let object;
+        return {
+            /**
+              * A specific task or objective
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            mission: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.mission, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi failed/mission statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'failed/mission', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A piece of work to be done or undertaken, often part of a larger goal for the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            task: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.task, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi failed/task statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'failed/task', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi failed/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'failed/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player fells in an object like a pit
+     *
+     */
+    fellIn() {
+        let object;
+        return {
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi fellIn/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'fellIn/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player jumps (no object? or himself?)
+     * @param {number} distance - Number of units the object jumped
+     * @param {string} units - Units in which the distance is expressed
+     */
+    jumped(distance, units) {
+        let object;
+        return {
+            /**
+              * A persona or figure in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            character: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.character, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/units'] = units;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi jumped/character statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'jumped/character', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A hostile individual or group opposing the protagonist in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            enemy: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.enemy, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/units'] = units;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi jumped/enemy statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'jumped/enemy', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * undefined
+     *
+     */
+    launched() {
+        let object;
+        return {};
+    }
+    /**
+     * The player loads the game or a level
+     * @param {string} id_load - Unique id of the load the players choose, if the player reloads the same save the id would also be the same. Example: Save number_17 11-02-2024T14:23:00.140Z
+     */
+    loaded(id_load) {
+        let object;
+        return {
+            /**
+              * A saved state or instance of a video game, representing progress made by the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            game: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.game, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi loaded/game statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'loaded/game', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi loaded/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'loaded/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * undefined
+     *
+     */
+    loggedIn() {
+        let object;
+        return {};
+    }
+    /**
+     * undefined
+     *
+     */
+    loggedOut() {
+        let object;
+        return {};
+    }
+    /**
+     * The player moves an object like a boulder
+     *
+     */
+    moved() {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi moved/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.moved, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'moved/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player navigates a new location
+     *
+     */
+    navigated() {
+        let object;
+        return {
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi navigated/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.navigated, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'navigated/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player opens an object like a door or a chest
+     *
+     */
+    opened() {
+        let object;
+        return {
+            /**
+              * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            chest: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.chest, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi opened/chest statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'opened/chest', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A movable barrier used to close off an entrance or exit from a room, building, or vehicle
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            door: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.door, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi opened/door statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'opened/door', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player loads the game or a level overriding an old one
+     * @param {string} id_load - Unique id of the load the players choose, if the player reloads the same save the id would also be the same. Example: Save number_17 11-02-2024T14:23:00.140Z
+     */
+    overloaded(id_load) {
+        let object;
+        return {
+            /**
+              * A saved state or instance of a video game, representing progress made by the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            game: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.game, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi overloaded/game statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'overloaded/game', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi overloaded/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'overloaded/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player pauses the game
+     *
+     */
+    paused() {
+        let object;
+        return {
+            /**
+              * A saved state or instance of a video game, representing progress made by the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            game: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.game, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi paused/game statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.paused, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'paused/game', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * undefined
+     *
+     */
+    registered() {
+        let object;
+        return {};
+    }
+    /**
+     * undefined
+     *
+     */
+    rejected() {
+        let object;
+        return {};
+    }
+    /**
+     * undefined
+     *
+     */
+    rotated() {
+        let object;
+        return {};
+    }
+    /**
+     * undefined
+     *
+     */
+    shared() {
+        let object;
+        return {};
+    }
+    /**
+     * The player skips a dialog
+     *
+     */
+    skipped() {
+        let object;
+        return {
+            /**
+              * Conversation between characters in the game, or a text box in the game providing information or choices to the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            dialog: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.dialog, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi skipped/dialog statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.skipped, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'skipped/dialog', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * undefined
+     *
+     */
+    solved() {
+        let object;
+        return {};
+    }
+    /**
+     * The player jumps (no object? or himself?)
+     *
+     */
+    sprinted() {
+        let object;
+        return {};
+    }
+    /**
+     * The player starts a level or a new game
+     *
+     */
+    started() {
+        let object;
+        return {
+            /**
+              * A stage or section in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            level: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.level, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi started/level statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'started/level', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A saved state or instance of a video game, representing progress made by the player
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            game: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.game, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi started/game statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'started/game', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player teleports to a location or a character
+     *
+     */
+    teleported() {
+        let object;
+        return {
+            /**
+              * A specific place or position relevant to the action of the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            location: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.location, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi teleported/location statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'teleported/location', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A persona or figure in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            character: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.character, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi teleported/character statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'teleported/character', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player unlocks an object like a chest or a skill
+     *
+     */
+    unlocked() {
+        let object;
+        return {
+            /**
+              * A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            chest: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.chest, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi unlocked/chest statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'unlocked/chest', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            },
+            /**
+              * A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            skill: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.skill, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi unlocked/skill statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'unlocked/skill', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player upgrades an item
+     *
+     */
+    upgraded() {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi upgraded/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'upgraded/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * The player uses an item
+     * @param {boolean} consumed - The item is consumed with the use or not
+     */
+    used(consumed) {
+        let object;
+        return {
+            /**
+              * An object or thing of value, often collectible or usable in the game
+              * @param {string} name - Unique name that identifies the object
+              * @param {string} [description] - Description on the object you are including
+              * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+              * @param {any} [context] - Adds a field context for the statement
+              * @param {any} [result] - Adds a field result for the statement
+              * @param {any} [authority] - Adds a field authority for the statement
+              */
+            item: (name, description, extraParameters, result, context, authority) => {
+                object = generate.generateObject(this.objects.item, name, description);
+                let tcontext = this.context;
+                if (context)
+                    tcontext = context;
+                object.definition.extensions['https://github.com/UCM-FDI-JaXpi/consumed'] = consumed;
+                if (extraParameters && extraParameters.length > 0) {
+                    extraParameters.forEach((value) => {
+                        object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                    });
+                }
+                // if (objectParameters && objectParameters.length > 0) {
+                //   objectParameters.forEach((value) => {
+                //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+                //   });
+                // }
+                console.log("JaXpi used/item statement enqueued");
+                const statement = generate.generateStatement(this.player, this.verbs.used, object, result, tcontext, authority);
+                //this.statementQueue.enqueue(statement);
+                let id = this.statementIdCalc();
+                this.statementQueue.enqueue({ type: 'used/item', data: statement, id: id });
+                if (this.statementQueue.length >= this.max_queue_length)
+                    this.flush();
+            }
+        };
+    }
+    /**
+     * undefined
+     *
+     */
+    watched() {
+        let object;
+        return {};
+    }
+}

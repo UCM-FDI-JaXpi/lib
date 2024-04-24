@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/navigated",
     "display": {
-        "en-us": "navigated",
+        "en-US": "navigated",
         "es": "navegado"
     },
     "objects": ["location"],

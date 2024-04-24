@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/achieved",
     "display": {
-        "en-us": "achieved",
+        "en-US": "achieved",
         "es": "logrado"
     },
     "objects": ["achievement","award","game","goal","level","reward"],

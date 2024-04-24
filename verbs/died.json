@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/died",
     "display": {
-        "en-us": "died",
+        "en-US": "died",
         "es": "muerto"
     },
     "objects": ["character","location"],

@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default chest",
+            "en-US": "Default chest",
             "es": "Cofre por defecto"
         },
         "description": {
-            "en-us": "A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock",
+            "en-US": "A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock",
             "es": "Un contenedor de almacenamiento, que a menudo se usa para guardar artículos o recompensas, puede requerir una llave o mecanismo para desbloquearlo"
         }
     }

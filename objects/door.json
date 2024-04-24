@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default door",
+            "en-US": "Default door",
             "es": "Puerta por defecto"
         },
         "description": {
-            "en-us": "A movable barrier used to close off an entrance or exit from a room, building, or vehicle",
+            "en-US": "A movable barrier used to close off an entrance or exit from a room, building, or vehicle",
             "es": "Una barrera móvil utilizada para cerrar una entrada o salida de una habitación, edificio o vehículo"
         }
     }

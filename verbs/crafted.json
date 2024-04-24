@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/crafted",
     "display": {
-        "en-us": "crafted",
+        "en-US": "crafted",
         "es": "elaborado"
     },
     "objects": ["item"],

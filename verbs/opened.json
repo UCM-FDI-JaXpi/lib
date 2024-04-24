@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/opened",
     "display": {
-        "en-us": "opened",
+        "en-US": "opened",
         "es": "abierto"
     },
     "objects": ["chest","door"],

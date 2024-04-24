@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/completed",
     "display": {
-        "en-us": "completed",
+        "en-US": "completed",
         "es": "completado"
     },
     "objects": ["achievement","game","goal","level","mission","task"],

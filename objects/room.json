@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default room",
+            "en-US": "Default room",
             "es": "Habitación por defecto"
         },
         "description": {
-            "en-us": "A space within a building or structure like a house or a cave",
+            "en-US": "A space within a building or structure like a house or a cave",
             "es": "Un espacio dentro de un edificio o estructura como una casa o una cueva"
         }
     }

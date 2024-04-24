@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default saved game",
+            "en-US": "Default saved game",
             "es": "Juego guardado por defecto"
         },
         "description": {
-            "en-us": "A saved state or instance of a video game, representing progress made by the player",
+            "en-US": "A saved state or instance of a video game, representing progress made by the player",
             "es": "Un estado guardado o instancia de un videojuego, que representa el progreso realizado por el jugador"
         }
     }

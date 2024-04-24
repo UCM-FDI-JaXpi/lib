@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/defeated",
     "display": {
-        "en-us": "defeated",
+        "en-US": "defeated",
         "es": "derrotado"
     },
     "objects": ["enemy"],

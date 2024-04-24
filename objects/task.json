@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default task",
+            "en-US": "Default task",
             "es": "Tarea por defecto"
         },
         "description": {
-            "en-us": "A piece of work to be done or undertaken, often part of a larger goal for the player",
+            "en-US": "A piece of work to be done or undertaken, often part of a larger goal for the player",
             "es": "Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador"
         }
     }

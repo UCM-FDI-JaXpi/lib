@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/loaded",
     "display": {
-        "en-us": "loaded",
+        "en-US": "loaded",
         "es": "cargado"
     },
     "objects": ["game","level"],

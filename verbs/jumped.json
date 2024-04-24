@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
     "display": {
-        "en-us": "jumped",
+        "en-US": "jumped",
         "es": "saltado"
     },
     "objects": ["character","enemy"],

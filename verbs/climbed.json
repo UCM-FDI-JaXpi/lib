@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/climbed",
     "display": {
-        "en-us": "climbed",
+        "en-US": "climbed",
         "es": "escalado"
     },
     "objects": ["location"],

@@ -1,7 +1,7 @@
 {
     "id": "https://w3id.org/xapi/adl/verbs/closed",
     "display": {
-        "en-us": "closed",
+        "en-US": "closed",
         "es": "cerrado"
     },
     "objects": ["chest","door"],

@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/failed",
     "display": {
-        "en-us": "failed",
+        "en-US": "failed",
         "es": "falló"
     },
     "objects": ["mission","task","level"],

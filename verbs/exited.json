@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/exited",
     "display": {
-        "en-us": "exited",
+        "en-US": "exited",
         "es": "salió"
     },
     "objects": ["game","level"],

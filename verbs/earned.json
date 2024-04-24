@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/earned",
     "display": {
-        "en-us": "earned",
+        "en-US": "earned",
         "es": "ganado"
     },
     "objects": ["reward"],

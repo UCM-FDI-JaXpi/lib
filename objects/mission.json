@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default mission",
+            "en-US": "Default mission",
             "es": "Misión por defecto"
         },
         "description": {
-            "en-us": "A specific task or objective",
+            "en-US": "A specific task or objective",
             "es": "Una tarea u objetivo específico"
         }
     }

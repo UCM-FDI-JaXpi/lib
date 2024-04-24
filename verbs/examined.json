@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/examined",
     "display": {
-        "en-us": "examined",
+        "en-US": "examined",
         "es": "examinado"
     },
     "objects": ["item","room"],

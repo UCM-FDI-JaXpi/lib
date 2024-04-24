@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default item",
+            "en-US": "Default item",
             "es": "Objeto por defecto"
         },
         "description": {
-            "en-us": "An object or thing of value, often collectible or usable in the game",
+            "en-US": "An object or thing of value, often collectible or usable in the game",
             "es": "Un objeto o cosa de valor, a menudo coleccionable o utilizable en el juego"
         }
     }

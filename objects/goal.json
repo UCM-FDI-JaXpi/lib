@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default goal",
+            "en-US": "Default goal",
             "es": "Objetivo por defecto"
         },
         "description": {
-            "en-us": "An objective or target to be achieved, providing direction and motivation in the game",
+            "en-US": "An objective or target to be achieved, providing direction and motivation in the game",
             "es": "Un objetivo o meta a alcanzar, proporcionando dirección y motivación en el juego"
         }
     }

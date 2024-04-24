@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/combined",
     "display": {
-        "en-us": "combined",
+        "en-US": "combined",
         "es": "combinado"
     },
     "objects": ["item"],

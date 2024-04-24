@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default level",
+            "en-US": "Default level",
             "es": "Nivel por defecto"
         },
         "description": {
-            "en-us": "A stage or section in the game",
+            "en-US": "A stage or section in the game",
             "es": "Una etapa o sección del juego"
         }
     }

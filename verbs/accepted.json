@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/accepted",
     "display": {
-        "en-us": "accepted",
+        "en-US": "accepted",
         "es": "aceptado"
     },
     "objects": ["achievement","award","mission","reward","task"],

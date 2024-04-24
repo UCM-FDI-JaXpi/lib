@@ -3,11 +3,11 @@
   "definition": {
     "type": "https://github.com/UCM-FDI-JaXpi/object",
     "name": {
-      "en-us": "Default character",
+      "en-US": "Default character",
       "es": "Personaje por defecto"
     },
     "description": {
-      "en-us": "A persona or figure in the game",
+      "en-US": "A persona or figure in the game",
       "es": "Una persona o figura en el juego"
     }
   }

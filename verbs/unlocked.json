@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/unlocked",
     "display": {
-        "en-us": "unlocked",
+        "en-US": "unlocked",
         "es": "desbloqueado"
     },
     "objects": ["chest","skill"],

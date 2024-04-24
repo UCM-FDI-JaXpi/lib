@@ -3,11 +3,11 @@
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
-            "en-us": "Default achievement",
+            "en-US": "Default achievement",
             "es": "Logro por defecto"
         },
         "description": {
-            "en-us": "A recognition or accomplishment gained by meeting certain criteria",
+            "en-US": "A recognition or accomplishment gained by meeting certain criteria",
             "es": "Un reconocimiento o logro obtenido al cumplir ciertos criterios"
         }
     }

@@ -1,7 +1,7 @@
 {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/accessed",
     "display": {
-        "en-us": "accessed",
+        "en-US": "accessed",
         "es": "accedido"
     },
     "objects": ["chest","door","room","location"],
