@@ -1,4 +1,5 @@
 node_modules/
 scratch/
+dist/
 package-lock.json
 jaxpi-1.0.0.tgz
