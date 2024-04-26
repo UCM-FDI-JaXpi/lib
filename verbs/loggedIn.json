@@ -3,5 +3,7 @@
     "display": {
         "en-US": "loggedIn",
         "es": "conectado"
-    }
+    },
+    "objects": ["player"],
+    "description": "The player starts the session"
 }

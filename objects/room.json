@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/rooms/room",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/room",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {

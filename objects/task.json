@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/tasks/task",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/task",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {

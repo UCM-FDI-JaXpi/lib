@@ -3,6 +3,7 @@ import { XAPIStatement } from '../schema/xAPIschema.js';
 export interface Player {
     name: string;
     mail: string;
+    password: string;
 }
 
 export function generateStatementFromZero(verbId: string | any, objectId: string | any, parameters?: Array<[string,any]>): [any, any] {

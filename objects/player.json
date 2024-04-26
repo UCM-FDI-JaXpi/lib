@@ -1,0 +1,14 @@
+{
+  "id": "https://github.com/UCM-FDI-JaXpi/objects/player",
+  "definition": {
+    "type": "https://github.com/UCM-FDI-JaXpi/object",
+    "name": {
+      "en-US": "Player who use Jaxpi",
+      "es": "Jugador que usa Jaxpi"
+    },
+    "description": {
+      "en-US": "Player that connects to the server in wich the statement will be analized",
+      "es": "Jugador que se conecta al servidor cuyas trazas seran analizadas"
+    }
+  }
+}

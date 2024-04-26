@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/objects/door",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/door",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {

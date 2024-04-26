@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/goals/goal",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/goal",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {

@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/objects/chest",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/chest",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {

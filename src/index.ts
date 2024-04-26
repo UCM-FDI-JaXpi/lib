@@ -21,7 +21,9 @@
 	private stat_id: number = 1;
 	private promises: Promise<void>[];
 	private statementInterval: NodeJS.Timeout | undefined;
-  
+    // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
+  	private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
+	private token: string = "-1";
   
   
   
@@ -56,8 +58,8 @@
       "jumped":{"id":"https://github.com/UCM-FDI-JaXpi/lib/jumped","display":{"en-US":"jumped","es":"saltado"},"objects":["character","enemy"],"description":"The player jumps (no object? or himself?)","extensions":{"https://github.com/UCM-FDI-JaXpi/distance":5,"https://github.com/UCM-FDI-JaXpi/units":"meters"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/distance":"Number of units the object jumped","https://github.com/UCM-FDI-JaXpi/units":"Units in which the distance is expressed"}},
       "launched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/launched","display":{"en-US":"launched","es":"ejecutado"}},
       "loaded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loaded","display":{"en-US":"loaded","es":"cargado"},"objects":["game","level"],"description":"The player loads the game or a level","extensions":{"https://github.com/UCM-FDI-JaXpi/lib/id_load":"Save number_17 11-02-2024T14:23:00.140Z"},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/lib/id_load":"Unique id of the load the players choose, if the player reloads the same save the id would also be the same. Example: Save number_17 11-02-2024T14:23:00.140Z"}},
-      "loggedIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedIn","display":{"en-US":"loggedIn","es":"conectado"}},
-      "loggedOut":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedOut","display":{"en-US":"loggedOut","es":"desconectado"}},
+      "loggedIn":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedIn","display":{"en-US":"loggedIn","es":"conectado"},"objects":["player"],"description":"The player starts the session"},
+      "loggedOut":{"id":"https://github.com/UCM-FDI-JaXpi/lib/loggedOut","display":{"en-US":"loggedOut","es":"desconectado"},"objects":["player"],"description":"The player finalizes the session"},
       "moved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/moved","display":{"en-US":"moved","es":"movido"},"objects":["item"],"description":"The player moves an object like a boulder"},
       "navigated":{"id":"https://github.com/UCM-FDI-JaXpi/lib/navigated","display":{"en-US":"navigated","es":"navegado"},"objects":["location"],"description":"The player navigates a new location"},
       "opened":{"id":"https://github.com/UCM-FDI-JaXpi/lib/opened","display":{"en-US":"opened","es":"abierto"},"objects":["chest","door"],"description":"The player opens an object like a door or a chest"},
@@ -80,23 +82,24 @@
   
   
 	  public objects = {
-		"achievement":{"id":"http://example.com/achievements/achievement","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default achievement","es":"Logro por defecto"},"description":{"en-US":"A recognition or accomplishment gained by meeting certain criteria","es":"Un reconocimiento o logro obtenido al cumplir ciertos criterios"}}},
-      "award":{"id":"http://example.com/achievements/award","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default award","es":"Premio por defecto"},"description":{"en-US":"A prize or honor given to the player for an achievement","es":"Un premio u honor otorgado al jugador por un logro"}}},
-      "character":{"id":"http://example.com/character","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default character","es":"Personaje por defecto"},"description":{"en-US":"A persona or figure in the game","es":"Una persona o figura en el juego"}}},
-      "chest":{"id":"http://example.com/objects/chest","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default chest","es":"Cofre por defecto"},"description":{"en-US":"A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock","es":"Un contenedor de almacenamiento, que a menudo se usa para guardar artículos o recompensas, puede requerir una llave o mecanismo para desbloquearlo"}}},
-      "dialog":{"id":"http://example.com/achievements/dialog","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default dialog","es":"Dialogo por defecto"},"description":{"en-US":"Conversation between characters in the game, or a text box in the game providing information or choices to the player","es":"Conversación entre personajes del juego o un cuadro de texto en el juego que proporciona información u opciones al jugador"}}},
-      "door":{"id":"http://example.com/objects/door","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default door","es":"Puerta por defecto"},"description":{"en-US":"A movable barrier used to close off an entrance or exit from a room, building, or vehicle","es":"Una barrera móvil utilizada para cerrar una entrada o salida de una habitación, edificio o vehículo"}}},
-      "enemy":{"id":"http://example.com/enemy","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default enemy","es":"Enemigo por defecto"},"description":{"en-US":"A hostile individual or group opposing the protagonist in the game","es":"Un individuo o grupo hostil que se opone al protagonista del juego"}}},
-      "game":{"id":"http://example.com/achievements/game","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default saved game","es":"Juego guardado por defecto"},"description":{"en-US":"A saved state or instance of a video game, representing progress made by the player","es":"Un estado guardado o instancia de un videojuego, que representa el progreso realizado por el jugador"}}},
-      "goal":{"id":"http://example.com/goals/goal","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default goal","es":"Objetivo por defecto"},"description":{"en-US":"An objective or target to be achieved, providing direction and motivation in the game","es":"Un objetivo o meta a alcanzar, proporcionando dirección y motivación en el juego"}}},
-      "item":{"id":"http://example.com/achievements/item","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default item","es":"Objeto por defecto"},"description":{"en-US":"An object or thing of value, often collectible or usable in the game","es":"Un objeto o cosa de valor, a menudo coleccionable o utilizable en el juego"}}},
-      "level":{"id":"http://example.com/achievements/level","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default level","es":"Nivel por defecto"},"description":{"en-US":"A stage or section in the game","es":"Una etapa o sección del juego"}}},
-      "location":{"id":"http://example.com/achievements/location","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default ocation","es":"Lugar por defecto"},"description":{"en-US":"A specific place or position relevant to the action of the game","es":"Un lugar o posición específica relevante para la acción del juego"}}},
-      "mission":{"id":"http://example.com/missions/mission","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default mission","es":"Misión por defecto"},"description":{"en-US":"A specific task or objective","es":"Una tarea u objetivo específico"}}},
-      "reward":{"id":"http://example.com/rewards/reward","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default reward","es":"Recompensa por defecto"},"description":{"en-US":"Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player","es":"Algo entregado en reconocimiento al servicio, esfuerzo o logro; A menudo se utiliza para incentivar el comportamiento deseado o la finalización de tareas del jugador"}}},
-      "room":{"id":"http://example.com/rooms/room","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default room","es":"Habitación por defecto"},"description":{"en-US":"A space within a building or structure like a house or a cave","es":"Un espacio dentro de un edificio o estructura como una casa o una cueva"}}},
-      "skill":{"id":"http://example.com/achievements/skill","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default skill","es":"Habilidad por defecto"},"description":{"en-US":"A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game","es":"La capacidad o experiencia de un jugador para ejecutar acciones particulares, o un movimiento distinto que puede usar en combate y que mejora sus habilidades de combate o desbloquea avances en el juego"}}},
-      "task":{"id":"http://example.com/tasks/task","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default task","es":"Tarea por defecto"},"description":{"en-US":"A piece of work to be done or undertaken, often part of a larger goal for the player","es":"Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador"}}}
+		"achievement":{"id":"https://github.com/UCM-FDI-JaXpi/objects/achievement","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default achievement","es":"Logro por defecto"},"description":{"en-US":"A recognition or accomplishment gained by meeting certain criteria","es":"Un reconocimiento o logro obtenido al cumplir ciertos criterios"}}},
+      "award":{"id":"https://github.com/UCM-FDI-JaXpi/objects/award","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default award","es":"Premio por defecto"},"description":{"en-US":"A prize or honor given to the player for an achievement","es":"Un premio u honor otorgado al jugador por un logro"}}},
+      "character":{"id":"https://github.com/UCM-FDI-JaXpi/objects/character","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default character","es":"Personaje por defecto"},"description":{"en-US":"A persona or figure in the game","es":"Una persona o figura en el juego"}}},
+      "chest":{"id":"https://github.com/UCM-FDI-JaXpi/objects/chest","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default chest","es":"Cofre por defecto"},"description":{"en-US":"A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock","es":"Un contenedor de almacenamiento, que a menudo se usa para guardar artículos o recompensas, puede requerir una llave o mecanismo para desbloquearlo"}}},
+      "dialog":{"id":"https://github.com/UCM-FDI-JaXpi/objects/dialog","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default dialog","es":"Dialogo por defecto"},"description":{"en-US":"Conversation between characters in the game, or a text box in the game providing information or choices to the player","es":"Conversación entre personajes del juego o un cuadro de texto en el juego que proporciona información u opciones al jugador"}}},
+      "door":{"id":"https://github.com/UCM-FDI-JaXpi/objects/door","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default door","es":"Puerta por defecto"},"description":{"en-US":"A movable barrier used to close off an entrance or exit from a room, building, or vehicle","es":"Una barrera móvil utilizada para cerrar una entrada o salida de una habitación, edificio o vehículo"}}},
+      "enemy":{"id":"https://github.com/UCM-FDI-JaXpi/objects/enemy","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default enemy","es":"Enemigo por defecto"},"description":{"en-US":"A hostile individual or group opposing the protagonist in the game","es":"Un individuo o grupo hostil que se opone al protagonista del juego"}}},
+      "game":{"id":"https://github.com/UCM-FDI-JaXpi/objects/game","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default saved game","es":"Juego guardado por defecto"},"description":{"en-US":"A saved state or instance of a video game, representing progress made by the player","es":"Un estado guardado o instancia de un videojuego, que representa el progreso realizado por el jugador"}}},
+      "goal":{"id":"https://github.com/UCM-FDI-JaXpi/objects/goal","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default goal","es":"Objetivo por defecto"},"description":{"en-US":"An objective or target to be achieved, providing direction and motivation in the game","es":"Un objetivo o meta a alcanzar, proporcionando dirección y motivación en el juego"}}},
+      "item":{"id":"https://github.com/UCM-FDI-JaXpi/objects/item","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default item","es":"Objeto por defecto"},"description":{"en-US":"An object or thing of value, often collectible or usable in the game","es":"Un objeto o cosa de valor, a menudo coleccionable o utilizable en el juego"}}},
+      "level":{"id":"https://github.com/UCM-FDI-JaXpi/objects/level","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default level","es":"Nivel por defecto"},"description":{"en-US":"A stage or section in the game","es":"Una etapa o sección del juego"}}},
+      "location":{"id":"https://github.com/UCM-FDI-JaXpi/objects/location","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default ocation","es":"Lugar por defecto"},"description":{"en-US":"A specific place or position relevant to the action of the game","es":"Un lugar o posición específica relevante para la acción del juego"}}},
+      "mission":{"id":"https://github.com/UCM-FDI-JaXpi/objects/mission","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default mission","es":"Misión por defecto"},"description":{"en-US":"A specific task or objective","es":"Una tarea u objetivo específico"}}},
+      "player":{"id":"https://github.com/UCM-FDI-JaXpi/objects/player","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Player who use Jaxpi","es":"Jugador que usa Jaxpi"},"description":{"en-US":"Player that connects to the server in wich the statement will be analized","es":"Jugador que se conecta al servidor cuyas trazas seran analizadas"}}},
+      "reward":{"id":"https://github.com/UCM-FDI-JaXpi/objects/reward","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default reward","es":"Recompensa por defecto"},"description":{"en-US":"Something given in recognition of service, effort, or achievement; often used to incentivize desired behavior or completion of tasks of the player","es":"Algo entregado en reconocimiento al servicio, esfuerzo o logro; A menudo se utiliza para incentivar el comportamiento deseado o la finalización de tareas del jugador"}}},
+      "room":{"id":"https://github.com/UCM-FDI-JaXpi/objects/room","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default room","es":"Habitación por defecto"},"description":{"en-US":"A space within a building or structure like a house or a cave","es":"Un espacio dentro de un edificio o estructura como una casa o una cueva"}}},
+      "skill":{"id":"https://github.com/UCM-FDI-JaXpi/objects/skill","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default skill","es":"Habilidad por defecto"},"description":{"en-US":"A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game","es":"La capacidad o experiencia de un jugador para ejecutar acciones particulares, o un movimiento distinto que puede usar en combate y que mejora sus habilidades de combate o desbloquea avances en el juego"}}},
+      "task":{"id":"https://github.com/UCM-FDI-JaXpi/objects/task","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default task","es":"Tarea por defecto"},"description":{"en-US":"A piece of work to be done or undertaken, often part of a larger goal for the player","es":"Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador"}}}
 	  }
   
   
@@ -104,43 +107,72 @@
   
   
   
-	/**
+	  /**
 	   * @param {Object} player - Structure that contains player data.
 	   * @param {string} player.name - The name of the player.
 	   * @param {string} player.mail - The mail of the player.
-	   * @param {string} url - The url of the server where statements will be sent.
-	   * @param {string} interval - Boolean that activates an interval to send statements. 
+	   * @param {string} player.password - The password of the player.
+	   * @param {string} serverURL - The url of the server where statements will be sent.
+	   * @param {string} logInURL - The url of the server to log in.
 	   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
 	   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
 	   */
-	constructor(player: generate.Player, private serverUrl: string, private interval: boolean, private time_interval?: number, private max_queue?: number) {
-	  console.log("constructor library")
-  
-	  localStorage.clear()
-  
+	constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
 	  this.context = undefined;
 	  this.player = player;
 	  this.worker = new Worker(new URL('./worker.js', import.meta.url));
+
+    
+
+    // Dentro del evento 'message', recuperamos el ID de la promesa y llamamos a la función resolve o reject correspondiente
+    this.worker.addEventListener('message', (event: any) => {
+      const data = event.data;
+      if (data.type === 'RESPONSE') {
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.resolve();
+          this.promisesMap.delete(promiseId); // Limpiamos el mapa después de resolver la promesa
+        }
+      } else if (data.type === 'ERROR') {
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.reject(data.error);
+          this.promisesMap.delete(promiseId); // Limpiamos el mapa después de rechazar la promesa
+        }
+      } else if (data.type === 'DEQUEUE') {
+        // Quitar de localStorage la traza enviada
+        localStorage.removeItem(data.stat_id)
+      } else if (data.type === 'LOGIN') {
+        this.token = data.token;
+      }
+    });
 	  this.promises = [];
 	  // Inicia el tamaño de la cola de trazas. Por defecto MAX_QUEUE_LENGTH
 	  if (this.max_queue) this.max_queue_length = this.max_queue
 	  else this.max_queue_length = MAX_QUEUE_LENGTH;
 	  // Inicia el intervalo de envios de traza. Pod defecto TIME_INTERVAL_SEND
-		  if (this.interval)
-			  if (this.time_interval !== undefined)
-				  this.statementInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval);
-			  else
-				  this.statementInterval = setInterval(this.flush.bind(this), 1000 * TIME_INTERVAL_SEND);
+    if (this.time_interval)
+      this.statementInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval);
   
 	  const self = this;
+
+
+    // LogIn con el server para generar el token
+      this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
   
 	  // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
 		  if (localStorage.length) {
 			  for (let i = 0; i < localStorage.length; i++) {
 				  const key = localStorage.key(i);
-				  const value = localStorage.getItem(key!);
-  
-		  this.statementQueue.enqueue(JSON.parse(value!))
+          console.log(/^statd+$/.test(key!))
+          console.log(localStorage.getItem(key!))
+          if (/^statd+$/.test(key!)) {
+            const value = localStorage.getItem(key!);
+    
+            this.statementQueue.enqueue(JSON.parse(value!))
+          }
 			  }
 		  }
   
@@ -209,29 +241,23 @@
 	  }
 	}
   
-	private async sendTraces(traces: { type: string; data: string }[]) {
-	  return new Promise<void>((resolve, reject) => {
-		this.worker.postMessage({ type: 'SEND_TRACES', traces, serverUrl: this.serverUrl });
+  private async sendTraces(traces: { type: string; data: string }[]) {
+    return new Promise<void>((resolve, reject) => {
+      // Generamos un ID único para esta promesa
+      const promiseId = this.generateUniquePromiseId();
+      // Guardamos las funciones resolve y reject en el mapa
+      this.promisesMap.set(promiseId, { resolve, reject });
   
-		const timeout = setTimeout(() => {
-		  reject(new Error('Timeout al enviar trazas'));
-		}, 5000);
+      this.worker.postMessage({ type: 'SEND_TRACES', traces, token: this.token, serverUrl: this.serverUrl, promiseId });
+    });
+  }
+
+  // Función para generar un ID único para cada promesa
+  private generateUniquePromiseId(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
   
-		this.worker.addEventListener('message', (event: any) => {
-		  clearTimeout(timeout);
-		  const data = event.data;
-		  if (data.type === 'RESPONSE') {
-			resolve();
-		  } else if (data.type === 'ERROR') {
-			reject(data.error);
-		  } else if (data.type === 'DEQUEUE') {
-			// Quitar de localStorage la traza enviada
-			localStorage.removeItem(data.stat_id)
-		  }
-		});
-	  });
-	}
-  
+  // Función para generar un id unico para cada traza <-----------------------------------------------------------------------------------------------------------------------------------------
 	private statementIdCalc(): string{
 	  while (localStorage.getItem(`stat${this.stat_id}`) !== null) this.stat_id++;
 	  
@@ -352,20 +378,14 @@ accepted() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accepted/achievement statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/achievement', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -395,20 +415,14 @@ accepted() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accepted/award statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/award', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -438,20 +452,14 @@ accepted() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accepted/mission statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/mission', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -481,20 +489,14 @@ accepted() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accepted/reward statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/reward', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -524,20 +526,14 @@ accepted() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accepted/task statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/task', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -580,20 +576,14 @@ accessed(visited_times : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accessed/chest statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/chest', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -624,20 +614,14 @@ accessed(visited_times : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accessed/door statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/door', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -668,20 +652,14 @@ accessed(visited_times : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accessed/room statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/room', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -712,20 +690,14 @@ accessed(visited_times : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi accessed/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -767,20 +739,14 @@ achieved() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi achieved/achievement statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/achievement', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -810,20 +776,14 @@ achieved() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi achieved/award statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/award', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -853,20 +813,14 @@ achieved() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi achieved/game statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/game', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -896,20 +850,14 @@ achieved() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi achieved/goal statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/goal', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -939,20 +887,14 @@ achieved() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi achieved/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -982,20 +924,14 @@ achieved() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi achieved/reward statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/reward', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1038,20 +974,14 @@ cancelled(reason : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi cancelled/mission statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'cancelled/mission', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1082,20 +1012,14 @@ cancelled(reason : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi cancelled/task statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'cancelled/task', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1137,20 +1061,14 @@ chatted() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi chatted/character statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.chatted, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'chatted/character', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1192,20 +1110,14 @@ clicked() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi clicked/character statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/character', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1235,20 +1147,14 @@ clicked() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi clicked/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1278,20 +1184,14 @@ clicked() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi clicked/dialog statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/dialog', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1321,20 +1221,14 @@ clicked() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi clicked/door statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/door', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1376,20 +1270,14 @@ climbed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi climbed/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.climbed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'climbed/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1431,20 +1319,14 @@ closed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi closed/chest statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'closed/chest', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1474,20 +1356,14 @@ closed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi closed/door statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'closed/door', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1530,20 +1406,14 @@ combined(target : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi combined/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.combined, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'combined/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1586,20 +1456,14 @@ completed(score : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi completed/achievement statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/achievement', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1630,20 +1494,14 @@ completed(score : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi completed/game statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/game', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1674,20 +1532,14 @@ completed(score : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi completed/goal statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/goal', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1718,20 +1570,14 @@ completed(score : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi completed/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1762,20 +1608,14 @@ completed(score : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi completed/mission statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/mission', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1806,20 +1646,14 @@ completed(score : number,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi completed/task statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/task', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1874,20 +1708,14 @@ crafted() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi crafted/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.crafted, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'crafted/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1929,20 +1757,14 @@ dashed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi dashed/character statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.dashed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'dashed/character', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -1984,20 +1806,14 @@ defeated() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi defeated/enemy statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.defeated, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'defeated/enemy', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2039,20 +1855,14 @@ destroyed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi destroyed/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'destroyed/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2094,20 +1904,14 @@ died() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi died/character statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'died/character', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2137,20 +1941,14 @@ died() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi died/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'died/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2192,20 +1990,14 @@ discovered() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi discovered/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'discovered/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2235,20 +2027,14 @@ discovered() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi discovered/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'discovered/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2303,20 +2089,14 @@ earned() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi earned/reward statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.earned, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'earned/reward', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2358,20 +2138,14 @@ equipped() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi equipped/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.equipped, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'equipped/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2413,20 +2187,14 @@ examined() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi examined/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'examined/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2456,20 +2224,14 @@ examined() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi examined/room statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'examined/room', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2511,20 +2273,14 @@ exited() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi exited/game statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'exited/game', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2554,20 +2310,14 @@ exited() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi exited/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'exited/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2609,20 +2359,14 @@ explored() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi explored/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.explored, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'explored/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2664,20 +2408,14 @@ failed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi failed/mission statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'failed/mission', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2707,20 +2445,14 @@ failed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi failed/task statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'failed/task', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2750,20 +2482,14 @@ failed() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi failed/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'failed/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2805,20 +2531,14 @@ fellIn() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi fellIn/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'fellIn/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2863,20 +2583,14 @@ jumped(distance : number,units : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi jumped/character statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'jumped/character', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2908,20 +2622,14 @@ jumped(distance : number,units : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi jumped/enemy statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'jumped/enemy', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -2977,20 +2685,14 @@ loaded(id_load : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi loaded/game statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'loaded/game', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3021,20 +2723,14 @@ loaded(id_load : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi loaded/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'loaded/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3045,7 +2741,7 @@ loaded(id_load : string,) {
 }
 
 /**
- * undefined
+ * The player starts the session
  * 
  */ 
 loggedIn() { 
@@ -3054,11 +2750,47 @@ loggedIn() {
 
   return {
     
+      /**
+        * Player that connects to the server in wich the statement will be analized
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+		* @param {any} [context] - Adds a field context for the statement
+		* @param {any} [result] - Adds a field result for the statement
+		* @param {any} [authority] - Adds a field authority for the statement
+        */ 
+      player: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
+
+        object = generate.generateObject(this.objects.player, name, description)
+		let tcontext = this.context;
+        if (context) tcontext = context
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+		
+		console.log("JaXpi loggedIn/player statement enqueued")
+
+
+        const statement = generate.generateStatement(this.player, this.verbs.loggedIn, object, result, tcontext, authority);
+		let id = this.statementIdCalc()
+
+        localStorage.setItem(id,JSON.stringify(statement))
+        this.statementQueue.enqueue({type: 'loggedIn/player', data: statement, id: id});
+        if (this.statementQueue.length >= this.max_queue_length) this.flush();
+        
+      
+      }
+          
   };
 }
 
 /**
- * undefined
+ * The player finalizes the session
  * 
  */ 
 loggedOut() { 
@@ -3067,6 +2799,42 @@ loggedOut() {
 
   return {
     
+      /**
+        * Player that connects to the server in wich the statement will be analized
+        * @param {string} name - Unique name that identifies the object
+        * @param {string} [description] - Description on the object you are including
+        * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
+		* @param {any} [context] - Adds a field context for the statement
+		* @param {any} [result] - Adds a field result for the statement
+		* @param {any} [authority] - Adds a field authority for the statement
+        */ 
+      player: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
+
+        object = generate.generateObject(this.objects.player, name, description)
+		let tcontext = this.context;
+        if (context) tcontext = context
+        
+        
+      
+        if (extraParameters && extraParameters.length > 0) {
+          extraParameters.forEach((value) => {
+              object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
+          });
+        }
+		
+		console.log("JaXpi loggedOut/player statement enqueued")
+
+
+        const statement = generate.generateStatement(this.player, this.verbs.loggedOut, object, result, tcontext, authority);
+		let id = this.statementIdCalc()
+
+        localStorage.setItem(id,JSON.stringify(statement))
+        this.statementQueue.enqueue({type: 'loggedOut/player', data: statement, id: id});
+        if (this.statementQueue.length >= this.max_queue_length) this.flush();
+        
+      
+      }
+          
   };
 }
 
@@ -3102,20 +2870,14 @@ moved() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi moved/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.moved, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'moved/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3157,20 +2919,14 @@ navigated() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi navigated/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.navigated, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'navigated/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3212,20 +2968,14 @@ opened() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi opened/chest statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'opened/chest', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3255,20 +3005,14 @@ opened() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi opened/door statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'opened/door', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3311,20 +3055,14 @@ overloaded(id_load : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi overloaded/game statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'overloaded/game', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3355,20 +3093,14 @@ overloaded(id_load : string,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi overloaded/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'overloaded/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3410,20 +3142,14 @@ paused() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi paused/game statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.paused, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'paused/game', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3517,20 +3243,14 @@ skipped() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi skipped/dialog statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.skipped, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'skipped/dialog', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3598,20 +3318,14 @@ started() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi started/level statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'started/level', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3641,20 +3355,14 @@ started() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi started/game statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'started/game', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3696,20 +3404,14 @@ teleported() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi teleported/location statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'teleported/location', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3739,20 +3441,14 @@ teleported() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi teleported/character statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'teleported/character', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3794,20 +3490,14 @@ unlocked() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi unlocked/chest statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'unlocked/chest', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3837,20 +3527,14 @@ unlocked() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi unlocked/skill statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'unlocked/skill', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3892,20 +3576,14 @@ upgraded() {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi upgraded/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'upgraded/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -3948,20 +3626,14 @@ used(consumed : boolean,) {
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi used/item statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.used, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'used/item', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         

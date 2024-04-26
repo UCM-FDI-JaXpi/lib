@@ -3,5 +3,7 @@
     "display": {
         "en-US": "loggedOut",
         "es": "desconectado"
-    }
+    },
+    "objects": ["player"],
+    "description": "The player finalizes the session"
 }

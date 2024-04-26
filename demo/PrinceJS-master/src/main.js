@@ -32,9 +32,11 @@ const config = {
   ]
 };
 
+// Import JaxpiLib
 const Jaxpi = require ('jaxpi').default;
+
 // Create a new JaxpiLib instance
-let jaxpi = new Jaxpi({name: "maru", mail: "maru@example.com"},"http://localhost:3000/records", false);
+let jaxpi = new Jaxpi({name: "Student1", mail: "student1@example.com", password: "Pp123456"},"http://localhost:3000/records", "http://localhost:3000/login");
 
 // Export the JaxpiLib instance
 export default jaxpi;

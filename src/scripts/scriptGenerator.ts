@@ -5,6 +5,8 @@
 //const path = require ('fs');
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path'
 
 //const postAxios = require ('../../src/worker.ts')
 //import axios from 'axios';
@@ -110,20 +112,14 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
               object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
           });
         }
-
-        // if (objectParameters && objectParameters.length > 0) {
-        //   objectParameters.forEach((value) => {
-        //       object.definition.extensions['https://github.com/UCM-FDI-JaXpi/' + value[0]] = value[1];
-        //   });
-        // }
 		
 		console.log("JaXpi ${key}/${element} statement enqueued")
 
 
         const statement = generate.generateStatement(this.player, this.verbs.${key}, object, result, tcontext, authority);
-        //this.statementQueue.enqueue(statement);
 		let id = this.statementIdCalc()
 
+        localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: '${key}/${element}', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
@@ -160,11 +156,11 @@ ${key}(${parameters}) {
     //private objectMap = new Map([${resolvedObjectsMap.join(',\n')}])\n
     let codeBody = `
   // index.ts
-  import './worker';
-  import { Queue } from './queue';
+  import './worker.js';
+  import { Queue } from './queue.js';
   
-  import * as generate from './scripts/generateStatement';
-  import { checkObject, checkVerb } from './scripts/validateStatement';
+  import * as generate from './scripts/generateStatement.js';
+  import { checkObject, checkVerb } from './scripts/validateStatement.js';
   
   
   const TIME_INTERVAL_SEND = 5;
@@ -181,7 +177,9 @@ ${key}(${parameters}) {
 	private stat_id: number = 1;
 	private promises: Promise<void>[];
 	private statementInterval: NodeJS.Timeout | undefined;
-  
+    // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
+  	private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
+	private token: string = "-1";
   
   
   
@@ -201,43 +199,72 @@ ${key}(${parameters}) {
   
   
   
-	/**
+	  /**
 	   * @param {Object} player - Structure that contains player data.
 	   * @param {string} player.name - The name of the player.
 	   * @param {string} player.mail - The mail of the player.
-	   * @param {string} url - The url of the server where statements will be sent.
-	   * @param {string} interval - Boolean that activates an interval to send statements. 
+	   * @param {string} player.password - The password of the player.
+	   * @param {string} serverURL - The url of the server where statements will be sent.
+	   * @param {string} logInURL - The url of the server to log in.
 	   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
 	   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
 	   */
-	constructor(player: generate.Player, private serverUrl: string, private interval: boolean, private time_interval?: number, private max_queue?: number) {
-	  console.log("constructor library")
-  
-	  localStorage.clear()
-  
+	constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
 	  this.context = undefined;
 	  this.player = player;
-	  this.worker = new Worker(new URL('./worker', import.meta.url));
+	  this.worker = new Worker(new URL('./worker.js', import.meta.url));
+
+    
+
+    // Dentro del evento 'message', recuperamos el ID de la promesa y llamamos a la función resolve o reject correspondiente
+    this.worker.addEventListener('message', (event: any) => {
+      const data = event.data;
+      if (data.type === 'RESPONSE') {
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.resolve();
+          this.promisesMap.delete(promiseId); // Limpiamos el mapa después de resolver la promesa
+        }
+      } else if (data.type === 'ERROR') {
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.reject(data.error);
+          this.promisesMap.delete(promiseId); // Limpiamos el mapa después de rechazar la promesa
+        }
+      } else if (data.type === 'DEQUEUE') {
+        // Quitar de localStorage la traza enviada
+        localStorage.removeItem(data.stat_id)
+      } else if (data.type === 'LOGIN') {
+        this.token = data.token;
+      }
+    });
 	  this.promises = [];
 	  // Inicia el tamaño de la cola de trazas. Por defecto MAX_QUEUE_LENGTH
 	  if (this.max_queue) this.max_queue_length = this.max_queue
 	  else this.max_queue_length = MAX_QUEUE_LENGTH;
 	  // Inicia el intervalo de envios de traza. Pod defecto TIME_INTERVAL_SEND
-		  if (this.interval)
-			  if (this.time_interval !== undefined)
-				  this.statementInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval);
-			  else
-				  this.statementInterval = setInterval(this.flush.bind(this), 1000 * TIME_INTERVAL_SEND);
+    if (this.time_interval)
+      this.statementInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval);
   
 	  const self = this;
+
+
+    // LogIn con el server para generar el token
+      this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
   
 	  // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
 		  if (localStorage.length) {
 			  for (let i = 0; i < localStorage.length; i++) {
 				  const key = localStorage.key(i);
-				  const value = localStorage.getItem(key!);
-  
-		  this.statementQueue.enqueue(JSON.parse(value!))
+          console.log(/^stat\d+$/.test(key!))
+          console.log(localStorage.getItem(key!))
+          if (/^stat\d+$/.test(key!)) {
+            const value = localStorage.getItem(key!);
+    
+            this.statementQueue.enqueue(JSON.parse(value!))
+          }
 			  }
 		  }
   
@@ -306,29 +333,23 @@ ${key}(${parameters}) {
 	  }
 	}
   
-	private async sendTraces(traces: { type: string; data: string }[]) {
-	  return new Promise<void>((resolve, reject) => {
-		this.worker.postMessage({ type: 'SEND_TRACES', traces, serverUrl: this.serverUrl });
+  private async sendTraces(traces: { type: string; data: string }[]) {
+    return new Promise<void>((resolve, reject) => {
+      // Generamos un ID único para esta promesa
+      const promiseId = this.generateUniquePromiseId();
+      // Guardamos las funciones resolve y reject en el mapa
+      this.promisesMap.set(promiseId, { resolve, reject });
   
-		const timeout = setTimeout(() => {
-		  reject(new Error('Timeout al enviar trazas'));
-		}, 5000);
+      this.worker.postMessage({ type: 'SEND_TRACES', traces, token: this.token, serverUrl: this.serverUrl, promiseId });
+    });
+  }
+
+  // Función para generar un ID único para cada promesa
+  private generateUniquePromiseId(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
   
-		this.worker.addEventListener('message', (event: any) => {
-		  clearTimeout(timeout);
-		  const data = event.data;
-		  if (data.type === 'RESPONSE') {
-			resolve();
-		  } else if (data.type === 'ERROR') {
-			reject(data.error);
-		  } else if (data.type === 'DEQUEUE') {
-			// Quitar de localStorage la traza enviada
-			localStorage.removeItem(data.stat_id)
-		  }
-		});
-	  });
-	}
-  
+  // Función para generar un id unico para cada traza <-----------------------------------------------------------------------------------------------------------------------------------------
 	private statementIdCalc(): string{
 	  while (localStorage.getItem(\`stat\${this.stat_id}\`) !== null) this.stat_id++;
 	  
@@ -425,10 +446,10 @@ ${key}(${parameters}) {
 
 
 //const currentDir = path.dirname(new URL(import.meta.url).pathname);
-//const verbsFolderPath = path.join(currentDir, '../../verbs');
-const verbsFolderPath = 'F:/Git Clone Repo/JaXpi/z_mockup_lib/verbs';
+const verbsFolderPath = path.join(dirname(fileURLToPath(import.meta.url)), '../../verbs');
+//const verbsFolderPath = './verbs';
 //const objectsFolderPath = path.join(currentDir, '../../objects');
-const objectsFolderPath = 'F:/Git Clone Repo/JaXpi/z_mockup_lib/objects';
+const objectsFolderPath = path.join(dirname(fileURLToPath(import.meta.url)), '../../objects');
 
 async function generateMap(): Promise<{ verbJsonMap: Map<string, any>, objectJsonMap: Map<string, any> }> {
   const objectJsonMap: Map<string, any> = new Map();

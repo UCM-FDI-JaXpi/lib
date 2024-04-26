@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/missions/mission",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/mission",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {

@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/achievements/skill",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/skill",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {

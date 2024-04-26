@@ -1,5 +1,5 @@
 {
-    "id": "http://example.com/enemy",
+    "id": "https://github.com/UCM-FDI-JaXpi/objects/enemy",
     "definition": {
         "type": "https://github.com/UCM-FDI-JaXpi/object",
         "name": {
