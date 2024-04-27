@@ -1,5 +1,5 @@
 // Import JaxpiLib
-import Jaxpi from '../dist/index.js'
+import Jaxpi from '../src/index.js'
 
 // Create a new JaxpiLib instance
 let jaxpi = new Jaxpi({name: "Student1", mail: "student1@example.com", password: "Pp123456"},"http://localhost:3000/records", "http://localhost:3000/login");
