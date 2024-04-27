@@ -5,6 +5,9 @@ import * as generate from './scripts/generateStatement.js';
 import { checkObject, checkVerb } from './scripts/validateStatement.js';
 import { Worker } from 'worker_threads';
 import { LocalStorage } from 'node-localstorage';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path'
 const TIME_INTERVAL_SEND = 5;
 const MAX_QUEUE_LENGTH = 5;
 let instance = null;
@@ -112,7 +115,8 @@ export default class Jaxpi {
         this.max_queue = max_queue;
         this.context = undefined;
         this.player = player;
-        this.worker = new Worker('./dist/worker.js');
+        
+        this.worker = new Worker(path.join(dirname(fileURLToPath(import.meta.url)), './worker.js'));
         this.localStorage = new LocalStorage('../scratch');
         // Dentro del evento 'message', recuperamos el ID de la promesa y llamamos a la función resolve o reject correspondiente
         this.worker.on('message', (event) => {
