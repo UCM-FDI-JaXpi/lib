@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 let statements = [
 {
   "actor": {
@@ -705,5 +707,5 @@ async function foo(){
 }
 
 foo();
-
+console.log("Student3")
 //console.log(JSON.stringify(statements,null,2));

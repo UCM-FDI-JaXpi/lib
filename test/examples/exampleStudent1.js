@@ -1303,7 +1303,7 @@ let statements = [
 },
 ]
 
-console.log(statements.length)
+//console.log(statements.length)
 
 // Número de grupos a crear
 // Dividir el array en 7 grupos
@@ -1349,5 +1349,5 @@ async function foo(){
 }
 
 foo();
-
+console.log("Student1")
 //console.log(JSON.stringify(statements,null,2));
