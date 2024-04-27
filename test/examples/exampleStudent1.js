@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 let statements = [
 {
   "actor": {
@@ -1328,4 +1330,24 @@ grupos.forEach((grupo) => {
 // statements.forEach(element => {
 //   console.log(element.timestamp)
 // });
-console.log(JSON.stringify(statements,null,2));
+
+async function foo(){
+  const response = await axios.post("http://localhost:3000/login", {email: "student1@example.com", password: "Pp123456"}, {
+    headers: {
+        'Content-Type': 'application/json',
+    }
+  });
+  
+  statements.forEach(async element => {
+    await axios.post("http://localhost:3000/records", element, {
+      headers: {
+          'Content-Type': 'application/json',
+          'x-authentication': response.data.token
+      }
+  });
+  });
+}
+
+foo();
+
+//console.log(JSON.stringify(statements,null,2));
