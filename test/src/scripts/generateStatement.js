@@ -79,9 +79,9 @@ export function generateObject(objectJson, name, description) {
         }
     };
     if (name)
-        object.definition.name["en-us"] = name;
+        object.definition.name["en-US"] = name;
     // object.id = object.id.substring(0, object.id.lastIndexOf("/") - 1) + name
     if (description)
-        object.definition.description["en-us"] = description;
+        object.definition.description["en-US"] = description;
     return object;
 }

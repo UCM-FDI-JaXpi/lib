@@ -1,10 +1,9 @@
 import axios from 'axios'
-
 let statements = [
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -18,9 +17,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -32,12 +30,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.185Z"
+  "timestamp": "2024-04-27T21:11:49.092Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -51,9 +49,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -65,12 +62,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.260Z"
+  "timestamp": "2024-04-27T21:11:49.138Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -84,9 +81,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -98,12 +94,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.266Z"
+  "timestamp": "2024-04-27T21:11:49.141Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -117,9 +113,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -131,12 +126,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.272Z"
+  "timestamp": "2024-04-27T21:11:49.144Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -150,9 +145,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -164,12 +158,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.278Z"
+  "timestamp": "2024-04-27T21:11:49.147Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -183,9 +177,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -197,12 +190,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.284Z"
+  "timestamp": "2024-04-27T21:11:49.149Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -216,9 +209,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -230,12 +222,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.289Z"
+  "timestamp": "2024-04-27T21:11:49.152Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -249,9 +241,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -263,12 +254,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.296Z"
+  "timestamp": "2024-04-27T21:11:49.156Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -282,9 +273,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -296,12 +286,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.302Z"
+  "timestamp": "2024-04-27T21:11:49.159Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -315,9 +305,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -329,12 +318,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.308Z"
+  "timestamp": "2024-04-27T21:11:49.162Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -348,9 +337,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -362,12 +350,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.314Z"
+  "timestamp": "2024-04-27T21:11:49.165Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -381,9 +369,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -395,12 +382,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.320Z"
+  "timestamp": "2024-04-27T21:11:49.168Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -414,9 +401,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -428,12 +414,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.325Z"
+  "timestamp": "2024-04-27T21:11:49.171Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -447,9 +433,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -461,12 +446,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.332Z"
+  "timestamp": "2024-04-27T21:11:49.174Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -480,9 +465,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -494,12 +478,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.337Z"
+  "timestamp": "2024-04-27T21:11:49.176Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -513,9 +497,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -527,12 +510,12 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.343Z"
+  "timestamp": "2024-04-27T21:11:49.179Z"
 },
 {
   "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
+    "mbox": "mailto:student2@example.com",
+    "name": "Student2"
   },
   "verb": {
     "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
@@ -546,9 +529,8 @@ let statements = [
     "definition": {
       "type": "https://github.com/UCM-FDI-JaXpi/object",
       "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
+        "en-US": "Tristana",
+        "es": "Personaje por defecto"
       },
       "description": {
         "en-US": "A persona or figure in the game",
@@ -560,108 +542,11 @@ let statements = [
       }
     }
   },
-  "timestamp": "2024-04-27T19:30:17.348Z"
-},
-{
-  "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
-  },
-  "verb": {
-    "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
-    "display": {
-      "en-US": "jumped",
-      "es": "saltado"
-    }
-  },
-  "object": {
-    "id": "http://example.com/character",
-    "definition": {
-      "type": "https://github.com/UCM-FDI-JaXpi/object",
-      "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
-      },
-      "description": {
-        "en-US": "A persona or figure in the game",
-        "es": "Una persona o figura en el juego"
-      },
-      "extensions": {
-        "https://github.com/UCM-FDI-JaXpi/distance": 1,
-        "https://github.com/UCM-FDI-JaXpi/units": "1"
-      }
-    }
-  },
-  "timestamp": "2024-04-27T19:30:17.354Z"
-},
-{
-  "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
-  },
-  "verb": {
-    "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
-    "display": {
-      "en-US": "jumped",
-      "es": "saltado"
-    }
-  },
-  "object": {
-    "id": "http://example.com/character",
-    "definition": {
-      "type": "https://github.com/UCM-FDI-JaXpi/object",
-      "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
-      },
-      "description": {
-        "en-US": "A persona or figure in the game",
-        "es": "Una persona o figura en el juego"
-      },
-      "extensions": {
-        "https://github.com/UCM-FDI-JaXpi/distance": 1,
-        "https://github.com/UCM-FDI-JaXpi/units": "1"
-      }
-    }
-  },
-  "timestamp": "2024-04-27T19:30:17.359Z"
-},
-{
-  "actor": {
-    "mbox": "mailto:student3@example.com",
-    "name": "Student3"
-  },
-  "verb": {
-    "id": "https://github.com/UCM-FDI-JaXpi/lib/jumped",
-    "display": {
-      "en-US": "jumped",
-      "es": "saltado"
-    }
-  },
-  "object": {
-    "id": "http://example.com/character",
-    "definition": {
-      "type": "https://github.com/UCM-FDI-JaXpi/object",
-      "name": {
-        "en-US": "Default character",
-        "es": "Personaje por defecto",
-        "en-us": "Luigi"
-      },
-      "description": {
-        "en-US": "A persona or figure in the game",
-        "es": "Una persona o figura en el juego"
-      },
-      "extensions": {
-        "https://github.com/UCM-FDI-JaXpi/distance": 1,
-        "https://github.com/UCM-FDI-JaXpi/units": "1"
-      }
-    }
-  },
-  "timestamp": "2024-04-27T19:30:17.365Z"
+  "timestamp": "2024-04-27T21:11:49.182Z"
 },
 ]
+
+//console.log(statements.length)
 
 // Número de grupos a crear
 // Dividir el array en 7 grupos
@@ -690,7 +575,7 @@ grupos.forEach((grupo) => {
 // });
 
 async function foo(){
-  const response = await axios.post("http://localhost:3000/login", {email: "student1@example.com", password: "Pp123456"}, {
+  const response = await axios.post("http://localhost:3000/login", {email: "student2@example.com", password: "Pp123456"}, {
     headers: {
         'Content-Type': 'application/json',
     }
@@ -707,5 +592,5 @@ async function foo(){
 }
 
 foo();
-console.log("Student3")
+console.log("Student2")
 //console.log(JSON.stringify(statements,null,2));

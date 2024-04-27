@@ -289,8 +289,8 @@ export default class Jaxpi {
         else
             console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one");
     }
-    writeExample(){
-        this.statementQueue.writeFile(this.player.name);
+    writeExample(id){
+        this.statementQueue.writeFile(this.player.name, id);
     }
     /**
      * The player accepts an object like a task or a reward

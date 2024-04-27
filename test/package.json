@@ -4,7 +4,9 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
-        "build": "node ./examples/exampleStudent1 && node ./examples/exampleStudent2 && node ./examples/exampleStudent3"
+        "timeSession": "node ./examples/exampleStudent1time && node ./examples/exampleStudent2time && node ./examples/exampleStudent3time",
+        "verbCount": "node ./examples/exampleStudent1count",
+        "timeLevel": "node ./examples/exampleStudent1tlevel"
     },
     "devDependencies": {
         "@types/node-localstorage": "^1.3.3",

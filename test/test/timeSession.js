@@ -293,7 +293,7 @@ async function foo(){
     //jaxpi.loggedOut().player("Student1")
 
     await delay(2000)
-    jaxpi.writeExample()
+    jaxpi.writeExample("time")
 
     jaxpi = new Jaxpi({name: "Student3", mail: "student3@example.com", password: "Pp123456"},"http://localhost:3000/records", "http://localhost:3000/login", undefined, 40);
     
@@ -307,7 +307,7 @@ async function foo(){
     //jaxpi.loggedOut().player("maria")
     
     await delay(2000)
-    jaxpi.writeExample()
+    jaxpi.writeExample("time")
 
 
     jaxpi = new Jaxpi({name: "Student2", mail: "student2@example.com", password: "Pp123456"},"http://localhost:3000/records", "http://localhost:3000/login", undefined, 40);
@@ -322,7 +322,7 @@ async function foo(){
     //jaxpi.loggedOut().player("Student2")
 
     await delay(2000)
-    jaxpi.writeExample()
+    jaxpi.writeExample("time")
 
 
 }

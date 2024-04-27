@@ -1,10 +1,13 @@
 import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path'
 export class Queue {
     file = "let statements = [\n";
     items = [];
     enqueue(item) {
-        console.log(JSON.stringify(item.data, null, 2))
-        console.log(",")
+        //console.log(JSON.stringify(item.data, null, 2))
+        //console.log(",")
         this.file += JSON.stringify(item.data, null, 2) + ",\n"
         this.items.push(item);
     }
@@ -31,8 +34,8 @@ export class Queue {
     get head() {
         return this.items[0];
     }
-    writeFile(name){
+    writeFile(name, id){
         this.file += "]"
-        fs.writeFileSync(`./test/examples/example${name}.js`, this.file);
+        fs.writeFileSync(path.join(dirname(fileURLToPath(import.meta.url)), `../examples/example${name + id}.js`), this.file);
     }
 }
