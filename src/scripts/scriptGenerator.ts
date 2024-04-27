@@ -113,7 +113,7 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
           });
         }
 		
-		console.log("JaXpi ${key}/${element} statement enqueued")
+		console.log(\`JaXpi ${key}/${element} = "\${name}" statement enqueued\`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.${key}, object, result, tcontext, authority);

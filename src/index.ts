@@ -379,7 +379,7 @@ accepted() {
           });
         }
 		
-		console.log("JaXpi accepted/achievement statement enqueued")
+		console.log(`JaXpi accepted/achievement = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
@@ -416,7 +416,7 @@ accepted() {
           });
         }
 		
-		console.log("JaXpi accepted/award statement enqueued")
+		console.log(`JaXpi accepted/award = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
@@ -453,7 +453,7 @@ accepted() {
           });
         }
 		
-		console.log("JaXpi accepted/mission statement enqueued")
+		console.log(`JaXpi accepted/mission = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
@@ -490,7 +490,7 @@ accepted() {
           });
         }
 		
-		console.log("JaXpi accepted/reward statement enqueued")
+		console.log(`JaXpi accepted/reward = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
@@ -527,7 +527,7 @@ accepted() {
           });
         }
 		
-		console.log("JaXpi accepted/task statement enqueued")
+		console.log(`JaXpi accepted/task = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
@@ -577,7 +577,7 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log("JaXpi accessed/chest statement enqueued")
+		console.log(`JaXpi accessed/chest = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
@@ -615,7 +615,7 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log("JaXpi accessed/door statement enqueued")
+		console.log(`JaXpi accessed/door = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
@@ -653,7 +653,7 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log("JaXpi accessed/room statement enqueued")
+		console.log(`JaXpi accessed/room = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
@@ -691,7 +691,7 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log("JaXpi accessed/location statement enqueued")
+		console.log(`JaXpi accessed/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
@@ -740,7 +740,7 @@ achieved() {
           });
         }
 		
-		console.log("JaXpi achieved/achievement statement enqueued")
+		console.log(`JaXpi achieved/achievement = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
@@ -777,7 +777,7 @@ achieved() {
           });
         }
 		
-		console.log("JaXpi achieved/award statement enqueued")
+		console.log(`JaXpi achieved/award = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
@@ -814,7 +814,7 @@ achieved() {
           });
         }
 		
-		console.log("JaXpi achieved/game statement enqueued")
+		console.log(`JaXpi achieved/game = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
@@ -851,7 +851,7 @@ achieved() {
           });
         }
 		
-		console.log("JaXpi achieved/goal statement enqueued")
+		console.log(`JaXpi achieved/goal = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
@@ -888,7 +888,7 @@ achieved() {
           });
         }
 		
-		console.log("JaXpi achieved/level statement enqueued")
+		console.log(`JaXpi achieved/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
@@ -925,7 +925,7 @@ achieved() {
           });
         }
 		
-		console.log("JaXpi achieved/reward statement enqueued")
+		console.log(`JaXpi achieved/reward = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
@@ -975,7 +975,7 @@ cancelled(reason : string,) {
           });
         }
 		
-		console.log("JaXpi cancelled/mission statement enqueued")
+		console.log(`JaXpi cancelled/mission = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
@@ -1013,7 +1013,7 @@ cancelled(reason : string,) {
           });
         }
 		
-		console.log("JaXpi cancelled/task statement enqueued")
+		console.log(`JaXpi cancelled/task = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
@@ -1062,7 +1062,7 @@ chatted() {
           });
         }
 		
-		console.log("JaXpi chatted/character statement enqueued")
+		console.log(`JaXpi chatted/character = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.chatted, object, result, tcontext, authority);
@@ -1111,7 +1111,7 @@ clicked() {
           });
         }
 		
-		console.log("JaXpi clicked/character statement enqueued")
+		console.log(`JaXpi clicked/character = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
@@ -1148,7 +1148,7 @@ clicked() {
           });
         }
 		
-		console.log("JaXpi clicked/item statement enqueued")
+		console.log(`JaXpi clicked/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
@@ -1185,7 +1185,7 @@ clicked() {
           });
         }
 		
-		console.log("JaXpi clicked/dialog statement enqueued")
+		console.log(`JaXpi clicked/dialog = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
@@ -1222,7 +1222,7 @@ clicked() {
           });
         }
 		
-		console.log("JaXpi clicked/door statement enqueued")
+		console.log(`JaXpi clicked/door = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
@@ -1271,7 +1271,7 @@ climbed() {
           });
         }
 		
-		console.log("JaXpi climbed/location statement enqueued")
+		console.log(`JaXpi climbed/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.climbed, object, result, tcontext, authority);
@@ -1320,7 +1320,7 @@ closed() {
           });
         }
 		
-		console.log("JaXpi closed/chest statement enqueued")
+		console.log(`JaXpi closed/chest = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
@@ -1357,7 +1357,7 @@ closed() {
           });
         }
 		
-		console.log("JaXpi closed/door statement enqueued")
+		console.log(`JaXpi closed/door = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
@@ -1407,7 +1407,7 @@ combined(target : string,) {
           });
         }
 		
-		console.log("JaXpi combined/item statement enqueued")
+		console.log(`JaXpi combined/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.combined, object, result, tcontext, authority);
@@ -1457,7 +1457,7 @@ completed(score : number,) {
           });
         }
 		
-		console.log("JaXpi completed/achievement statement enqueued")
+		console.log(`JaXpi completed/achievement = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
@@ -1495,7 +1495,7 @@ completed(score : number,) {
           });
         }
 		
-		console.log("JaXpi completed/game statement enqueued")
+		console.log(`JaXpi completed/game = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
@@ -1533,7 +1533,7 @@ completed(score : number,) {
           });
         }
 		
-		console.log("JaXpi completed/goal statement enqueued")
+		console.log(`JaXpi completed/goal = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
@@ -1571,7 +1571,7 @@ completed(score : number,) {
           });
         }
 		
-		console.log("JaXpi completed/level statement enqueued")
+		console.log(`JaXpi completed/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
@@ -1609,7 +1609,7 @@ completed(score : number,) {
           });
         }
 		
-		console.log("JaXpi completed/mission statement enqueued")
+		console.log(`JaXpi completed/mission = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
@@ -1647,7 +1647,7 @@ completed(score : number,) {
           });
         }
 		
-		console.log("JaXpi completed/task statement enqueued")
+		console.log(`JaXpi completed/task = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
@@ -1709,7 +1709,7 @@ crafted() {
           });
         }
 		
-		console.log("JaXpi crafted/item statement enqueued")
+		console.log(`JaXpi crafted/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.crafted, object, result, tcontext, authority);
@@ -1758,7 +1758,7 @@ dashed() {
           });
         }
 		
-		console.log("JaXpi dashed/character statement enqueued")
+		console.log(`JaXpi dashed/character = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.dashed, object, result, tcontext, authority);
@@ -1807,7 +1807,7 @@ defeated() {
           });
         }
 		
-		console.log("JaXpi defeated/enemy statement enqueued")
+		console.log(`JaXpi defeated/enemy = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.defeated, object, result, tcontext, authority);
@@ -1856,7 +1856,7 @@ destroyed() {
           });
         }
 		
-		console.log("JaXpi destroyed/item statement enqueued")
+		console.log(`JaXpi destroyed/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, result, tcontext, authority);
@@ -1905,7 +1905,7 @@ died() {
           });
         }
 		
-		console.log("JaXpi died/character statement enqueued")
+		console.log(`JaXpi died/character = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
@@ -1942,7 +1942,7 @@ died() {
           });
         }
 		
-		console.log("JaXpi died/location statement enqueued")
+		console.log(`JaXpi died/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
@@ -1991,7 +1991,7 @@ discovered() {
           });
         }
 		
-		console.log("JaXpi discovered/level statement enqueued")
+		console.log(`JaXpi discovered/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
@@ -2028,7 +2028,7 @@ discovered() {
           });
         }
 		
-		console.log("JaXpi discovered/location statement enqueued")
+		console.log(`JaXpi discovered/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
@@ -2090,7 +2090,7 @@ earned() {
           });
         }
 		
-		console.log("JaXpi earned/reward statement enqueued")
+		console.log(`JaXpi earned/reward = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.earned, object, result, tcontext, authority);
@@ -2139,7 +2139,7 @@ equipped() {
           });
         }
 		
-		console.log("JaXpi equipped/item statement enqueued")
+		console.log(`JaXpi equipped/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.equipped, object, result, tcontext, authority);
@@ -2188,7 +2188,7 @@ examined() {
           });
         }
 		
-		console.log("JaXpi examined/item statement enqueued")
+		console.log(`JaXpi examined/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
@@ -2225,7 +2225,7 @@ examined() {
           });
         }
 		
-		console.log("JaXpi examined/room statement enqueued")
+		console.log(`JaXpi examined/room = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
@@ -2274,7 +2274,7 @@ exited() {
           });
         }
 		
-		console.log("JaXpi exited/game statement enqueued")
+		console.log(`JaXpi exited/game = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
@@ -2311,7 +2311,7 @@ exited() {
           });
         }
 		
-		console.log("JaXpi exited/level statement enqueued")
+		console.log(`JaXpi exited/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
@@ -2360,7 +2360,7 @@ explored() {
           });
         }
 		
-		console.log("JaXpi explored/location statement enqueued")
+		console.log(`JaXpi explored/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.explored, object, result, tcontext, authority);
@@ -2409,7 +2409,7 @@ failed() {
           });
         }
 		
-		console.log("JaXpi failed/mission statement enqueued")
+		console.log(`JaXpi failed/mission = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
@@ -2446,7 +2446,7 @@ failed() {
           });
         }
 		
-		console.log("JaXpi failed/task statement enqueued")
+		console.log(`JaXpi failed/task = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
@@ -2483,7 +2483,7 @@ failed() {
           });
         }
 		
-		console.log("JaXpi failed/level statement enqueued")
+		console.log(`JaXpi failed/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
@@ -2532,7 +2532,7 @@ fellIn() {
           });
         }
 		
-		console.log("JaXpi fellIn/location statement enqueued")
+		console.log(`JaXpi fellIn/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, result, tcontext, authority);
@@ -2584,7 +2584,7 @@ jumped(distance : number,units : string,) {
           });
         }
 		
-		console.log("JaXpi jumped/character statement enqueued")
+		console.log(`JaXpi jumped/character = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
@@ -2623,7 +2623,7 @@ jumped(distance : number,units : string,) {
           });
         }
 		
-		console.log("JaXpi jumped/enemy statement enqueued")
+		console.log(`JaXpi jumped/enemy = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
@@ -2686,7 +2686,7 @@ loaded(id_load : string,) {
           });
         }
 		
-		console.log("JaXpi loaded/game statement enqueued")
+		console.log(`JaXpi loaded/game = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
@@ -2724,7 +2724,7 @@ loaded(id_load : string,) {
           });
         }
 		
-		console.log("JaXpi loaded/level statement enqueued")
+		console.log(`JaXpi loaded/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
@@ -2773,7 +2773,7 @@ loggedIn() {
           });
         }
 		
-		console.log("JaXpi loggedIn/player statement enqueued")
+		console.log(`JaXpi loggedIn/player = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.loggedIn, object, result, tcontext, authority);
@@ -2822,7 +2822,7 @@ loggedOut() {
           });
         }
 		
-		console.log("JaXpi loggedOut/player statement enqueued")
+		console.log(`JaXpi loggedOut/player = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.loggedOut, object, result, tcontext, authority);
@@ -2871,7 +2871,7 @@ moved() {
           });
         }
 		
-		console.log("JaXpi moved/item statement enqueued")
+		console.log(`JaXpi moved/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.moved, object, result, tcontext, authority);
@@ -2920,7 +2920,7 @@ navigated() {
           });
         }
 		
-		console.log("JaXpi navigated/location statement enqueued")
+		console.log(`JaXpi navigated/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.navigated, object, result, tcontext, authority);
@@ -2969,7 +2969,7 @@ opened() {
           });
         }
 		
-		console.log("JaXpi opened/chest statement enqueued")
+		console.log(`JaXpi opened/chest = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
@@ -3006,7 +3006,7 @@ opened() {
           });
         }
 		
-		console.log("JaXpi opened/door statement enqueued")
+		console.log(`JaXpi opened/door = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
@@ -3056,7 +3056,7 @@ overloaded(id_load : string,) {
           });
         }
 		
-		console.log("JaXpi overloaded/game statement enqueued")
+		console.log(`JaXpi overloaded/game = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
@@ -3094,7 +3094,7 @@ overloaded(id_load : string,) {
           });
         }
 		
-		console.log("JaXpi overloaded/level statement enqueued")
+		console.log(`JaXpi overloaded/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
@@ -3143,7 +3143,7 @@ paused() {
           });
         }
 		
-		console.log("JaXpi paused/game statement enqueued")
+		console.log(`JaXpi paused/game = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.paused, object, result, tcontext, authority);
@@ -3244,7 +3244,7 @@ skipped() {
           });
         }
 		
-		console.log("JaXpi skipped/dialog statement enqueued")
+		console.log(`JaXpi skipped/dialog = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.skipped, object, result, tcontext, authority);
@@ -3319,7 +3319,7 @@ started() {
           });
         }
 		
-		console.log("JaXpi started/level statement enqueued")
+		console.log(`JaXpi started/level = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
@@ -3356,7 +3356,7 @@ started() {
           });
         }
 		
-		console.log("JaXpi started/game statement enqueued")
+		console.log(`JaXpi started/game = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
@@ -3405,7 +3405,7 @@ teleported() {
           });
         }
 		
-		console.log("JaXpi teleported/location statement enqueued")
+		console.log(`JaXpi teleported/location = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
@@ -3442,7 +3442,7 @@ teleported() {
           });
         }
 		
-		console.log("JaXpi teleported/character statement enqueued")
+		console.log(`JaXpi teleported/character = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
@@ -3491,7 +3491,7 @@ unlocked() {
           });
         }
 		
-		console.log("JaXpi unlocked/chest statement enqueued")
+		console.log(`JaXpi unlocked/chest = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
@@ -3528,7 +3528,7 @@ unlocked() {
           });
         }
 		
-		console.log("JaXpi unlocked/skill statement enqueued")
+		console.log(`JaXpi unlocked/skill = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
@@ -3577,7 +3577,7 @@ upgraded() {
           });
         }
 		
-		console.log("JaXpi upgraded/item statement enqueued")
+		console.log(`JaXpi upgraded/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, result, tcontext, authority);
@@ -3627,7 +3627,7 @@ used(consumed : boolean,) {
           });
         }
 		
-		console.log("JaXpi used/item statement enqueued")
+		console.log(`JaXpi used/item = "${name}" statement enqueued`)
 
 
         const statement = generate.generateStatement(this.player, this.verbs.used, object, result, tcontext, authority);
