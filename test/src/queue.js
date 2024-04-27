@@ -1,7 +1,7 @@
 export class Queue {
     items = [];
     enqueue(item) {
-        console.log(JSON.stringify(item.data, null, 2))
+        //console.log(JSON.stringify(item.data, null, 2))
         this.items.push(item);
     }
     dequeue() {

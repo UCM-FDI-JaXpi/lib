@@ -120,7 +120,7 @@ export default class Jaxpi {
         this.localStorage = new LocalStorage('../scratch');
         // Dentro del evento 'message', recuperamos el ID de la promesa y llamamos a la función resolve o reject correspondiente
         this.worker.on('message', (event) => {
-            const data = event.data;
+            const data = event;
             if (data.type === 'RESPONSE') {
                 const promiseId = data.promiseId;
                 const promiseFunctions = this.promisesMap.get(promiseId);
@@ -183,6 +183,7 @@ export default class Jaxpi {
         // });
         this.statementQueue = new Queue(); // Limpiar la cola 
         if (traces.length > 0) {
+
             const promise = this.sendTraces(traces);
             this.promises.push(promise);
             try {
@@ -196,10 +197,13 @@ export default class Jaxpi {
     }
     async sendTraces(traces) {
         return new Promise((resolve, reject) => {
+
             // Generamos un ID único para esta promesa
             const promiseId = this.generateUniquePromiseId();
             // Guardamos las funciones resolve y reject en el mapa
             this.promisesMap.set(promiseId, { resolve, reject });
+        console.log("Cuantas llegas")
+
             this.worker.postMessage({ type: 'SEND_TRACES', traces, token: this.token, serverUrl: this.serverUrl, promiseId });
         });
     }
