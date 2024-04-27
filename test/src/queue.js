@@ -1,7 +1,11 @@
+import * as fs from 'fs';
 export class Queue {
+    file = "let statements = [\n";
     items = [];
     enqueue(item) {
         console.log(JSON.stringify(item.data, null, 2))
+        console.log(",")
+        this.file += JSON.stringify(item.data, null, 2) + ",\n"
         this.items.push(item);
     }
     dequeue() {
@@ -26,5 +30,9 @@ export class Queue {
     }
     get head() {
         return this.items[0];
+    }
+    writeFile(name){
+        this.file += "]"
+        fs.writeFileSync(`./test/examples/example${name}.js`, this.file);
     }
 }

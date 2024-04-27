@@ -289,6 +289,9 @@ export default class Jaxpi {
         else
             console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one");
     }
+    writeExample(){
+        this.statementQueue.writeFile(this.player.name);
+    }
     /**
      * The player accepts an object like a task or a reward
      *
@@ -316,7 +319,7 @@ export default class Jaxpi {
                     });
                 }
                 // console.log(`JaXpi accepted/achievement = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -344,7 +347,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accepted/award = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -372,7 +375,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accepted/mission = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -400,7 +403,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accepted/reward = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -428,7 +431,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accepted/task = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -466,7 +469,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accessed/chest = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -495,7 +498,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accessed/door = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -524,7 +527,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accessed/room = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -553,7 +556,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi accessed/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -590,7 +593,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi achieved/achievement = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -618,7 +621,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi achieved/award = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -646,7 +649,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi achieved/game = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -674,7 +677,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi achieved/goal = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -702,7 +705,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi achieved/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -730,7 +733,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi achieved/reward = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -768,7 +771,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi cancelled/mission = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -797,7 +800,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi cancelled/task = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -834,7 +837,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi chatted/character = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.chatted, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -871,7 +874,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi clicked/character = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -899,7 +902,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi clicked/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -927,7 +930,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi clicked/dialog = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -955,7 +958,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi clicked/door = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -992,7 +995,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi climbed/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.climbed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1029,7 +1032,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi closed/chest = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1057,7 +1060,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi closed/door = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1095,7 +1098,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi combined/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.combined, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1133,7 +1136,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi completed/achievement = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1162,7 +1165,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi completed/game = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1191,7 +1194,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi completed/goal = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1220,7 +1223,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi completed/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1249,7 +1252,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi completed/mission = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1278,7 +1281,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi completed/task = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1323,7 +1326,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi crafted/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.crafted, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1360,7 +1363,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi dashed/character = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.dashed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1397,7 +1400,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi defeated/enemy = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.defeated, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1434,7 +1437,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi destroyed/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1471,7 +1474,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi died/character = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1499,7 +1502,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi died/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1536,7 +1539,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi discovered/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1564,7 +1567,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi discovered/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1609,7 +1612,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi earned/reward = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.earned, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1646,7 +1649,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi equipped/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.equipped, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1683,7 +1686,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi examined/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1711,7 +1714,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi examined/room = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1748,7 +1751,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi exited/game = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1776,7 +1779,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi exited/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1813,7 +1816,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi explored/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.explored, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1850,7 +1853,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi failed/mission = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1878,7 +1881,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi failed/task = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1906,7 +1909,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi failed/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1943,7 +1946,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi fellIn/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -1983,7 +1986,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi jumped/character = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2013,7 +2016,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi jumped/enemy = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2059,7 +2062,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi loaded/game = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2088,7 +2091,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi loaded/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2125,7 +2128,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi loggedIn/player = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.loggedIn, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2162,7 +2165,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi loggedOut/player = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.loggedOut, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2199,7 +2202,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi moved/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.moved, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2236,7 +2239,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi navigated/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.navigated, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2273,7 +2276,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi opened/chest = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2301,7 +2304,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi opened/door = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2339,7 +2342,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi overloaded/game = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2368,7 +2371,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi overloaded/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2405,7 +2408,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi paused/game = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.paused, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2474,7 +2477,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi skipped/dialog = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.skipped, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2527,7 +2530,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi started/level = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2555,7 +2558,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi started/game = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2592,7 +2595,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi teleported/location = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2620,7 +2623,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi teleported/character = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2657,7 +2660,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi unlocked/chest = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2685,7 +2688,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi unlocked/skill = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2722,7 +2725,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi upgraded/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
@@ -2760,7 +2763,7 @@ console.log(",")
                     });
                 }
                 // console.log(`JaXpi used/item = "${name}" statement enqueued`);
-console.log(",")
+
                 const statement = generate.generateStatement(this.player, this.verbs.used, object, result, tcontext, authority);
                 let id = this.statementIdCalc();
                 this.localStorage.setItem(id, JSON.stringify(statement));
