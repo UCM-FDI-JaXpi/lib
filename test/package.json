@@ -4,9 +4,10 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
-        "timeSession": "node ./examples/exampleStudent1time && node ./examples/exampleStudent2time && node ./examples/exampleStudent3time",
+        "timeSession": "node ./examples/exampleVariousStudentstsession",
         "verbCount": "node ./examples/exampleStudent1count",
-        "timeLevel": "node ./examples/exampleStudent1tlevel"
+        "timeLevel": "node ./examples/exampleStudent1tlevel",
+        "todas": "npm run timeSession && npm run timeLevel && npm run verbCount"
     },
     "devDependencies": {
         "@types/node-localstorage": "^1.3.3",
