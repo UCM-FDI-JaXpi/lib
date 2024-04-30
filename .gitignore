@@ -8,6 +8,8 @@ jaxpi-1.0.0.tgz
 test/examples/exampleStudent1time.js
 test/examples/exampleStudent2time.js
 test/examples/exampleStudent3time.js
+test/examples/exampleStudent2time1.js
+test/examples/exampleStudent3time1.js
 test/test/fusionTest.js
 test/test/timeLevel.js
 test/test/timeSession.js
