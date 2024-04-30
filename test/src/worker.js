@@ -4,7 +4,6 @@ import { parentPort } from 'worker_threads';
 //const axios = require('axios')
 if (parentPort)
 parentPort.on('message', async (event) => {
-    console.log(event)
 
     const data = event;
     if (data.type === 'SEND_TRACES') {

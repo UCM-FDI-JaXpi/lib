@@ -418,6 +418,7 @@ class Fighter extends Actor {
         this.hit(damage);
         this.setAction(this.health == 0 ? 'stabkill' : 'stabbed');
         if (this.charName == 'kid') {
+            
             this.scene.requestSoundPlay(SOUND.KID_HURT);
         } else {
             this.scene.requestSoundPlay(SOUND.GUARD_HURT);

@@ -6,9 +6,7 @@ export class Queue {
     file = "import axios from 'axios'\nlet statements = [\n";
     items = [];
     enqueue(item) {
-        //console.log(JSON.stringify(item.data, null, 2))
-        //console.log(",")
-        this.file += JSON.stringify(item.data, null, 2) + ",\n"
+        this.file += JSON.stringify(item.data, null, 2) + ",\n" // Codigo generativo para ejemplos
         this.items.push(item);
     }
     dequeue() {
@@ -36,34 +34,6 @@ export class Queue {
     }
     writeFile(name, id){
         this.file += `]
-        
-//console.log(statements.length)
-
-// Número de grupos a crear
-// Dividir el array en 7 grupos
-const grupos = [];
-let i = 0;
-const tamGrupo = Math.ceil(statements.length / 7);
-for (let i = 0; i < statements.length; i += tamGrupo) {
-    grupos.push(statements.slice(i, i + tamGrupo));
-}
-
-// Iterar sobre cada grupo y asignar un nuevo valor de timestamp
-let nuevoTimestamp = 0;
-grupos.forEach((grupo) => {
-    const incremento = Math.random() * 1000; // Incremento aleatorio para hacer los grupos diferentes
-    grupo.forEach((traza) => {
-        traza.timestamp = \`2024-04-\${17 + i}T\${19 + Math.round(Math.random() * (3 - (-7)) + (-7))}:30:12.927Z\`;
-    });
-    nuevoTimestamp += incremento;
-    i++;
-});
-
-//statements.sort((a, b) => a.timestamp - b.timestamp);
-
-// statements.forEach(element => {
-//   console.log(element.timestamp)
-// });
 
 async function foo(){
   const response = await axios.post("http://localhost:3000/login", {email: "student1@example.com", password: "Pp123456"}, {
@@ -82,9 +52,7 @@ async function foo(){
   });
 }
 
-foo();
-console.log("Student1")
-//console.log(JSON.stringify(statements,null,2));`
+foo();`
         fs.writeFileSync(path.join(dirname(fileURLToPath(import.meta.url)), `../examples/example${name + id}.js`), this.file);
     }
 }

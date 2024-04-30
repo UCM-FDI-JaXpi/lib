@@ -1,4 +1,6 @@
 import Fighter from './Fighter';
+// Import jaxpi
+import jaxpi from '../../main';
 
 const STRIKE_PROBABILITY =      [  61, 100,  61,   61, 61,  40, 100, 220, 0,  48,  32,  48 ];
 const RESTRIKE_PROBABILITY =    [   0,   0,   0,   5,   5, 175,  16,   8, 0, 255, 255, 150 ];
@@ -53,7 +55,13 @@ class Enemy extends Fighter {
         if (this.blockTimer  > 0)  this.blockTimer--;
         if (this.strikeTimer > 0)  this.strikeTimer--;
         
-        if ( this.getAction() == 'stabbed' || this.getAction() == 'stabkill' || this.getAction() == 'dropdead') return;
+        if ( this.getAction() == 'stabbed' || this.getAction() == 'stabkill' || this.getAction() == 'dropdead') {
+
+            if (this.getAction() == 'stabkill') jaxpi.defeated().enemy("Fighter","Stabbed to death")
+            if (this.getAction() == 'dropdead') jaxpi.defeated().enemy("Fighter","Dropped to death?")
+
+            return;
+        }
         
         var distance = this.opponentDistance();
         

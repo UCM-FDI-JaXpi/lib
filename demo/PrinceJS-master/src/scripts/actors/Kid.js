@@ -183,6 +183,8 @@ class Kid extends Fighter {
     }
     
     drinkPotion() {
+
+        jaxpi.used(true).item("potion")
         
         this.setAction('drinkpotion');
         this.pickupPotion = false;
@@ -192,6 +194,8 @@ class Kid extends Fighter {
     }
     
     gotSword() {
+
+        jaxpi.equipped().item("sword")
         
         this.setAction('pickupsword');
         this.pickupSword = false;
@@ -883,6 +887,7 @@ class Kid extends Fighter {
     
     runjump() {
         
+        jaxpi.jumped(1, "1").character("kid");
         // adjust jump to edge
         const xpos = this.charX + 4 * this.charFace;
         const block = convertXtoBlockX(xpos);
@@ -1259,7 +1264,8 @@ class Kid extends Fighter {
     }
     
     jump() {
-    
+       
+
         var tile = this.level.getTileAt(this.charBlockX, this.charBlockY, this.room);
         var tileT = this.level.getTileAt(this.charBlockX, this.charBlockY - 1, this.room);
         var tileTF = this.level.getTileAt(this.charBlockX + this.charFace, this.charBlockY - 1, this.room);
@@ -1279,6 +1285,9 @@ class Kid extends Fighter {
             if ( tile.isOpen() ) return this.climbstairs();
             
         }
+
+        // Jaxpi call after checking jump is possible
+        jaxpi.jumped(1, "1").character("kid");
         
         if ( tileT.isSpace() && tileTF.isWalkable() )
         {
