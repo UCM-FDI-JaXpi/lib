@@ -1,6 +1,7 @@
 import GameState from "./GameState";
 import { SCREEN_HEIGHT, SCREEN_WIDTH, UI_HEIGHT } from "../Config";
 import { toMinutes, toSeconds } from '../Utils';
+import jaxpi from "../../main";
 
 class Interface {
 
@@ -56,6 +57,7 @@ class Interface {
     }
 
     showPressButton() {
+        jaxpi.died().character("kid")
         this.scene.time.delayedCall(2000, this.showText, ['Press Button to Continue'], this);
     }
 

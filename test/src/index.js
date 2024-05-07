@@ -117,7 +117,7 @@ export default class Jaxpi {
         this.player = player;
 
         this.worker = new Worker(path.join(dirname(fileURLToPath(import.meta.url)), './worker.js'));
-        this.localStorage = new LocalStorage('../scratch');
+        this.localStorage = new LocalStorage('./scratch');
         // Dentro del evento 'message', recuperamos el ID de la promesa y llamamos a la función resolve o reject correspondiente
         this.worker.on('message', (event) => {
             const data = event;

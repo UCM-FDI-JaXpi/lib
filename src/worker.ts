@@ -7,28 +7,27 @@ self.onmessage = async (event) => {
   const data = event.data;
 
   if (data.type === 'SEND_TRACES') {
-    const { traces, token, serverUrl } = data;
+    const { traces, token, serverUrl, promiseId } = data;
 
     for (const trace of traces) {
-      await sendTraceToServer(trace, token, serverUrl);
+      await sendTraceToServer(trace, token, serverUrl, promiseId);
     }
 
-    self.postMessage({ type: 'RESPONSE' });
+    self.postMessage({ type: 'RESPONSE', promiseID: promiseId });
   }
   if (data.type === 'LOGIN') {
     const { credentials, serverUrl } = data;
 
     await login(credentials, serverUrl);
 
-    self.postMessage({ type: 'RESPONSE' });
+    //self.postMessage({ type: 'RESPONSE' });
   }
 };
 
-async function sendTraceToServer(trace: { type: string; data: string, id: string }, token: string, serverUrl: string) {
+async function sendTraceToServer(trace: { type: string; data: string, id: string }, token: string, serverUrl: string, promiseId: any) {
   try {
     // Aquí utilizamos Axios para enviar la traza al servidor
     console.log(`Enviando traza ${trace.type} al servidor...`);
-    console.log(trace.data)
 
     const response = await axios.post(serverUrl, trace.data, { 
       headers: {
@@ -44,7 +43,7 @@ async function sendTraceToServer(trace: { type: string; data: string, id: string
 
   } catch (error) {
     console.error('Error al enviar traza:', error);
-    self.postMessage({ type: 'ERROR', error });
+    self.postMessage({ type: 'ERROR', error, promiseId });
   }
 }
 
@@ -59,7 +58,7 @@ async function login(credentials: { email: string; password: string }, serverUrl
       }
     });
 
-    console.log(`Logeado ${credentials.email} al servidor`);
+    console.log(`${credentials.email} logeado al servidor`);
 
     self.postMessage({ type: 'LOGIN', token: response.data.token})
 

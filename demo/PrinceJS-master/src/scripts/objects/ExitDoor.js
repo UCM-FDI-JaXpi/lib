@@ -1,5 +1,7 @@
 import Object from './Object';
 import { TILE, LEVEL } from '../Constants';
+// Import JaXpi
+import jaxpi from '../../main'
 
 const STATE_OPEN = 0;
 const STATE_RAISING = 1;
@@ -65,6 +67,7 @@ class ExitDoor extends Object {
     
         if ( this.state == STATE_CLOSED ) {
             
+            jaxpi.opened().door("exit_door")
             this.state = STATE_RAISING;
             
         }

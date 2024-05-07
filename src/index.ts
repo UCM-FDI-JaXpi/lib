@@ -128,7 +128,7 @@
     this.worker.addEventListener('message', (event: any) => {
       const data = event.data;
       if (data.type === 'RESPONSE') {
-        const promiseId = data.promiseId;
+        const promiseId = data.promiseID;
         const promiseFunctions = this.promisesMap.get(promiseId);
         if (promiseFunctions) {
           promiseFunctions.resolve();
@@ -162,19 +162,19 @@
     // LogIn con el server para generar el token
       this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
   
-	  // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
-		  if (localStorage.length) {
-			  for (let i = 0; i < localStorage.length; i++) {
-				  const key = localStorage.key(i);
-          console.log(/^statd+$/.test(key!))
-          console.log(localStorage.getItem(key!))
-          if (/^statd+$/.test(key!)) {
-            const value = localStorage.getItem(key!);
+	  // // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
+		//   if (localStorage.length) {
+		// 	  for (let i = 0; i < localStorage.length; i++) {
+		// 		  const key = localStorage.key(i);
+    //       console.log(/^statd+$/.test(key!))
+    //       console.log(localStorage.getItem(key!))
+    //       if (/^statd+$/.test(key!)) {
+    //         const value = localStorage.getItem(key!);
     
-            this.statementQueue.enqueue(JSON.parse(value!))
-          }
-			  }
-		  }
+    //         this.statementQueue.enqueue(JSON.parse(value!))
+    //       }
+		// 	  }
+		//   }
   
 	  if (typeof window !== undefined){
 		let isListening = false;
@@ -227,7 +227,6 @@
   
 	private async processQueue() {
 	  const traces = this.statementQueue.toArray();
-	  console.log(traces)
 	  if (traces.length > 0) {
 		const promise = this.sendTraces(traces);
 		this.promises.push(promise);
@@ -248,7 +247,7 @@
       // Guardamos las funciones resolve y reject en el mapa
       this.promisesMap.set(promiseId, { resolve, reject });
   
-      this.worker.postMessage({ type: 'SEND_TRACES', traces, token: this.token, serverUrl: this.serverUrl, promiseId });
+      this.worker.postMessage({ type: 'SEND_TRACES', traces, token: this.token, serverUrl: this.serverUrl, promiseId: promiseId });
     });
   }
 

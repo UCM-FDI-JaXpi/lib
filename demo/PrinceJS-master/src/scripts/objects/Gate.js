@@ -1,5 +1,7 @@
 import Object from './Object';
 import { TILE, SOUND } from '../Constants';
+// Import JaXpi
+import jaxpi from '../../main'
 
 const STATE_CLOSED = 0;
 const STATE_OPEN = 1;
@@ -127,7 +129,8 @@ class Gate extends Object {
   
         this.step = 0;
         if ( this.state != STATE_WAITING ) {
-            
+            jaxpi.
+            jaxpi.opened().door("gate")
             this.state = STATE_RAISING;
             this.risingSound = true;
         }

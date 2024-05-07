@@ -57,8 +57,8 @@ class Enemy extends Fighter {
         
         if ( this.getAction() == 'stabbed' || this.getAction() == 'stabkill' || this.getAction() == 'dropdead') {
 
-            if (this.getAction() == 'stabkill') jaxpi.defeated().enemy("Fighter","Stabbed to death")
-            if (this.getAction() == 'dropdead') jaxpi.defeated().enemy("Fighter","Dropped to death?")
+            if (this.getAction() == 'stabkill') jaxpi.defeated().enemy("fighter","Stabbed to death")
+            if (this.getAction() == 'dropdead') jaxpi.defeated().enemy("fighter","Dropped to death?")
 
             return;
         }

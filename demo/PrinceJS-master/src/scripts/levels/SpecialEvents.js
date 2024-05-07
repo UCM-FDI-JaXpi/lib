@@ -1,5 +1,6 @@
 import GameState from "../ui/GameState";
 import { TILE } from '../Constants';
+import jaxpi from "../../main";
 
 class SpecialEvents {
 
@@ -12,6 +13,8 @@ class SpecialEvents {
         switch (GameState.currentLevel) {
 
             case 1:
+                jaxpi.started().level("level 1")
+
                 this.scene.kid.charX -= 7;
                 this.scene.level.fireEvent(8, TILE.DROP_BUTTON);
                 this.scene.kid.specialLand = true;

@@ -5,6 +5,8 @@ import Clock from '../objects/Clock'
 import Actor from '../actors/Actor'
 import GameState from '../ui/GameState'
 import { TILE, LEVEL } from '../Constants';
+// Import JaXpi
+import jaxpi from '../../main'
 
 const STATE_WAITING = 0;
 const STATE_RUNNING = 1;
@@ -154,7 +156,8 @@ class CutScene extends Scene {
     }
    
     endCutscene() {
-      
+        
+        jaxpi.completed(100).game("Prince of JS")
         this.cameras.main.fadeOut(2000);
         this.cameras.main.on('camerafadeoutcomplete', this.nextScene, this);
         

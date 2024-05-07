@@ -197,9 +197,9 @@ class GameScene extends Scene {
     
 	nextLevel() {
 
-        jaxpi.completed(0).level(GameState.currentLevel.toString());
+        jaxpi.completed(0).level(`level ${GameState.currentLevel.toString()}`);
         GameState.currentLevel++;
-        jaxpi.started().level(GameState.currentLevel.toString());
+        jaxpi.started().level(`level ${GameState.currentLevel.toString()}`);
 
         if (GameState.currentLevel == 16) GameState.currentLevel = 1;
         this.saveGameState();
@@ -210,6 +210,8 @@ class GameScene extends Scene {
     previousLevel() {
 
 		GameState.currentLevel--;
+        jaxpi.started().level(`level ${GameState.currentLevel.toString()}`);
+
         if (GameState.currentLevel == 0) GameState.currentLevel = 14;
         this.reset();
 

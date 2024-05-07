@@ -860,7 +860,6 @@ class Kid extends Fighter {
     standjump() {
         
         this.setAction('standjump');
-        console.log("Haz algo, muevete")
         jaxpi.jumped(1, "1").character("kid");
         
     }
