@@ -23,7 +23,7 @@
 	private statementInterval: NodeJS.Timeout | undefined;
     // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
   	private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
-	private token: string = "-1";
+	//private token: string = "-1";
   
   
   
@@ -104,20 +104,21 @@
   
   
   
-  
-  
+  // @param {string} logInURL - The url of the server to log in.
+  // @param {string} player.password - The password of the player.
+	//constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
   
 	  /**
 	   * @param {Object} player - Structure that contains player data.
 	   * @param {string} player.name - The name of the player.
 	   * @param {string} player.mail - The mail of the player.
-	   * @param {string} player.password - The password of the player.
 	   * @param {string} serverURL - The url of the server where statements will be sent.
-	   * @param {string} logInURL - The url of the server to log in.
+	   * @param {string} token - The token of authentication the server will use to send the statements.
 	   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
 	   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
 	   */
-	constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
+	constructor(player: generate.Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
+
 	  this.context = undefined;
 	  this.player = player;
 	  this.worker = new Worker(new URL('./worker.js', import.meta.url));
@@ -144,9 +145,10 @@
       } else if (data.type === 'DEQUEUE') {
         // Quitar de localStorage la traza enviada
         localStorage.removeItem(data.stat_id)
-      } else if (data.type === 'LOGIN') {
-        this.token = data.token;
-      }
+      } 
+      // else if (data.type === 'LOGIN') {
+      //   this.token = data.token;
+      // }
     });
 	  this.promises = [];
 	  // Inicia el tamaño de la cola de trazas. Por defecto MAX_QUEUE_LENGTH
@@ -160,7 +162,7 @@
 
 
     // LogIn con el server para generar el token
-      this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
+    //  this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
   
 	  // // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
 		//   if (localStorage.length) {

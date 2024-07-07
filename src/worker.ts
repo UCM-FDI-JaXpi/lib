@@ -15,13 +15,13 @@ self.onmessage = async (event) => {
 
     self.postMessage({ type: 'RESPONSE', promiseID: promiseId });
   }
-  if (data.type === 'LOGIN') {
-    const { credentials, serverUrl } = data;
+  // if (data.type === 'LOGIN') {
+  //   const { credentials, serverUrl } = data;
 
-    await login(credentials, serverUrl);
+  //   await login(credentials, serverUrl);
 
-    //self.postMessage({ type: 'RESPONSE' });
-  }
+  //   //self.postMessage({ type: 'RESPONSE' });
+  // }
 };
 
 async function sendTraceToServer(trace: { type: string; data: string, id: string }, token: string, serverUrl: string, promiseId: any) {
@@ -47,23 +47,23 @@ async function sendTraceToServer(trace: { type: string; data: string, id: string
   }
 }
 
-async function login(credentials: { email: string; password: string }, serverUrl: string) {
-  try {
-    // Aquí utilizamos Axios para enviar la traza al servidor
-    console.log(`Conectado al servidor`);
+// async function login(credentials: { email: string; password: string }, serverUrl: string) {
+//   try {
+//     // Aquí utilizamos Axios para enviar la traza al servidor
+//     console.log(`Conectado al servidor`);
 
-    const response = await axios.post(serverUrl, credentials, { //{email: credentials.email, password: credentials.password}
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
+//     const response = await axios.post(serverUrl, credentials, { //{email: credentials.email, password: credentials.password}
+//       headers: {
+//         'Content-Type': 'application/json',
+//       }
+//     });
 
-    console.log(`${credentials.email} logeado al servidor`);
+//     console.log(`${credentials.email} logeado al servidor`);
 
-    self.postMessage({ type: 'LOGIN', token: response.data.token})
+//     self.postMessage({ type: 'LOGIN', token: response.data.token})
 
-  } catch (error) {
-    console.error('Error al conectar al servidor:', error);
-    self.postMessage({ type: 'ERROR', error });
-  }
-}
+//   } catch (error) {
+//     console.error('Error al conectar al servidor:', error);
+//     self.postMessage({ type: 'ERROR', error });
+//   }
+// }

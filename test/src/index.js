@@ -104,13 +104,13 @@ export default class Jaxpi {
        * @param {string} player.mail - The mail of the player.
        * @param {string} player.password - The password of the player.
        * @param {string} serverURL - The url of the server where statements will be sent.
-       * @param {string} logInURL - The url of the server to log in.
+       * @param {string} token - The token of authentication the server will use to send the statements.
        * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server.
        * @param {string} [max_queue=7] - Maximum number of statement per queue before sending.
        */
-    constructor(player, serverUrl, loginUrl, time_interval, max_queue) {
+    constructor(player, serverUrl, token, time_interval, max_queue) {
         this.serverUrl = serverUrl;
-        this.loginUrl = loginUrl;
+        this.token = token;
         this.time_interval = time_interval;
         this.max_queue = max_queue;
         this.context = undefined;
@@ -141,12 +141,12 @@ export default class Jaxpi {
                 // Quitar de this.localStorage la traza enviada
                 this.localStorage.removeItem(data.stat_id);
             }
-            else if (data.type === 'LOGIN') {
-                this.token = data.token;
-            }
+            // else if (data.type === 'LOGIN') {
+            //     this.token = data.token;
+            // }
         });
         // LogIn con el server para generar el token
-        this.worker.postMessage({ type: 'LOGIN', credentials: { email: this.player.mail, password: this.player.password }, serverUrl: this.loginUrl });
+        // this.worker.postMessage({ type: 'LOGIN', credentials: { email: this.player.mail, password: this.player.password }, serverUrl: this.loginUrl });
         this.promises = [];
         // Inicia el tamaño de la cola de trazas. Por defecto MAX_QUEUE_LENGTH
         if (this.max_queue)
