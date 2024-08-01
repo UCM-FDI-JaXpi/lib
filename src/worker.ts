@@ -13,7 +13,7 @@ self.onmessage = async (event) => {
       await sendTraceToServer(trace, token, serverUrl, promiseId);
     }
 
-    self.postMessage({ type: 'RESPONSE', promiseID: promiseId });
+    self.postMessage({ type: 'RESPONSE', promiseId: promiseId });
   }
   // if (data.type === 'LOGIN') {
   //   const { credentials, serverUrl } = data;

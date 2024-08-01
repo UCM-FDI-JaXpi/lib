@@ -1,8 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<meta charset="UTF-8" />
-	<title>PrinceJS - An HTML5 port of Prince of Persia</title>
+    <meta charset="UTF-8" />
+    <title>PrinceJS - An HTML5 port of Prince of Persia</title>
     <style>
         body {
             background-image: url(img/prince_back_1920.jpg);
@@ -13,15 +13,49 @@
                 background-image: url(img/prince_back_1920.jpg);
             }
         }
+
+        #menu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: rgba(240, 240, 240, 0.9);
+            position: absolute;
+            width: 100%;
+        }
+
+        #menu input, #menu button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #gameContainer {
+            padding-left: 112px;
+            padding-top: 183px;
+        }
     </style>
+    
+
 </head>
 <body>
-    <div style="float: right; margin-top: 10px; margin-right: 20px;" >
+    
+    <div style="float: right; margin-top: 10px; margin-right: 20px;">
         <a href="http://ultrabolido.wordpress.com"><img src="img/wordpress.png" width="50px" height="50px" border="0"/></a>
         <br/>
         <a href="http://twitter.com/ultrabolido"><img src="img/twitter.png" width="50px" height="50px" border="0"/></a>
     </div>
-<div style="padding-left: 112px; padding-top: 183px;" id="gameContainer"></div>
+    <div id="menu">
+        <h1>Bienvenido al Juego</h1>
+        <input type="text" id="playerKey" placeholder="Clave de 6 valores">
+        <button id="playWithKey">Jugar Identificado</button>
+        <button id="playWithoutKey">Jugar sin Identificación</button>
+    </div>
+
     
+
+    <div id="gameContainer" style="display:none;"></div>
+
 </body>
 </html>

@@ -6,6 +6,8 @@ export interface Player {
     //password: string;
 }
 
+
+
 export function generateStatementFromZero(verbId: string | any, objectId: string | any, parameters?: Array<[string,any]>): [any, any] {
 
     let parameter = "";
@@ -54,7 +56,7 @@ export function generateStatementFromZero(verbId: string | any, objectId: string
     return [verb,object];
 }
 
-export function generateStatement(player: Player, verb: { id: any; display: any; objects?: string[]; description?: string; extensions?: object | undefined; }, object: { id: any; definition: { type: any; name: any; description: any; extensions?: object | undefined; }; }, result?: any, context?: any, authority?: any): XAPIStatement {
+export function generateStatement(player: Player, verb: { id: any; display: any; objects?: string[]; description?: string; extensions?: object | undefined; }, object: { id: any; definition: { type: any; name: any; description: any; extensions?: object | undefined; }; }, sessionKey: string, result?: any, context?: any, authority?: any, ): XAPIStatement {
 
     const statement: XAPIStatement = {
         actor: {
@@ -74,12 +76,37 @@ export function generateStatement(player: Player, verb: { id: any; display: any;
         }
         },
         timestamp: new Date().toISOString(),
+        context: {
+            instructor: {
+                name: "",
+                mbox: ""
+            },
+            contextActivities: {
+                parent: {
+                    id: ""
+                },
+                grouping: {
+                    id: ""
+                }
+            },
+            extensions: {}
+        },
     };
 
     if (object.definition.extensions !== undefined) statement.object.definition.extensions = object.definition.extensions;
     if (result !== undefined) statement.result = result;
     if (context !== undefined) statement.context = context;
     if (authority !== undefined) statement.authority = authority;
+
+    // Ensure context.extensions is defined
+    if (!statement.context!.extensions) {
+        statement.context!.extensions = {};
+    }
+
+    // Add idUser to context.extensions if sessionKey is provided
+    if (sessionKey !== "") {
+        statement.context!.extensions.idUser = sessionKey;
+    }
 
     return statement;
 }

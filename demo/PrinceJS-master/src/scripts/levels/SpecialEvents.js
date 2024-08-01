@@ -13,6 +13,7 @@ class SpecialEvents {
         switch (GameState.currentLevel) {
 
             case 1:
+                //console.log(localStorage.getItem("jaxpi"))
                 jaxpi.started().level("level 1")
 
                 this.scene.kid.charX -= 7;

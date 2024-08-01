@@ -95,14 +95,14 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       ${element}: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.${element}, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         ${parametersUpdate}
@@ -113,11 +113,11 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
           });
         }
 		
-		console.log(\`JaXpi ${key}/${element} = "\${name}" statement enqueued\`)
+		    console.log(\`JaXpi ${key}/${element} = "\${name}" statement enqueued\`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.${key}, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.${key}, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: '${key}/${element}', data: statement, id: id});
@@ -177,22 +177,22 @@ ${key}(${parameters}) {
 	private stat_id: number = 1;
 	private promises: Promise<void>[];
 	private statementInterval: NodeJS.Timeout | undefined;
-    // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
-  	private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
-	//private token: string = "-1";
-  
+  // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
+  private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
+	// private token: string = "-1";
+  private sessionKey: string = "";
   
   
   
   
 	public verbs = {
-		${resolvedVerbsMap.join(',\n      ')}
-	  }
+    ${resolvedVerbsMap.join(',\n      ')}
+  }
   
   
-	  public objects = {
-		${resolvedObjectsMap.join(',\n      ')}
-	  }
+  public objects = {
+    ${resolvedObjectsMap.join(',\n      ')}
+  }
   
   
     // @param {string} logInURL - The url of the server to log in.
@@ -200,15 +200,15 @@ ${key}(${parameters}) {
 	  // constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
 
   
-	  /**
-	   * @param {Object} player - Structure that contains player data.
-	   * @param {string} player.name - The name of the player.
-	   * @param {string} player.mail - The mail of the player.
-	   * @param {string} serverURL - The url of the server where statements will be sent.
-	   * @param {string} token - The token of authentication the server will use to send the statements.
-	   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
-	   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
-	   */
+  /**
+   * @param {Object} player - Structure that contains player data.
+   * @param {string} player.name - The name of the player.
+   * @param {string} player.mail - The mail of the player.
+   * @param {string} serverURL - The url of the server where statements will be sent.
+   * @param {string} token - The token of authentication the server will use to send the statements.
+   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
+   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
+   */
 	constructor(player: generate.Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
 	  this.context = undefined;
 	  this.player = player;
@@ -312,8 +312,8 @@ ${key}(${parameters}) {
   
   
 	/**
-	   * Function to send the statements queue to the server, it also creates a backup if the sending fails
-	   */
+   * Function to send the statements queue to the server, it also creates a backup if the sending fails
+   */
 	async flush() {
 	  this.processQueue();
 	}
@@ -358,83 +358,89 @@ ${key}(${parameters}) {
 	}
   
 	/**
-	   * Function to stop the interval to send the statements queue to the server
-	   */
-	  public stopStatementInterval() {
-		  if (this.statementInterval)
-			  clearInterval(this.statementInterval); // Detiene el temporizador
-	  }
-	  /**
-	   * Function to start the interval to send the statements queue to the server
-	   */
-	  public startSendingInterval(seconds: number) {
-		  if (this.statementInterval)
-			  clearInterval(this.statementInterval);
-		  this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
-	  }
+   * Function to stop the interval to send the statements queue to the server
+   */
+  public stopStatementInterval() {
+    if (this.statementInterval)
+      clearInterval(this.statementInterval); // Detiene el temporizador
+  }
+  /**
+   * Function to start the interval to send the statements queue to the server
+   */
+  public startSendingInterval(seconds: number) {
+    if (this.statementInterval)
+      clearInterval(this.statementInterval);
+    this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
+  }
   
+  /**
+   * Function to set the session key of an user
+   * @param {string} sessionKey - Key of 6 values to identify user
+   */
+  public setKey(sessionKey: string){
+    this.sessionKey = sessionKey
+  }
   
+  /**
+   * Function to set the context field of the statement (class / association where it takes places)
+   * @param {string} name - Name of the instructor
+   * @param {string} mbox - Mail of the instructor
+   * @param {string} sessionId - Unique id of the session (class URI)
+   * @param {string} groupId - Unique id of the association (college URI)
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
+   */
+  public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string, any]>) {
+    this.context = {
+      instructor: {
+        name: name,
+        mbox: "mailto:" + mbox
+      },
+      contextActivities: {
+        parent: { id: "http://example.com/activities/" + sessionId },
+        grouping: { id: 'http://example.com/activities/' + groupId }
+      },
+      extensions: {}
+    }
+    if (parameters) {
+      for (let [key, value] of parameters) {
+        if (this.context.extensions !== undefined) {
+          let parameter = "http://example.com/activities/" + key;
+          (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
+        }
+      }
+    }
+  }
   
-	  /**
-	   * Function to set the context field of the statement (class / association where it takes places)
-	   * @param {string} name - Name of the instructor
-	   * @param {string} mbox - Mail of the instructor
-	   * @param {string} sessionId - Unique id of the session (class URI)
-	   * @param {string} groupId - Unique id of the association (college URI)
-	   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
-	   */
-	  public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string, any]>) {
-		  this.context = {
-			  instructor: {
-				  name: name,
-				  mbox: "mailto:" + mbox
-			  },
-			  contextActivities: {
-				  parent: { id: "http://example.com/activities/" + sessionId },
-				  grouping: { id: 'http://example.com/activities/' + groupId }
-			  },
-			  extensions: {}
-		  }
-		  if (parameters) {
-			  for (let [key, value] of parameters) {
-				  if (this.context.extensions !== undefined) {
-					  let parameter = "http://example.com/activities/" + key;
-					  (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
-				  }
-			  }
-		  }
-	  }
-  
-	  /**
-	   * Function to accept verbs / objects not contemplated in the library
-	   * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
-	   * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
-	   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
-	   * @param {any} [context] - Adds a field context for the statement
-	   * @param {any} [result] - Adds a field result for the statement
-	   * @param {any} [authority] - Adds a field authority for the statement
-	   */
-	  customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; }, parameters?: Array<[string, any]>, result?: any, context?: any, authority?: any) {
-  
-		  if (checkObject(object) || typeof object === "string") {
-			  if (checkVerb(verb) || typeof verb === "string") {
-				  const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
-  
-				  //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
-				  let statement = generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined)
-		  let id = this.statementIdCalc()
-  
-		  this.statementQueue.enqueue({type: 'accepted/achievement', data: statement, id: id});
-		  //this.statementQueue.enqueue({type: 'custom', data: statement});
-				  if (this.statementQueue.length >= this.max_queue_length) this.flush();
-			  }
-			  else
-				  console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
-		  }
-		  else
-			  console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
-  
-	  }\n\n
+  /**
+   * Function to accept verbs / objects not contemplated in the library
+   * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
+   * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
+   * @param {any} [context] - Adds a field context for the statement
+   * @param {any} [result] - Adds a field result for the statement
+   * @param {any} [authority] - Adds a field authority for the statement
+   */
+  customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; }, parameters?: Array<[string, any]>, result?: any, context?: any, authority?: any) {
+
+    if (checkObject(object) || typeof object === "string") {
+      if (checkVerb(verb) || typeof verb === "string") {
+        const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
+
+        //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
+        let statement = generate.generateStatement(this.player, verbJson, objectJson, this.sessionKey, undefined, this.context, undefined)
+        let id = this.statementIdCalc()
+    
+        this.statementQueue.enqueue({type: 'accepted/achievement', data: statement, id: id});
+        //this.statementQueue.enqueue({type: 'custom', data: statement});
+        if (this.statementQueue.length >= this.max_queue_length) this.flush();
+      }
+      else
+        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
+    }
+    else
+      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
+
+  }\n\n
 \n${methods.join('\n')}\n
 }`;
 

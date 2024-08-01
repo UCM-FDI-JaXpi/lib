@@ -5,6 +5,8 @@
   
   import * as generate from './scripts/generateStatement.js';
   import { checkObject, checkVerb } from './scripts/validateStatement.js';
+
+  import axios, { AxiosError } from 'axios';
   
   
   const TIME_INTERVAL_SEND = 5;
@@ -21,16 +23,16 @@
 	private stat_id: number = 1;
 	private promises: Promise<void>[];
 	private statementInterval: NodeJS.Timeout | undefined;
-    // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
-  	private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
-	//private token: string = "-1";
-  
+  // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
+  private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
+	// private token: string = "-1";
+  private sessionKey: string = "";
   
   
   
   
 	public verbs = {
-		"accepted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-US":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"],"description":"The player accepts an object like a task or a reward"},
+    "accepted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-US":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"],"description":"The player accepts an object like a task or a reward"},
       "accessed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accessed","display":{"en-US":"accessed","es":"accedido"},"objects":["chest","door","room","location"],"description":"The player access an object like a room or a new area","extensions":{"https://example.com/game/visited_times":3},"extensions-doc":{"https://example.com/game/visited_times":"Number of times the object has been accessed"}},
       "achieved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/achieved","display":{"en-US":"achieved","es":"logrado"},"objects":["achievement","award","game","goal","level","reward"],"description":"The player achieves something like a level up"},
       "cancelled":{"id":"https://github.com/UCM-FDI-JaXpi/lib/cancelled","display":{"en-US":"cancelled","es":"cancelado"},"objects":["mission","task"],"description":"The player cancels an object like a mission","extensions":{"https://example.com/game/reason":"Obstacle ahead"},"extensions-doc":{"https://example.com/game/reason":"Reason of the cancelation"}},
@@ -78,11 +80,11 @@
       "upgraded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/upgraded","display":{"en-US":"upgraded","es":"mejorado"},"objects":["item"],"description":"The player upgrades an item"},
       "used":{"id":"https://github.com/UCM-FDI-JaXpi/lib/used","display":{"en-US":"used","es":"utilizado"},"objects":["item"],"description":"The player uses an item","extensions":{"https://github.com/UCM-FDI-JaXpi/consumed":false},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/consumed":"The item is consumed with the use or not"}},
       "watched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/watched","display":{"en-US":"watched","es":"visto"}}
-	  }
+  }
   
   
-	  public objects = {
-		"achievement":{"id":"https://github.com/UCM-FDI-JaXpi/objects/achievement","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default achievement","es":"Logro por defecto"},"description":{"en-US":"A recognition or accomplishment gained by meeting certain criteria","es":"Un reconocimiento o logro obtenido al cumplir ciertos criterios"}}},
+  public objects = {
+    "achievement":{"id":"https://github.com/UCM-FDI-JaXpi/objects/achievement","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default achievement","es":"Logro por defecto"},"description":{"en-US":"A recognition or accomplishment gained by meeting certain criteria","es":"Un reconocimiento o logro obtenido al cumplir ciertos criterios"}}},
       "award":{"id":"https://github.com/UCM-FDI-JaXpi/objects/award","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default award","es":"Premio por defecto"},"description":{"en-US":"A prize or honor given to the player for an achievement","es":"Un premio u honor otorgado al jugador por un logro"}}},
       "character":{"id":"https://github.com/UCM-FDI-JaXpi/objects/character","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default character","es":"Personaje por defecto"},"description":{"en-US":"A persona or figure in the game","es":"Una persona o figura en el juego"}}},
       "chest":{"id":"https://github.com/UCM-FDI-JaXpi/objects/chest","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default chest","es":"Cofre por defecto"},"description":{"en-US":"A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock","es":"Un contenedor de almacenamiento, que a menudo se usa para guardar artículos o recompensas, puede requerir una llave o mecanismo para desbloquearlo"}}},
@@ -100,25 +102,24 @@
       "room":{"id":"https://github.com/UCM-FDI-JaXpi/objects/room","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default room","es":"Habitación por defecto"},"description":{"en-US":"A space within a building or structure like a house or a cave","es":"Un espacio dentro de un edificio o estructura como una casa o una cueva"}}},
       "skill":{"id":"https://github.com/UCM-FDI-JaXpi/objects/skill","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default skill","es":"Habilidad por defecto"},"description":{"en-US":"A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game","es":"La capacidad o experiencia de un jugador para ejecutar acciones particulares, o un movimiento distinto que puede usar en combate y que mejora sus habilidades de combate o desbloquea avances en el juego"}}},
       "task":{"id":"https://github.com/UCM-FDI-JaXpi/objects/task","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default task","es":"Tarea por defecto"},"description":{"en-US":"A piece of work to be done or undertaken, often part of a larger goal for the player","es":"Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador"}}}
-	  }
+  }
   
   
-  
-  // @param {string} logInURL - The url of the server to log in.
-  // @param {string} player.password - The password of the player.
-	//constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
-  
-	  /**
-	   * @param {Object} player - Structure that contains player data.
-	   * @param {string} player.name - The name of the player.
-	   * @param {string} player.mail - The mail of the player.
-	   * @param {string} serverURL - The url of the server where statements will be sent.
-	   * @param {string} token - The token of authentication the server will use to send the statements.
-	   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
-	   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
-	   */
-	constructor(player: generate.Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
+    // @param {string} logInURL - The url of the server to log in.
+	  // @param {string} player.password - The password of the player.
+	  // constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
 
+  
+  /**
+   * @param {Object} player - Structure that contains player data.
+   * @param {string} player.name - The name of the player.
+   * @param {string} player.mail - The mail of the player.
+   * @param {string} serverURL - The url of the server where statements will be sent.
+   * @param {string} token - The token of authentication the server will use to send the statements.
+   * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
+   * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
+   */
+	constructor(player: generate.Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
 	  this.context = undefined;
 	  this.player = player;
 	  this.worker = new Worker(new URL('./worker.js', import.meta.url));
@@ -129,7 +130,7 @@
     this.worker.addEventListener('message', (event: any) => {
       const data = event.data;
       if (data.type === 'RESPONSE') {
-        const promiseId = data.promiseID;
+        const promiseId = data.promiseId;
         const promiseFunctions = this.promisesMap.get(promiseId);
         if (promiseFunctions) {
           promiseFunctions.resolve();
@@ -164,19 +165,19 @@
     // LogIn con el server para generar el token
     //  this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
   
-	  // // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
-		//   if (localStorage.length) {
-		// 	  for (let i = 0; i < localStorage.length; i++) {
-		// 		  const key = localStorage.key(i);
-    //       console.log(/^statd+$/.test(key!))
-    //       console.log(localStorage.getItem(key!))
-    //       if (/^statd+$/.test(key!)) {
-    //         const value = localStorage.getItem(key!);
+	  // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
+		  if (localStorage.length) {
+			  for (let i = 0; i < localStorage.length; i++) {
+				  const key = localStorage.key(i);
+          console.log(/^statd+$/.test(key!))
+          console.log(localStorage.getItem(key!))
+          if (/^statd+$/.test(key!)) {
+            const value = localStorage.getItem(key!);
     
-    //         this.statementQueue.enqueue(JSON.parse(value!))
-    //       }
-		// 	  }
-		//   }
+            this.statementQueue.enqueue(JSON.parse(value!))
+          }
+			  }
+		  }
   
 	  if (typeof window !== undefined){
 		let isListening = false;
@@ -221,19 +222,21 @@
   
   
 	/**
-	   * Function to send the statements queue to the server, it also creates a backup if the sending fails
-	   */
+   * Function to send the statements queue to the server, it also creates a backup if the sending fails
+   */
 	async flush() {
 	  this.processQueue();
 	}
   
 	private async processQueue() {
 	  const traces = this.statementQueue.toArray();
+	  console.log(traces)
 	  if (traces.length > 0) {
 		const promise = this.sendTraces(traces);
 		this.promises.push(promise);
 		try {
 		  await promise;
+
 		  //await this.promises.push(this.sendTraces(traces));
 		  this.statementQueue = new Queue(); // Limpiar la cola después de enviar
 		} catch (error) {
@@ -249,7 +252,7 @@
       // Guardamos las funciones resolve y reject en el mapa
       this.promisesMap.set(promiseId, { resolve, reject });
   
-      this.worker.postMessage({ type: 'SEND_TRACES', traces, token: this.token, serverUrl: this.serverUrl, promiseId: promiseId });
+      this.worker.postMessage({ type: 'SEND_TRACES', traces, token: this.token, serverUrl: this.serverUrl, promiseId });
     });
   }
 
@@ -266,83 +269,118 @@
 	}
   
 	/**
-	   * Function to stop the interval to send the statements queue to the server
-	   */
-	  public stopStatementInterval() {
-		  if (this.statementInterval)
-			  clearInterval(this.statementInterval); // Detiene el temporizador
-	  }
-	  /**
-	   * Function to start the interval to send the statements queue to the server
-	   */
-	  public startSendingInterval(seconds: number) {
-		  if (this.statementInterval)
-			  clearInterval(this.statementInterval);
-		  this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
-	  }
+   * Function to stop the interval to send the statements queue to the server
+   */
+  public stopStatementInterval() {
+    if (this.statementInterval)
+      clearInterval(this.statementInterval); // Detiene el temporizador
+  }
+  /**
+   * Function to start the interval to send the statements queue to the server
+   */
+  public startSendingInterval(seconds: number) {
+    if (this.statementInterval)
+      clearInterval(this.statementInterval);
+    this.statementInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
+  }
   
+  /**
+   * Function to set the session key of an user
+   * @param {string} sessionKey - Key of 6 values that identifies the user
+   */
+  public setKey(sessionKey: string){
+    this.sessionKey = sessionKey
+  }
+
+  /**
+   * Async function to validate the session key of an user
+   * @param {string} sessionKey - Key of 6 values that identifies the user
+   * @returns {Promise<boolean>} A promise with the boolean result of the validation
+   */
+  public async validateKey(sessionKey: string): Promise<boolean> {
+    try{
+      const response = await axios.get(`http://localhost:3000/publicAPI/key/${sessionKey}`)
+      return response.status === 200;
+
+    }catch (error){
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // El servidor respondió con un estado diferente de 2xx
+          console.error('Error:', error.response.status, error.response.data);
+        } else if (error.request) {
+          // La solicitud fue hecha pero no hubo respuesta
+          console.error('Error:', error.request);
+        } else {
+          // Algo pasó al configurar la solicitud
+          console.error('Error:', error.message);
+        }
+      } else {
+        console.error('Error:', error);
+      }
+      return false
+    }
+  }
   
+  /**
+   * Function to set the context field of the statement (class / association where it takes places)
+   * @param {string} name - Name of the instructor
+   * @param {string} mbox - Mail of the instructor
+   * @param {string} sessionId - Unique id of the session (class URI)
+   * @param {string} groupId - Unique id of the association (college URI)
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
+   */
+  public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string, any]>) {
+    this.context = {
+      instructor: {
+        name: name,
+        mbox: "mailto:" + mbox
+      },
+      contextActivities: {
+        parent: { id: "http://example.com/activities/" + sessionId },
+        grouping: { id: 'http://example.com/activities/' + groupId }
+      },
+      extensions: {}
+    }
+    if (parameters) {
+      for (let [key, value] of parameters) {
+        if (this.context.extensions !== undefined) {
+          let parameter = "http://example.com/activities/" + key;
+          (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
+        }
+      }
+    }
+  }
   
-	  /**
-	   * Function to set the context field of the statement (class / association where it takes places)
-	   * @param {string} name - Name of the instructor
-	   * @param {string} mbox - Mail of the instructor
-	   * @param {string} sessionId - Unique id of the session (class URI)
-	   * @param {string} groupId - Unique id of the association (college URI)
-	   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
-	   */
-	  public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string, any]>) {
-		  this.context = {
-			  instructor: {
-				  name: name,
-				  mbox: "mailto:" + mbox
-			  },
-			  contextActivities: {
-				  parent: { id: "http://example.com/activities/" + sessionId },
-				  grouping: { id: 'http://example.com/activities/' + groupId }
-			  },
-			  extensions: {}
-		  }
-		  if (parameters) {
-			  for (let [key, value] of parameters) {
-				  if (this.context.extensions !== undefined) {
-					  let parameter = "http://example.com/activities/" + key;
-					  (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
-				  }
-			  }
-		  }
-	  }
-  
-	  /**
-	   * Function to accept verbs / objects not contemplated in the library
-	   * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
-	   * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
-	   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
-	   * @param {any} [context] - Adds a field context for the statement
-	   * @param {any} [result] - Adds a field result for the statement
-	   * @param {any} [authority] - Adds a field authority for the statement
-	   */
-	  customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; }, parameters?: Array<[string, any]>, result?: any, context?: any, authority?: any) {
-  
-		  if (checkObject(object) || typeof object === "string") {
-			  if (checkVerb(verb) || typeof verb === "string") {
-				  const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
-  
-				  //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
-				  let statement = generate.generateStatement(this.player, verbJson, objectJson, undefined, this.context, undefined)
-		  let id = this.statementIdCalc()
-  
-		  this.statementQueue.enqueue({type: 'accepted/achievement', data: statement, id: id});
-		  //this.statementQueue.enqueue({type: 'custom', data: statement});
-				  if (this.statementQueue.length >= this.max_queue_length) this.flush();
-			  }
-			  else
-				  console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
-		  }
-		  else
-			  console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
-  
-	  }
+  /**
+   * Function to accept verbs / objects not contemplated in the library
+   * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
+   * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
+   * @param {any} [context] - Adds a field context for the statement
+   * @param {any} [result] - Adds a field result for the statement
+   * @param {any} [authority] - Adds a field authority for the statement
+   */
+  customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; }, parameters?: Array<[string, any]>, result?: any, context?: any, authority?: any) {
+
+    if (checkObject(object) || typeof object === "string") {
+      if (checkVerb(verb) || typeof verb === "string") {
+        const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
+
+        //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
+        let statement = generate.generateStatement(this.player, verbJson, objectJson, this.sessionKey, undefined, this.context, undefined)
+        let id = this.statementIdCalc()
+    
+        this.statementQueue.enqueue({type: 'accepted/achievement', data: statement, id: id});
+        //this.statementQueue.enqueue({type: 'custom', data: statement});
+        if (this.statementQueue.length >= this.max_queue_length) this.flush();
+      }
+      else
+        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
+    }
+    else
+      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
+
+  }
 
 
 
@@ -362,14 +400,14 @@ accepted() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.achievement, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -380,11 +418,11 @@ accepted() {
           });
         }
 		
-		console.log(`JaXpi accepted/achievement = "${name}" statement enqueued`)
+		    console.log(`JaXpi accepted/achievement = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/achievement', data: statement, id: id});
@@ -399,14 +437,14 @@ accepted() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       award: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.award, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -417,11 +455,11 @@ accepted() {
           });
         }
 		
-		console.log(`JaXpi accepted/award = "${name}" statement enqueued`)
+		    console.log(`JaXpi accepted/award = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/award', data: statement, id: id});
@@ -436,14 +474,14 @@ accepted() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -454,11 +492,11 @@ accepted() {
           });
         }
 		
-		console.log(`JaXpi accepted/mission = "${name}" statement enqueued`)
+		    console.log(`JaXpi accepted/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/mission', data: statement, id: id});
@@ -473,14 +511,14 @@ accepted() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       reward: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.reward, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -491,11 +529,11 @@ accepted() {
           });
         }
 		
-		console.log(`JaXpi accepted/reward = "${name}" statement enqueued`)
+		    console.log(`JaXpi accepted/reward = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/reward', data: statement, id: id});
@@ -510,14 +548,14 @@ accepted() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.task, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -528,11 +566,11 @@ accepted() {
           });
         }
 		
-		console.log(`JaXpi accepted/task = "${name}" statement enqueued`)
+		    console.log(`JaXpi accepted/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accepted/task', data: statement, id: id});
@@ -559,14 +597,14 @@ accessed(visited_times : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
@@ -578,11 +616,11 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log(`JaXpi accessed/chest = "${name}" statement enqueued`)
+		    console.log(`JaXpi accessed/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/chest', data: statement, id: id});
@@ -597,14 +635,14 @@ accessed(visited_times : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.door, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
@@ -616,11 +654,11 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log(`JaXpi accessed/door = "${name}" statement enqueued`)
+		    console.log(`JaXpi accessed/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/door', data: statement, id: id});
@@ -635,14 +673,14 @@ accessed(visited_times : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       room: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.room, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
@@ -654,11 +692,11 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log(`JaXpi accessed/room = "${name}" statement enqueued`)
+		    console.log(`JaXpi accessed/room = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/room', data: statement, id: id});
@@ -673,14 +711,14 @@ accessed(visited_times : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/visited_times'] = visited_times;
@@ -692,11 +730,11 @@ accessed(visited_times : number,) {
           });
         }
 		
-		console.log(`JaXpi accessed/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi accessed/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'accessed/location', data: statement, id: id});
@@ -723,14 +761,14 @@ achieved() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.achievement, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -741,11 +779,11 @@ achieved() {
           });
         }
 		
-		console.log(`JaXpi achieved/achievement = "${name}" statement enqueued`)
+		    console.log(`JaXpi achieved/achievement = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/achievement', data: statement, id: id});
@@ -760,14 +798,14 @@ achieved() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       award: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.award, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -778,11 +816,11 @@ achieved() {
           });
         }
 		
-		console.log(`JaXpi achieved/award = "${name}" statement enqueued`)
+		    console.log(`JaXpi achieved/award = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/award', data: statement, id: id});
@@ -797,14 +835,14 @@ achieved() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.game, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -815,11 +853,11 @@ achieved() {
           });
         }
 		
-		console.log(`JaXpi achieved/game = "${name}" statement enqueued`)
+		    console.log(`JaXpi achieved/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/game', data: statement, id: id});
@@ -834,14 +872,14 @@ achieved() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       goal: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.goal, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -852,11 +890,11 @@ achieved() {
           });
         }
 		
-		console.log(`JaXpi achieved/goal = "${name}" statement enqueued`)
+		    console.log(`JaXpi achieved/goal = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/goal', data: statement, id: id});
@@ -871,14 +909,14 @@ achieved() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -889,11 +927,11 @@ achieved() {
           });
         }
 		
-		console.log(`JaXpi achieved/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi achieved/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/level', data: statement, id: id});
@@ -908,14 +946,14 @@ achieved() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       reward: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.reward, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -926,11 +964,11 @@ achieved() {
           });
         }
 		
-		console.log(`JaXpi achieved/reward = "${name}" statement enqueued`)
+		    console.log(`JaXpi achieved/reward = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'achieved/reward', data: statement, id: id});
@@ -957,14 +995,14 @@ cancelled(reason : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/reason'] = reason;
@@ -976,11 +1014,11 @@ cancelled(reason : string,) {
           });
         }
 		
-		console.log(`JaXpi cancelled/mission = "${name}" statement enqueued`)
+		    console.log(`JaXpi cancelled/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'cancelled/mission', data: statement, id: id});
@@ -995,14 +1033,14 @@ cancelled(reason : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.task, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/reason'] = reason;
@@ -1014,11 +1052,11 @@ cancelled(reason : string,) {
           });
         }
 		
-		console.log(`JaXpi cancelled/task = "${name}" statement enqueued`)
+		    console.log(`JaXpi cancelled/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'cancelled/task', data: statement, id: id});
@@ -1045,14 +1083,14 @@ chatted() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.character, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1063,11 +1101,11 @@ chatted() {
           });
         }
 		
-		console.log(`JaXpi chatted/character = "${name}" statement enqueued`)
+		    console.log(`JaXpi chatted/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.chatted, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.chatted, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'chatted/character', data: statement, id: id});
@@ -1094,14 +1132,14 @@ clicked() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.character, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1112,11 +1150,11 @@ clicked() {
           });
         }
 		
-		console.log(`JaXpi clicked/character = "${name}" statement enqueued`)
+		    console.log(`JaXpi clicked/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/character', data: statement, id: id});
@@ -1131,14 +1169,14 @@ clicked() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1149,11 +1187,11 @@ clicked() {
           });
         }
 		
-		console.log(`JaXpi clicked/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi clicked/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/item', data: statement, id: id});
@@ -1168,14 +1206,14 @@ clicked() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       dialog: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.dialog, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1186,11 +1224,11 @@ clicked() {
           });
         }
 		
-		console.log(`JaXpi clicked/dialog = "${name}" statement enqueued`)
+		    console.log(`JaXpi clicked/dialog = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/dialog', data: statement, id: id});
@@ -1205,14 +1243,14 @@ clicked() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.door, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1223,11 +1261,11 @@ clicked() {
           });
         }
 		
-		console.log(`JaXpi clicked/door = "${name}" statement enqueued`)
+		    console.log(`JaXpi clicked/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'clicked/door', data: statement, id: id});
@@ -1254,14 +1292,14 @@ climbed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1272,11 +1310,11 @@ climbed() {
           });
         }
 		
-		console.log(`JaXpi climbed/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi climbed/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.climbed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.climbed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'climbed/location', data: statement, id: id});
@@ -1303,14 +1341,14 @@ closed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1321,11 +1359,11 @@ closed() {
           });
         }
 		
-		console.log(`JaXpi closed/chest = "${name}" statement enqueued`)
+		    console.log(`JaXpi closed/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.closed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'closed/chest', data: statement, id: id});
@@ -1340,14 +1378,14 @@ closed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.door, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1358,11 +1396,11 @@ closed() {
           });
         }
 		
-		console.log(`JaXpi closed/door = "${name}" statement enqueued`)
+		    console.log(`JaXpi closed/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.closed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.closed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'closed/door', data: statement, id: id});
@@ -1389,14 +1427,14 @@ combined(target : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/target'] = target;
@@ -1408,11 +1446,11 @@ combined(target : string,) {
           });
         }
 		
-		console.log(`JaXpi combined/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi combined/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.combined, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.combined, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'combined/item', data: statement, id: id});
@@ -1439,14 +1477,14 @@ completed(score : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.achievement, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
@@ -1458,11 +1496,11 @@ completed(score : number,) {
           });
         }
 		
-		console.log(`JaXpi completed/achievement = "${name}" statement enqueued`)
+		    console.log(`JaXpi completed/achievement = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/achievement', data: statement, id: id});
@@ -1477,14 +1515,14 @@ completed(score : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.game, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
@@ -1496,11 +1534,11 @@ completed(score : number,) {
           });
         }
 		
-		console.log(`JaXpi completed/game = "${name}" statement enqueued`)
+		    console.log(`JaXpi completed/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/game', data: statement, id: id});
@@ -1515,14 +1553,14 @@ completed(score : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       goal: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.goal, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
@@ -1534,11 +1572,11 @@ completed(score : number,) {
           });
         }
 		
-		console.log(`JaXpi completed/goal = "${name}" statement enqueued`)
+		    console.log(`JaXpi completed/goal = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/goal', data: statement, id: id});
@@ -1553,14 +1591,14 @@ completed(score : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
@@ -1572,11 +1610,11 @@ completed(score : number,) {
           });
         }
 		
-		console.log(`JaXpi completed/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi completed/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/level', data: statement, id: id});
@@ -1591,14 +1629,14 @@ completed(score : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
@@ -1610,11 +1648,11 @@ completed(score : number,) {
           });
         }
 		
-		console.log(`JaXpi completed/mission = "${name}" statement enqueued`)
+		    console.log(`JaXpi completed/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/mission', data: statement, id: id});
@@ -1629,14 +1667,14 @@ completed(score : number,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.task, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/score'] = score;
@@ -1648,11 +1686,11 @@ completed(score : number,) {
           });
         }
 		
-		console.log(`JaXpi completed/task = "${name}" statement enqueued`)
+		    console.log(`JaXpi completed/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'completed/task', data: statement, id: id});
@@ -1692,14 +1730,14 @@ crafted() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1710,11 +1748,11 @@ crafted() {
           });
         }
 		
-		console.log(`JaXpi crafted/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi crafted/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.crafted, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.crafted, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'crafted/item', data: statement, id: id});
@@ -1741,14 +1779,14 @@ dashed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.character, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1759,11 +1797,11 @@ dashed() {
           });
         }
 		
-		console.log(`JaXpi dashed/character = "${name}" statement enqueued`)
+		    console.log(`JaXpi dashed/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.dashed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.dashed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'dashed/character', data: statement, id: id});
@@ -1790,14 +1828,14 @@ defeated() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       enemy: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.enemy, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1808,11 +1846,11 @@ defeated() {
           });
         }
 		
-		console.log(`JaXpi defeated/enemy = "${name}" statement enqueued`)
+		    console.log(`JaXpi defeated/enemy = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.defeated, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.defeated, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'defeated/enemy', data: statement, id: id});
@@ -1839,14 +1877,14 @@ destroyed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1857,11 +1895,11 @@ destroyed() {
           });
         }
 		
-		console.log(`JaXpi destroyed/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi destroyed/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'destroyed/item', data: statement, id: id});
@@ -1888,14 +1926,14 @@ died() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.character, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1906,11 +1944,11 @@ died() {
           });
         }
 		
-		console.log(`JaXpi died/character = "${name}" statement enqueued`)
+		    console.log(`JaXpi died/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.died, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'died/character', data: statement, id: id});
@@ -1925,14 +1963,14 @@ died() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1943,11 +1981,11 @@ died() {
           });
         }
 		
-		console.log(`JaXpi died/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi died/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.died, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.died, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'died/location', data: statement, id: id});
@@ -1974,14 +2012,14 @@ discovered() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -1992,11 +2030,11 @@ discovered() {
           });
         }
 		
-		console.log(`JaXpi discovered/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi discovered/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'discovered/level', data: statement, id: id});
@@ -2011,14 +2049,14 @@ discovered() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2029,11 +2067,11 @@ discovered() {
           });
         }
 		
-		console.log(`JaXpi discovered/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi discovered/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'discovered/location', data: statement, id: id});
@@ -2073,14 +2111,14 @@ earned() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       reward: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.reward, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2091,11 +2129,11 @@ earned() {
           });
         }
 		
-		console.log(`JaXpi earned/reward = "${name}" statement enqueued`)
+		    console.log(`JaXpi earned/reward = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.earned, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.earned, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'earned/reward', data: statement, id: id});
@@ -2122,14 +2160,14 @@ equipped() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2140,11 +2178,11 @@ equipped() {
           });
         }
 		
-		console.log(`JaXpi equipped/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi equipped/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.equipped, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.equipped, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'equipped/item', data: statement, id: id});
@@ -2171,14 +2209,14 @@ examined() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2189,11 +2227,11 @@ examined() {
           });
         }
 		
-		console.log(`JaXpi examined/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi examined/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.examined, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'examined/item', data: statement, id: id});
@@ -2208,14 +2246,14 @@ examined() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       room: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.room, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2226,11 +2264,11 @@ examined() {
           });
         }
 		
-		console.log(`JaXpi examined/room = "${name}" statement enqueued`)
+		    console.log(`JaXpi examined/room = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.examined, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.examined, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'examined/room', data: statement, id: id});
@@ -2257,14 +2295,14 @@ exited() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.game, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2275,11 +2313,11 @@ exited() {
           });
         }
 		
-		console.log(`JaXpi exited/game = "${name}" statement enqueued`)
+		    console.log(`JaXpi exited/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.exited, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'exited/game', data: statement, id: id});
@@ -2294,14 +2332,14 @@ exited() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2312,11 +2350,11 @@ exited() {
           });
         }
 		
-		console.log(`JaXpi exited/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi exited/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.exited, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.exited, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'exited/level', data: statement, id: id});
@@ -2343,14 +2381,14 @@ explored() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2361,11 +2399,11 @@ explored() {
           });
         }
 		
-		console.log(`JaXpi explored/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi explored/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.explored, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.explored, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'explored/location', data: statement, id: id});
@@ -2392,14 +2430,14 @@ failed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.mission, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2410,11 +2448,11 @@ failed() {
           });
         }
 		
-		console.log(`JaXpi failed/mission = "${name}" statement enqueued`)
+		    console.log(`JaXpi failed/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.failed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'failed/mission', data: statement, id: id});
@@ -2429,14 +2467,14 @@ failed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.task, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2447,11 +2485,11 @@ failed() {
           });
         }
 		
-		console.log(`JaXpi failed/task = "${name}" statement enqueued`)
+		    console.log(`JaXpi failed/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.failed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'failed/task', data: statement, id: id});
@@ -2466,14 +2504,14 @@ failed() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2484,11 +2522,11 @@ failed() {
           });
         }
 		
-		console.log(`JaXpi failed/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi failed/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.failed, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.failed, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'failed/level', data: statement, id: id});
@@ -2515,14 +2553,14 @@ fellIn() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2533,11 +2571,11 @@ fellIn() {
           });
         }
 		
-		console.log(`JaXpi fellIn/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi fellIn/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'fellIn/location', data: statement, id: id});
@@ -2565,14 +2603,14 @@ jumped(distance : number,units : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.character, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
@@ -2585,11 +2623,11 @@ jumped(distance : number,units : string,) {
           });
         }
 		
-		console.log(`JaXpi jumped/character = "${name}" statement enqueued`)
+		    console.log(`JaXpi jumped/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'jumped/character', data: statement, id: id});
@@ -2604,14 +2642,14 @@ jumped(distance : number,units : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       enemy: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.enemy, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/distance'] = distance;
@@ -2624,11 +2662,11 @@ jumped(distance : number,units : string,) {
           });
         }
 		
-		console.log(`JaXpi jumped/enemy = "${name}" statement enqueued`)
+		    console.log(`JaXpi jumped/enemy = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'jumped/enemy', data: statement, id: id});
@@ -2668,14 +2706,14 @@ loaded(id_load : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.game, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
@@ -2687,11 +2725,11 @@ loaded(id_load : string,) {
           });
         }
 		
-		console.log(`JaXpi loaded/game = "${name}" statement enqueued`)
+		    console.log(`JaXpi loaded/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'loaded/game', data: statement, id: id});
@@ -2706,14 +2744,14 @@ loaded(id_load : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
@@ -2725,11 +2763,11 @@ loaded(id_load : string,) {
           });
         }
 		
-		console.log(`JaXpi loaded/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi loaded/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'loaded/level', data: statement, id: id});
@@ -2756,14 +2794,14 @@ loggedIn() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       player: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.player, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2774,11 +2812,11 @@ loggedIn() {
           });
         }
 		
-		console.log(`JaXpi loggedIn/player = "${name}" statement enqueued`)
+		    console.log(`JaXpi loggedIn/player = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loggedIn, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.loggedIn, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'loggedIn/player', data: statement, id: id});
@@ -2805,14 +2843,14 @@ loggedOut() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       player: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.player, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2823,11 +2861,11 @@ loggedOut() {
           });
         }
 		
-		console.log(`JaXpi loggedOut/player = "${name}" statement enqueued`)
+		    console.log(`JaXpi loggedOut/player = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loggedOut, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.loggedOut, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'loggedOut/player', data: statement, id: id});
@@ -2854,14 +2892,14 @@ moved() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2872,11 +2910,11 @@ moved() {
           });
         }
 		
-		console.log(`JaXpi moved/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi moved/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.moved, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.moved, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'moved/item', data: statement, id: id});
@@ -2903,14 +2941,14 @@ navigated() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2921,11 +2959,11 @@ navigated() {
           });
         }
 		
-		console.log(`JaXpi navigated/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi navigated/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.navigated, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.navigated, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'navigated/location', data: statement, id: id});
@@ -2952,14 +2990,14 @@ opened() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -2970,11 +3008,11 @@ opened() {
           });
         }
 		
-		console.log(`JaXpi opened/chest = "${name}" statement enqueued`)
+		    console.log(`JaXpi opened/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.opened, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'opened/chest', data: statement, id: id});
@@ -2989,14 +3027,14 @@ opened() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.door, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3007,11 +3045,11 @@ opened() {
           });
         }
 		
-		console.log(`JaXpi opened/door = "${name}" statement enqueued`)
+		    console.log(`JaXpi opened/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.opened, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.opened, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'opened/door', data: statement, id: id});
@@ -3038,14 +3076,14 @@ overloaded(id_load : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.game, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
@@ -3057,11 +3095,11 @@ overloaded(id_load : string,) {
           });
         }
 		
-		console.log(`JaXpi overloaded/game = "${name}" statement enqueued`)
+		    console.log(`JaXpi overloaded/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'overloaded/game', data: statement, id: id});
@@ -3076,14 +3114,14 @@ overloaded(id_load : string,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/id_load'] = id_load;
@@ -3095,11 +3133,11 @@ overloaded(id_load : string,) {
           });
         }
 		
-		console.log(`JaXpi overloaded/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi overloaded/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'overloaded/level', data: statement, id: id});
@@ -3126,14 +3164,14 @@ paused() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.game, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3144,11 +3182,11 @@ paused() {
           });
         }
 		
-		console.log(`JaXpi paused/game = "${name}" statement enqueued`)
+		    console.log(`JaXpi paused/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.paused, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.paused, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'paused/game', data: statement, id: id});
@@ -3227,14 +3265,14 @@ skipped() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       dialog: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.dialog, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3245,11 +3283,11 @@ skipped() {
           });
         }
 		
-		console.log(`JaXpi skipped/dialog = "${name}" statement enqueued`)
+		    console.log(`JaXpi skipped/dialog = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.skipped, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.skipped, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'skipped/dialog', data: statement, id: id});
@@ -3302,14 +3340,14 @@ started() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.level, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3320,11 +3358,11 @@ started() {
           });
         }
 		
-		console.log(`JaXpi started/level = "${name}" statement enqueued`)
+		    console.log(`JaXpi started/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.started, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'started/level', data: statement, id: id});
@@ -3339,14 +3377,14 @@ started() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.game, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3357,11 +3395,11 @@ started() {
           });
         }
 		
-		console.log(`JaXpi started/game = "${name}" statement enqueued`)
+		    console.log(`JaXpi started/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.started, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.started, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'started/game', data: statement, id: id});
@@ -3388,14 +3426,14 @@ teleported() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.location, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3406,11 +3444,11 @@ teleported() {
           });
         }
 		
-		console.log(`JaXpi teleported/location = "${name}" statement enqueued`)
+		    console.log(`JaXpi teleported/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'teleported/location', data: statement, id: id});
@@ -3425,14 +3463,14 @@ teleported() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.character, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3443,11 +3481,11 @@ teleported() {
           });
         }
 		
-		console.log(`JaXpi teleported/character = "${name}" statement enqueued`)
+		    console.log(`JaXpi teleported/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'teleported/character', data: statement, id: id});
@@ -3474,14 +3512,14 @@ unlocked() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.chest, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3492,11 +3530,11 @@ unlocked() {
           });
         }
 		
-		console.log(`JaXpi unlocked/chest = "${name}" statement enqueued`)
+		    console.log(`JaXpi unlocked/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'unlocked/chest', data: statement, id: id});
@@ -3511,14 +3549,14 @@ unlocked() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       skill: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.skill, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3529,11 +3567,11 @@ unlocked() {
           });
         }
 		
-		console.log(`JaXpi unlocked/skill = "${name}" statement enqueued`)
+		    console.log(`JaXpi unlocked/skill = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'unlocked/skill', data: statement, id: id});
@@ -3560,14 +3598,14 @@ upgraded() {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         
@@ -3578,11 +3616,11 @@ upgraded() {
           });
         }
 		
-		console.log(`JaXpi upgraded/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi upgraded/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'upgraded/item', data: statement, id: id});
@@ -3609,14 +3647,14 @@ used(consumed : boolean,) {
         * @param {string} name - Unique name that identifies the object
         * @param {string} [description] - Description on the object you are including
         * @param {Array<[string,any]>} [extraParameters] - Extra parameters to add to the statement in object.extensions field
-		* @param {any} [context] - Adds a field context for the statement
-		* @param {any} [result] - Adds a field result for the statement
-		* @param {any} [authority] - Adds a field authority for the statement
+        * @param {any} [context] - Adds a field context for the statement
+        * @param {any} [result] - Adds a field result for the statement
+        * @param {any} [authority] - Adds a field authority for the statement
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
         object = generate.generateObject(this.objects.item, name, description)
-		let tcontext = this.context;
+		    let tcontext = this.context;
         if (context) tcontext = context
         
         object.definition.extensions['https://github.com/UCM-FDI-JaXpi/consumed'] = consumed;
@@ -3628,11 +3666,11 @@ used(consumed : boolean,) {
           });
         }
 		
-		console.log(`JaXpi used/item = "${name}" statement enqueued`)
+		    console.log(`JaXpi used/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.used, object, result, tcontext, authority);
-		let id = this.statementIdCalc()
+        const statement = generate.generateStatement(this.player, this.verbs.used, object, this.sessionKey, result, tcontext, authority);
+		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify(statement))
         this.statementQueue.enqueue({type: 'used/item', data: statement, id: id});

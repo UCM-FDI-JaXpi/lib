@@ -8,7 +8,7 @@ import GameScene from './scripts/scenes/GameScene';
 import EndTitleScene from './scripts/scenes/EndTitleScene';
 
 // Axios library required to connect to the lrs
-import axios from 'axios'
+//import axios from 'axios'
 
 const config = {
   type: Phaser.AUTO,
@@ -37,16 +37,46 @@ const config = {
 
 // Import JaxpiLib
 const Jaxpi = require ('jaxpi').default;
+localStorage.removeItem("jaxpi")
 
 // Dev authenticates with the lrs, the lrs give him a token
 // Axios require the library axios to work, it can be done with similar libraries
-const response = await axios.post("http://localhost:3000/login", {email: "student1@example.com", password: "Pp123456"}, {
-    headers: {
-        'Content-Type': 'application/json',
-    }
+// const response = await axios.post("http://localhost:3000/login", {email: "student1@example.com", password: "Pp123456"}, {
+//     headers: {
+//         'Content-Type': 'application/json',
+//     }
+// });
+
+
+// Event listeners para los botones del menú
+document.getElementById('playWithKey').addEventListener('click', async () => {
+  const playerKey = document.getElementById('playerKey').value;
+
+  if (playerKey.length !== 6) {
+    alert('La clave debe tener 6 valores');
+  }
+
+  const valid = await jaxpi.validateKey(playerKey);
+  console.log(valid);
+  
+  if (!valid) {
+    alert('La clave no es correcta');
+
+  } else {
+    //localStorage.setItem("jaxpi", playerKey)
+    jaxpi.setKey(playerKey)
+    startGame()
+  }
 });
 
-let token = response.data.token
+document.getElementById('playWithoutKey').addEventListener('click', async () => {
+  startGame()
+});
+
+
+//let token = response.data.token
+let token = "PoP-AFkLU-4SWgD-MX7tF-OgUrH-mIjrq";
+
 
 // Create a new JaxpiLib instance
 let jaxpi = new Jaxpi({name: "Student1", mail: "student1@example.com"},"http://localhost:3000/records", token); // Añadir Token, quitar contraseña
@@ -54,4 +84,11 @@ let jaxpi = new Jaxpi({name: "Student1", mail: "student1@example.com"},"http://l
 // Export the JaxpiLib instance
 export default jaxpi;
 
-const game = new Game(config);
+function startGame(){
+  // Ocultar el menú y mostrar el contenedor del juego
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+
+  // Iniciar Juego
+  const game = new Game(config);
+}

@@ -1,3 +1,9 @@
+// Define un tipo para las extensiones
+interface ContextExtensions {
+  idUser?: string;
+  [key: string]: any;  // Permite otras propiedades en el futuro
+}
+
 export interface XAPIStatement {
     actor: {
       name: string;
@@ -37,7 +43,7 @@ export interface XAPIStatement {
           id: string;
         };
       };
-      extensions: object;
+      extensions: ContextExtensions;
     };
     timestamp: string;
     authority?:{
