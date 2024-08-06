@@ -169,12 +169,13 @@
 		  if (localStorage.length) {
 			  for (let i = 0; i < localStorage.length; i++) {
 				  const key = localStorage.key(i);
-          console.log(/^statd+$/.test(key!))
+          //console.log(/^stat\d+$/.test(key!))
           console.log(localStorage.getItem(key!))
-          if (/^statd+$/.test(key!)) {
-            const value = localStorage.getItem(key!);
+          if (/^stat\d+$/.test(key!)) {
+            const value = JSON.parse(localStorage.getItem(key!)!);
     
-            this.statementQueue.enqueue(JSON.parse(value!))
+            this.statementQueue.enqueue({type: `${value.verb.display["en-US"]}/${value.object.definition.name["en-US"]}`, data: value, id: key!})
+            
           }
 			  }
 		  }

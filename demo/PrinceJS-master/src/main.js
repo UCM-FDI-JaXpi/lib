@@ -37,7 +37,6 @@ const config = {
 
 // Import JaxpiLib
 const Jaxpi = require ('jaxpi').default;
-localStorage.removeItem("jaxpi")
 
 // Dev authenticates with the lrs, the lrs give him a token
 // Axios require the library axios to work, it can be done with similar libraries
@@ -75,11 +74,11 @@ document.getElementById('playWithoutKey').addEventListener('click', async () => 
 
 
 //let token = response.data.token
-let token = "PoP-AFkLU-4SWgD-MX7tF-OgUrH-mIjrq";
+let token = "Scxve-xLTqU-OTrvP-25mPw-HaUEd";
 
 
 // Create a new JaxpiLib instance
-let jaxpi = new Jaxpi({name: "Student1", mail: "student1@example.com"},"http://localhost:3000/records", token); // Añadir Token, quitar contraseña
+let jaxpi = new Jaxpi({name: "Super Mario", mail: "student1@example.com"},"http://localhost:3000/records", token); // Añadir Token, quitar contraseña
 
 // Export the JaxpiLib instance
 export default jaxpi;

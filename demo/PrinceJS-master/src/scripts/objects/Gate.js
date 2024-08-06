@@ -129,7 +129,6 @@ class Gate extends Object {
   
         this.step = 0;
         if ( this.state != STATE_WAITING ) {
-            jaxpi.
             jaxpi.opened().door("gate")
             this.state = STATE_RAISING;
             this.risingSound = true;

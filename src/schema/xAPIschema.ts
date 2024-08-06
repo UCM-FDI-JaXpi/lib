@@ -1,6 +1,6 @@
 // Define un tipo para las extensiones
 interface ContextExtensions {
-  idUser?: string;
+  session?: string;
   [key: string]: any;  // Permite otras propiedades en el futuro
 }
 
