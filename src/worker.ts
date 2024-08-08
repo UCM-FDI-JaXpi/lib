@@ -3,29 +3,29 @@ import axios, { AxiosError } from 'axios';
 self.onmessage = async (event) => {
   const data = event.data;
 
-  if (data.type === 'SEND_TRACES') {
-    const { traces, token, serverUrl, promiseId } = data;
+  if (data.type === 'SEND_RECORDS') {
+    const { records, token, serverUrl, promiseId } = data;
 
-    for (const trace of traces) {
+    for (const record of records) {
       try {
-        await sendTraceToServer(trace, token, serverUrl);
+        await sendRecordToServer(record, token, serverUrl);
       } catch (error: unknown) {
         if (error instanceof AxiosError && error.response) {
           // Solo enviamos un mensaje de error simplificado
           const simplifiedError = {
-            server_response: error.response.data.message,
+            serverResponse: error.response.data.message,
             message: error.message,
             code: error.code,
             response: {
               status: error.response?.status,
               statusText: error.response?.statusText,
             },
-            traceId: trace.id
+            traceId: record.id
           };
 
-          console.error(`Error al enviar traza ${trace.type}:`, simplifiedError);
+          console.error(`Error al enviar traza ${record.type}:`, simplifiedError);
 
-          self.postMessage({ type: 'ERROR', error: simplifiedError, promiseId });
+          self.postMessage({ type: 'ERROR', error: simplifiedError, promiseId, record_id: record.id });
         } else {
           console.error('Error desconocido:', error);
           // En caso de un error desconocido, podrías manejarlo de otra manera.
@@ -40,17 +40,17 @@ self.onmessage = async (event) => {
   }
 };
 
-async function sendTraceToServer(trace: { type: string; data: string; id: string }, token: string, serverUrl: string) {
-  console.log(`Enviando traza ${trace.type} al servidor...`);
-  const response = await axios.post(serverUrl, trace.data, {
+async function sendRecordToServer(record: { type: string; data: string; id: string }, token: string, serverUrl: string) {
+  console.log(`Enviando traza ${record.type} al servidor...`);
+  const response = await axios.post(serverUrl, record.data, {
     headers: {
       'Content-Type': 'application/json',
       'x-authentication': token,
     },
   });
 
-  console.log(`Trazas ${trace.type} enviada`);
+  console.log(`Trazas ${record.type} enviada`);
   console.log(`Respuesta del servidor: ${response.data}`);
 
-  self.postMessage({ type: 'DEQUEUE', stat_id: trace.id });
+  self.postMessage({ type: 'DEQUEUE', record_id: record.id });
 }

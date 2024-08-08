@@ -38,6 +38,7 @@ const config = {
 // Import JaxpiLib
 const Jaxpi = require ('jaxpi').default;
 
+
 // Dev authenticates with the lrs, the lrs give him a token
 // Axios require the library axios to work, it can be done with similar libraries
 // const response = await axios.post("http://localhost:3000/login", {email: "student1@example.com", password: "Pp123456"}, {
@@ -53,19 +54,19 @@ document.getElementById('playWithKey').addEventListener('click', async () => {
 
   if (playerKey.length !== 6) {
     alert('La clave debe tener 6 valores');
-  }
-
-  const valid = await jaxpi.validateKey(playerKey);
-  console.log(valid);
-  
-  if (!valid) {
-    alert('La clave no es correcta');
-
   } else {
-    //localStorage.setItem("jaxpi", playerKey)
-    //localStorage.clear()
-    jaxpi.setKey(playerKey)
-    startGame()
+    const valid = await jaxpi.validateKey(playerKey);
+    console.log(valid);
+    
+    if (!valid) {
+      alert('La clave no es correcta');
+
+    } else {
+      //localStorage.setItem("jaxpi", playerKey)
+      //localStorage.clear()
+      jaxpi.setKey(playerKey)
+      startGame()
+    }
   }
 });
 
