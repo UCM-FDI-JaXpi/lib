@@ -63,6 +63,7 @@ document.getElementById('playWithKey').addEventListener('click', async () => {
 
   } else {
     //localStorage.setItem("jaxpi", playerKey)
+    //localStorage.clear()
     jaxpi.setKey(playerKey)
     startGame()
   }
@@ -74,7 +75,7 @@ document.getElementById('playWithoutKey').addEventListener('click', async () => 
 
 
 //let token = response.data.token
-let token = "Scxve-xLTqU-OTrvP-25mPw-HaUEd";
+let token = "cEPTx-GsXov-dJBXe-pY7jc-NPyQ9";
 
 
 // Create a new JaxpiLib instance

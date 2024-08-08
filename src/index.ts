@@ -1,32 +1,31 @@
+// index.ts
+import './worker.js';
+import { Queue } from './queue.js';
 
-  // index.ts
-  import './worker.js';
-  import { Queue } from './queue.js';
-  
-  import * as generate from './scripts/generateStatement.js';
-  import { checkObject, checkVerb } from './scripts/validateStatement.js';
+import * as generate from './scripts/generateStatement.js';
+import { checkObject, checkVerb } from './scripts/validateStatement.js';
 
-  import axios, { AxiosError } from 'axios';
-  
-  
-  const TIME_INTERVAL_SEND = 5;
-  const MAX_QUEUE_LENGTH = 5;
-  let instance: Jaxpi | null = null;
-  
-  
-  export default class Jaxpi {
-	private worker: Worker;
-	private statementQueue: Queue<{ type: string; data: any, id: string }> = new Queue();
-	private player: generate.Player;
-	private context: any;
-	private max_queue_length: number;
-	private stat_id: number = 1;
-	private promises: Promise<void>[];
-	private statementInterval: NodeJS.Timeout | undefined;
-  // Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
-  private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
-	// private token: string = "-1";
-  private sessionKey: string = "";
+import axios, { AxiosError } from 'axios';
+
+
+const TIME_INTERVAL_SEND = 5;
+const MAX_QUEUE_LENGTH = 5;
+let instance: Jaxpi | null = null;
+
+
+export default class Jaxpi {
+private worker: Worker;
+private statementQueue: Queue<{ type: string; data: any, id: string }> = new Queue();
+private player: generate.Player;
+private context: any;
+private max_queue_length: number;
+private stat_id: number = 1;
+private promises: Promise<void>[];
+private statementInterval: NodeJS.Timeout | undefined;
+// Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
+private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
+// private token: string = "-1";
+private sessionKey: string = "";
   
   
   
@@ -137,6 +136,12 @@
           this.promisesMap.delete(promiseId); // Limpiamos el mapa después de resolver la promesa
         }
       } else if (data.type === 'ERROR') {
+        // Actualiza los campos de record en localStorage para controlar el nº de intentos fallidos de envio
+        const recordData = JSON.parse(localStorage.getItem(data.stat_id)!);
+        recordData.attempts += 1;
+        recordData.lastAttempt = new Date().toISOString(); // Si la traza se encolo hace mas de 24 horas se borra
+        localStorage.setItem(data.stat_id, JSON.stringify(recordData));
+
         const promiseId = data.promiseId;
         const promiseFunctions = this.promisesMap.get(promiseId);
         if (promiseFunctions) {
@@ -165,20 +170,8 @@
     // LogIn con el server para generar el token
     //  this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
   
-	  // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas
-		  if (localStorage.length) {
-			  for (let i = 0; i < localStorage.length; i++) {
-				  const key = localStorage.key(i);
-          //console.log(/^stat\d+$/.test(key!))
-          console.log(localStorage.getItem(key!))
-          if (/^stat\d+$/.test(key!)) {
-            const value = JSON.parse(localStorage.getItem(key!)!);
-    
-            this.statementQueue.enqueue({type: `${value.verb.display["en-US"]}/${value.object.definition.name["en-US"]}`, data: value, id: key!})
-            
-          }
-			  }
-		  }
+	  // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas -> Se encolan cuando se procesan nuevas trazas
+    // this.checkLocalStorage()
   
 	  if (typeof window !== undefined){
 		let isListening = false;
@@ -216,7 +209,7 @@
 	  }
   
 	  if (instance) {
-		return instance;
+		  return instance;
 	  }
 	  instance = this;
 	}
@@ -226,23 +219,21 @@
    * Function to send the statements queue to the server, it also creates a backup if the sending fails
    */
 	async flush() {
-	  this.processQueue();
-	}
-  
-	private async processQueue() {
+    this.checkLocalStorage()
 	  const traces = this.statementQueue.toArray();
 	  console.log(traces)
 	  if (traces.length > 0) {
-		const promise = this.sendTraces(traces);
-		this.promises.push(promise);
-		try {
-		  await promise;
+      const promise = this.sendTraces(traces);
+      this.statementQueue = new Queue(); // Limpiar la cola después de enviar
+      this.promises.push(promise);
+      try {
+        await promise;
 
-		  //await this.promises.push(this.sendTraces(traces));
-		  this.statementQueue = new Queue(); // Limpiar la cola después de enviar
-		} catch (error) {
-		  console.error('Error al enviar trazas:', error);
-		}
+        //await this.promises.push(this.sendTraces(traces));
+        
+      } catch (error) {
+        console.error('Error al enviar trazas:', error);
+      }
 	  }
 	}
   
@@ -260,6 +251,38 @@
   // Función para generar un ID único para cada promesa
   private generateUniquePromiseId(): string {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
+
+  private checkLocalStorage(){
+    const maxAttempts = 5;
+    const maxAgeMs = 24 * 60 * 60 * 1000; // 24 horas
+
+    if (localStorage.length) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        //console.log(/^stat\d+$/.test(key!))
+        console.log(key!)
+        if (/^stat\d+$/.test(key!)) {
+          const value = JSON.parse(localStorage.getItem(key!)!);
+
+          const {record, attempts, lastAttempt} = value // Si supera los intentos permitidos tambien se borra
+          const lastAttemptDate = new Date(lastAttempt);
+          const now = new Date();
+          const age = now.getTime() - lastAttemptDate.getTime(); // Si la traza se encolo por ultima vez hace mas de 24 horas se borra
+
+          if (attempts < maxAttempts && age < maxAgeMs) {
+            this.statementQueue.enqueue({type: `${value.verb.display["en-US"]}/${value.object.definition.name["en-US"]}`, data: record, id: key!})
+        } else {
+            // Decidir si eliminar la traza
+            console.log(`Eliminando traza ${key} después de ${attempts} intentos o por exceder el tiempo permitido de 24 horas.`);
+            localStorage.removeItem(key!);
+        }
+  
+          
+          
+        }
+      }
+    }
   }
   
   // Función para generar un id unico para cada traza <-----------------------------------------------------------------------------------------------------------------------------------------
@@ -425,7 +448,7 @@ accepted() {
         const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.sessionKey, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
-        localStorage.setItem(id,JSON.stringify(statement))
+        localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         this.statementQueue.enqueue({type: 'accepted/achievement', data: statement, id: id});
         if (this.statementQueue.length >= this.max_queue_length) this.flush();
         
