@@ -76,7 +76,6 @@ document.getElementById('playWithoutKey').addEventListener('click', async () => 
 
 
 //let token = response.data.token
-let token = "cEPTx-GsXov-dJBXe-pY7jc-NPyQ9";
 
 
 // Create a new JaxpiLib instance
