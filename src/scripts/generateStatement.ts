@@ -105,7 +105,7 @@ export function generateStatement(player: Player, verb: { id: any; display: any;
 
     // Add idUser to context.extensions if sessionKey is provided
     if (sessionKey !== "") {
-        statement.context!.extensions.session = sessionKey;
+        statement.context!.extensions["https://www.jaxpi.com/sessionKey"] = sessionKey;
     }
 
     return statement;
