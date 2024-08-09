@@ -70,5 +70,10 @@
 // executeActionsWithDelay();
 
 //process.exit(0)
+import bcrypt from 'bcrypt'
 
-console.log(/^stat\d+$/.test("stat44"))
+//console.log(/^stat\d+$/.test("stat44"))
+
+const foo = await bcrypt.hash("prueba", 13)
+const foo2 = await bcrypt.hash("prueba", 13)
+console.log(foo + "   " + foo2)

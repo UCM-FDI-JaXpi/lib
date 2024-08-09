@@ -4,8 +4,7 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "scripts": {
-        "build": "webpack --mode production",
-        "start": "webpack serve --mode development"
+        "generate": "tsc && node ./dist/scripts/scriptGenerator.js && tsc"
     },
     "devDependencies": {
         "@types/node-localstorage": "^1.3.3",
