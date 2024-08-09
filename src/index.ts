@@ -115,8 +115,8 @@ public objects = {
  * @param {string} player.mail - The mail of the player.
  * @param {string} serverURL - The url of the server where statements will be sent.
  * @param {string} token - The token of authentication the server will use to send the statements.
- * @param {string} [time_interval=5] - Number of seconds an interval will try to send the statements to the server. 
- * @param {string} [max_queue=7] - Maximum number of statement per queue before sending. 
+ * @param {string} [time_interval=undefined] - Number of seconds an interval will try to send the statements to the server. 
+ * @param {string} [max_queue=MAX_QUEUE_LENGTH] - Maximum number of statement per queue before sending. 
  */
 constructor(player: generate.Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
   this.context = undefined;
