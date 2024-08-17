@@ -262,7 +262,7 @@ private checkLocalStorage(){
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       //console.log(/^stat\d+$/.test(key!))
-      //console.log(key)
+      console.log(key)
       if (/^stat\d+$/.test(key!) && !this.records_queue.toArray().some(item => item.id === key)) {
         const value = JSON.parse(localStorage.getItem(key!)!);
 
@@ -272,9 +272,12 @@ private checkLocalStorage(){
         const now = new Date();
         const age = now.getTime() - lastAttemptDate.getTime(); // Si la traza se encolo por ultima vez hace mas de 24 horas se borra
 
+        console.log(value)
+        console.log(record.verb.display["en-US"])
+        console.log(attempts)
+        console.log(lastAttempt)
 
         if (attempts < maxAttempts && age < maxAgeMs) {
-          console.log(`Traza encolada ${record.verb.display["en-US"]}/${record.object.definition.name["en-US"]}, Nº de intentos ${attempts}, Ultimo intento: ${lastAttempt}`)
           this.records_queue.enqueue({type: `${record.verb.display["en-US"]}/${record.object.definition.name["en-US"]}`, data: record, id: key!})
       } else {
           // Decidir si eliminar la traza
@@ -456,7 +459,7 @@ accepted() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accepted/achievement', data: statement, id: id});
+        this.records_queue.enqueue({type: `accepted/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -494,7 +497,7 @@ accepted() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accepted/award', data: statement, id: id});
+        this.records_queue.enqueue({type: `accepted/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -532,7 +535,7 @@ accepted() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accepted/mission', data: statement, id: id});
+        this.records_queue.enqueue({type: `accepted/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -570,7 +573,7 @@ accepted() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accepted/reward', data: statement, id: id});
+        this.records_queue.enqueue({type: `accepted/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -608,7 +611,7 @@ accepted() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accepted/task', data: statement, id: id});
+        this.records_queue.enqueue({type: `accepted/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -659,7 +662,7 @@ accessed(visited_times : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accessed/chest', data: statement, id: id});
+        this.records_queue.enqueue({type: `accessed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -698,7 +701,7 @@ accessed(visited_times : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accessed/door', data: statement, id: id});
+        this.records_queue.enqueue({type: `accessed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -737,7 +740,7 @@ accessed(visited_times : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accessed/room', data: statement, id: id});
+        this.records_queue.enqueue({type: `accessed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -776,7 +779,7 @@ accessed(visited_times : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'accessed/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `accessed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -826,7 +829,7 @@ achieved() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'achieved/achievement', data: statement, id: id});
+        this.records_queue.enqueue({type: `achieved/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -864,7 +867,7 @@ achieved() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'achieved/award', data: statement, id: id});
+        this.records_queue.enqueue({type: `achieved/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -902,7 +905,7 @@ achieved() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'achieved/game', data: statement, id: id});
+        this.records_queue.enqueue({type: `achieved/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -940,7 +943,7 @@ achieved() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'achieved/goal', data: statement, id: id});
+        this.records_queue.enqueue({type: `achieved/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -978,7 +981,7 @@ achieved() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'achieved/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `achieved/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1016,7 +1019,7 @@ achieved() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'achieved/reward', data: statement, id: id});
+        this.records_queue.enqueue({type: `achieved/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1067,7 +1070,7 @@ cancelled(reason : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'cancelled/mission', data: statement, id: id});
+        this.records_queue.enqueue({type: `cancelled/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1106,7 +1109,7 @@ cancelled(reason : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'cancelled/task', data: statement, id: id});
+        this.records_queue.enqueue({type: `cancelled/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1156,7 +1159,7 @@ chatted() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'chatted/character', data: statement, id: id});
+        this.records_queue.enqueue({type: `chatted/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1206,7 +1209,7 @@ clicked() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'clicked/character', data: statement, id: id});
+        this.records_queue.enqueue({type: `clicked/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1244,7 +1247,7 @@ clicked() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'clicked/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `clicked/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1282,7 +1285,7 @@ clicked() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'clicked/dialog', data: statement, id: id});
+        this.records_queue.enqueue({type: `clicked/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1320,7 +1323,7 @@ clicked() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'clicked/door', data: statement, id: id});
+        this.records_queue.enqueue({type: `clicked/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1370,7 +1373,7 @@ climbed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'climbed/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `climbed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1420,7 +1423,7 @@ closed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'closed/chest', data: statement, id: id});
+        this.records_queue.enqueue({type: `closed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1458,7 +1461,7 @@ closed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'closed/door', data: statement, id: id});
+        this.records_queue.enqueue({type: `closed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1509,7 +1512,7 @@ combined(target : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'combined/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `combined/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1560,7 +1563,7 @@ completed(score : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'completed/achievement', data: statement, id: id});
+        this.records_queue.enqueue({type: `completed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1599,7 +1602,7 @@ completed(score : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'completed/game', data: statement, id: id});
+        this.records_queue.enqueue({type: `completed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1638,7 +1641,7 @@ completed(score : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'completed/goal', data: statement, id: id});
+        this.records_queue.enqueue({type: `completed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1677,7 +1680,7 @@ completed(score : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'completed/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `completed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1716,7 +1719,7 @@ completed(score : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'completed/mission', data: statement, id: id});
+        this.records_queue.enqueue({type: `completed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1755,7 +1758,7 @@ completed(score : number,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'completed/task', data: statement, id: id});
+        this.records_queue.enqueue({type: `completed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1818,7 +1821,7 @@ crafted() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'crafted/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `crafted/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1868,7 +1871,7 @@ dashed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'dashed/character', data: statement, id: id});
+        this.records_queue.enqueue({type: `dashed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1918,7 +1921,7 @@ defeated() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'defeated/enemy', data: statement, id: id});
+        this.records_queue.enqueue({type: `defeated/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -1968,7 +1971,7 @@ destroyed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'destroyed/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `destroyed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2018,7 +2021,7 @@ died() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'died/character', data: statement, id: id});
+        this.records_queue.enqueue({type: `died/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2056,7 +2059,7 @@ died() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'died/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `died/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2106,7 +2109,7 @@ discovered() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'discovered/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `discovered/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2144,7 +2147,7 @@ discovered() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'discovered/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `discovered/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2207,7 +2210,7 @@ earned() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'earned/reward', data: statement, id: id});
+        this.records_queue.enqueue({type: `earned/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2257,7 +2260,7 @@ equipped() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'equipped/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `equipped/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2307,7 +2310,7 @@ examined() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'examined/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `examined/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2345,7 +2348,7 @@ examined() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'examined/room', data: statement, id: id});
+        this.records_queue.enqueue({type: `examined/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2395,7 +2398,7 @@ exited() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'exited/game', data: statement, id: id});
+        this.records_queue.enqueue({type: `exited/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2433,7 +2436,7 @@ exited() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'exited/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `exited/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2483,7 +2486,7 @@ explored() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'explored/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `explored/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2533,7 +2536,7 @@ failed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'failed/mission', data: statement, id: id});
+        this.records_queue.enqueue({type: `failed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2571,7 +2574,7 @@ failed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'failed/task', data: statement, id: id});
+        this.records_queue.enqueue({type: `failed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2609,7 +2612,7 @@ failed() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'failed/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `failed/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2659,7 +2662,7 @@ fellIn() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'fellIn/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `fellIn/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2712,7 +2715,7 @@ jumped(distance : number,units : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'jumped/character', data: statement, id: id});
+        this.records_queue.enqueue({type: `jumped/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2752,7 +2755,7 @@ jumped(distance : number,units : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'jumped/enemy', data: statement, id: id});
+        this.records_queue.enqueue({type: `jumped/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2816,7 +2819,7 @@ loaded(id_load : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'loaded/game', data: statement, id: id});
+        this.records_queue.enqueue({type: `loaded/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2855,7 +2858,7 @@ loaded(id_load : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'loaded/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `loaded/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2905,7 +2908,7 @@ loggedIn() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'loggedIn/player', data: statement, id: id});
+        this.records_queue.enqueue({type: `loggedIn/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -2955,7 +2958,7 @@ loggedOut() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'loggedOut/player', data: statement, id: id});
+        this.records_queue.enqueue({type: `loggedOut/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3005,7 +3008,7 @@ moved() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'moved/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `moved/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3055,7 +3058,7 @@ navigated() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'navigated/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `navigated/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3105,7 +3108,7 @@ opened() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'opened/chest', data: statement, id: id});
+        this.records_queue.enqueue({type: `opened/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3143,7 +3146,7 @@ opened() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'opened/door', data: statement, id: id});
+        this.records_queue.enqueue({type: `opened/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3194,7 +3197,7 @@ overloaded(id_load : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'overloaded/game', data: statement, id: id});
+        this.records_queue.enqueue({type: `overloaded/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3233,7 +3236,7 @@ overloaded(id_load : string,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'overloaded/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `overloaded/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3283,7 +3286,7 @@ paused() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'paused/game', data: statement, id: id});
+        this.records_queue.enqueue({type: `paused/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3385,7 +3388,7 @@ skipped() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'skipped/dialog', data: statement, id: id});
+        this.records_queue.enqueue({type: `skipped/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3461,7 +3464,7 @@ started() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'started/level', data: statement, id: id});
+        this.records_queue.enqueue({type: `started/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3499,7 +3502,7 @@ started() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'started/game', data: statement, id: id});
+        this.records_queue.enqueue({type: `started/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3549,7 +3552,7 @@ teleported() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'teleported/location', data: statement, id: id});
+        this.records_queue.enqueue({type: `teleported/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3587,7 +3590,7 @@ teleported() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'teleported/character', data: statement, id: id});
+        this.records_queue.enqueue({type: `teleported/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3637,7 +3640,7 @@ unlocked() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'unlocked/chest', data: statement, id: id});
+        this.records_queue.enqueue({type: `unlocked/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3675,7 +3678,7 @@ unlocked() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'unlocked/skill', data: statement, id: id});
+        this.records_queue.enqueue({type: `unlocked/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3725,7 +3728,7 @@ upgraded() {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'upgraded/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `upgraded/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
@@ -3776,7 +3779,7 @@ used(consumed : boolean,) {
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
         //localStorage.setItem(id,JSON.stringify(statement))
-        this.records_queue.enqueue({type: 'used/item', data: statement, id: id});
+        this.records_queue.enqueue({type: `used/${name}`, data: statement, id: id});
         if (this.records_queue.length >= this.max_queue_length) this.flush();
         
       
