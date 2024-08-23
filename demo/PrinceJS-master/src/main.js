@@ -7,8 +7,8 @@ import CreditsScene from './scripts/scenes/CreditsScene';
 import GameScene from './scripts/scenes/GameScene';
 import EndTitleScene from './scripts/scenes/EndTitleScene';
 
-// Axios library required to connect to the lrs
-//import axios from 'axios'
+import { SERVER_URL, ACTOR_NAME, ACTOR_MAIL, GAME_TOKEN_POP } from "./scripts/Config";
+
 
 const config = {
   type: Phaser.AUTO,
@@ -39,15 +39,6 @@ const config = {
 const Jaxpi = require ('jaxpi').default;
 
 
-// Dev authenticates with the lrs, the lrs give him a token
-// Axios require the library axios to work, it can be done with similar libraries
-// const response = await axios.post("http://localhost:3000/login", {email: "student1@example.com", password: "Pp123456"}, {
-//     headers: {
-//         'Content-Type': 'application/json',
-//     }
-// });
-
-
 // Event listeners para los botones del menú
 document.getElementById('playWithKey').addEventListener('click', async () => {
   const playerKey = document.getElementById('playerKey').value;
@@ -62,8 +53,6 @@ document.getElementById('playWithKey').addEventListener('click', async () => {
       alert('La clave no es correcta');
 
     } else {
-      //localStorage.setItem("jaxpi", playerKey)
-      //localStorage.clear()
       jaxpi.setKey(playerKey)
       startGame()
     }
@@ -75,12 +64,9 @@ document.getElementById('playWithoutKey').addEventListener('click', async () => 
 });
 
 
-//let token = response.data.token
-let token = "cEPTx-GsXov-dJBXe-pY7jc-NPyQ9";
-
 
 // Create a new JaxpiLib instance
-let jaxpi = new Jaxpi({name: "Super Mario", mail: "student1@example.com"},"http://localhost:3000/records", token); // Añadir Token, quitar contraseña
+let jaxpi = new Jaxpi({name: ACTOR_NAME, mail: ACTOR_MAIL}, SERVER_URL, GAME_TOKEN_POP); // Añadir Token, quitar contraseña
 
 // Export the JaxpiLib instance
 export default jaxpi;

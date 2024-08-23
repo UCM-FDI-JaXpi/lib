@@ -11,3 +11,10 @@ export const UI_HEIGHT = 8;
 export const SKIP_TITLE = false;
 export const SKIP_CUTSCENES = false;
 export const KID_INMORTAL = false;
+
+
+
+export const SERVER_URL = 'http://localhost:3000/records'
+export const ACTOR_NAME = 'Super Mario'
+export const ACTOR_MAIL = 'student1@example.com'
+export const GAME_TOKEN_POP = 'cEPTx-GsXov-dJBXe-pY7jc-NPyQ9'
