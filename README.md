@@ -40,7 +40,7 @@ export const jaxpi = new Jaxpi({name: ACTOR_NAME, mail: ACTOR_MAIL}, SERVER_URL,
  Las trazas son configurables, pudiendo añadir los campos context, result y authority del estándard xAPI, además de poder agregar parametros extras en el campo `objects.extensions` en cualquier función que genere una traza si se requiere.
 
  ## 2. Agregar funciones verbo-objeto a JaXpi
- Se pueden agregar nuevas funciones de manera automática a la librería de JaXpi. Tan sólo se necesitan agregar nuevos verbos u objetos en formato JSON en la carpeta de verbos u objetos respectivamente, respetando el formato en el que están creados y ejecutar el comando     `$ npm run generate`. Para agregar objetos a un verbo ya existente, simplemente añade sus nombre en el campo objects del JSON del verbo deseado.
+ Se pueden agregar nuevas funciones de manera automática a la librería de JaXpi. Tan sólo se necesitan agregar nuevos verbos u objetos en formato JSON en la carpeta de verbos u objetos respectivamente, respetando el formato en el que están creados y ejecutar el comando `$ npm run generate`. Para agregar objetos a un verbo ya existente, simplemente añade sus nombre en el campo objects del JSON del verbo deseado.
  Ejemplos de JSON:
   ```JSON
 {
