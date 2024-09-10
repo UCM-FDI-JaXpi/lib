@@ -39,7 +39,7 @@ export const jaxpi = new Jaxpi({name: ACTOR_NAME, mail: ACTOR_MAIL}, SERVER_URL,
 
  Las trazas son configurables, pudiendo añadir los campos context, result y authority del estándard xAPI, además de poder agregar parametros extras en el campo `objects.extensions` en cualquier función que genere una traza si se requiere.
 
- ## 2. Agregar funciones verbo-objeto a JaXpi
+ ## 3. Agregar funciones verbo-objeto a JaXpi
  Se pueden agregar nuevas funciones de manera automática a la librería de JaXpi. Tan sólo se necesitan agregar nuevos verbos u objetos en formato JSON en la carpeta de verbos u objetos respectivamente, respetando el formato en el que están creados y ejecutar el comando `$ npm run generate`. Para agregar objetos a un verbo ya existente, simplemente añade sus nombre en el campo objects del JSON del verbo deseado.
  Ejemplos de JSON:
   ```JSON
@@ -69,7 +69,7 @@ export const jaxpi = new Jaxpi({name: ACTOR_NAME, mail: ACTOR_MAIL}, SERVER_URL,
     }
 }
  ```
- ## 2. Integración con servidor de JaXpi
+ ## 4. Integración con servidor de JaXpi
  Si se desea utilizar el LRS proporcionado por JaXpi se pide que se agregue una forma al usuario de introducir una contraseña de 6 digitos. Esta se puede validar con `jaxpi.validateKey(key)` que devuelve un valor booleano, en caso de ser correcto se pide que se establezca en el objeto JaXpi con el metodo `jaxpi.setKey(key)`. Además en el constructor del objeto JaXpi se deberá utilizar http://localhost:3000/records como valor del servidor y el token de juego para el token de autenticación.
 
  Seguir los pasos descritos en https://github.com/UCM-FDI-JaXpi/server para más información.
