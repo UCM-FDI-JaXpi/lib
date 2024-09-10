@@ -2,8 +2,8 @@
 
 The JaXpi library is design to integrate with games developed in JavaScript or TypeScript for e-Learning purposes, allowing the capture of player data through xAPI-formatted traces for later analysis.
 
-## 1. Guia de instalación
-### 1.1. Módulo JaXpi
+## 1. Installation guide
+### 1.1. JaXpi module
 To install the module, you need previosly installed Node.js and npm, then simply install it from Node:
 
 `$ npm install jaxpi`
