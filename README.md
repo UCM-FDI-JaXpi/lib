@@ -72,4 +72,4 @@ export const jaxpi = new Jaxpi({name: ACTOR_NAME, mail: ACTOR_MAIL}, SERVER_URL,
  ## 4. Integración con servidor de JaXpi
  Si se desea utilizar el LRS proporcionado por JaXpi se pide que se agregue una forma al usuario de introducir una contraseña de 6 digitos. Esta se puede validar con `jaxpi.validateKey(key)` que devuelve un valor booleano, en caso de ser correcto se pide que se establezca en el objeto JaXpi con el metodo `jaxpi.setKey(key)`. Además en el constructor del objeto JaXpi se deberá utilizar http://localhost:3000/records como valor del servidor y el token de juego para el token de autenticación.
 
- Seguir los pasos descritos en https://github.com/UCM-FDI-JaXpi/server para más información.
+ Seguir los pasos descritos en https://github.com/UCM-FDI-JaXpi/server para desplegar el servidor y utilizarlo.
