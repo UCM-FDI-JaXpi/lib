@@ -8,6 +8,10 @@ To install the module, you need previosly installed Node.js and npm, then simply
 
 `$ npm install jaxpi`
 
+and install all the references needed
+
+`$ npm install`
+
 and import the Jaxpi class into your main file.
 
  ### 1.2. JaXpi File
