@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { Game, Scene } from 'phaser';
 import GameState from '../ui/GameState';
 import Interface from '../ui/Interface';
 import Kid from '../actors/Kid';
@@ -201,7 +201,12 @@ class GameScene extends Scene {
         GameState.currentLevel++;
         jaxpi.started().level(`level ${GameState.currentLevel.toString()}`);
 
+        if (GameState.currentLevel == 15){
+            jaxpi.completed(100).game("Prince of JS");
+            jaxpi.flush();
+        } 
         if (GameState.currentLevel == 16) GameState.currentLevel = 1;
+        
         this.saveGameState();
         this.reset();
 

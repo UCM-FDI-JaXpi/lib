@@ -32,7 +32,9 @@ export function generateStatementFromZero(verbId: string | any, objectId: string
             id: header + objectId,
             definition: {
                 type: "custom",
-                name: {},
+                name: {
+                    "en-US": objectId
+                },
                 description: {},
                 extensions: {}
             }

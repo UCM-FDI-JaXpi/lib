@@ -157,7 +157,6 @@ class CutScene extends Scene {
    
     endCutscene() {
         
-        jaxpi.completed(100).game("Prince of JS")
         this.cameras.main.fadeOut(2000);
         this.cameras.main.on('camerafadeoutcomplete', this.nextScene, this);
         

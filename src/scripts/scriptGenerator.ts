@@ -495,7 +495,7 @@ customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x:
       let id = this.statementIdCalc()
   
       localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
-      this.records_queue.enqueue({type: 'accepted/achievement', data: statement, id: id});
+      this.records_queue.enqueue({type: 'custom', data: statement, id: id});
       //this.statementQueue.enqueue({type: 'custom', data: statement});
       if (this.records_queue.length >= this.max_queue_length) this.flush();
     }

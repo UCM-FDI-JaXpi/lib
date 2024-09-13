@@ -75,6 +75,7 @@ function startGame(){
   // Ocultar el menú y mostrar el contenedor del juego
   document.getElementById('menu').style.display = 'none';
   document.getElementById('gameContainer').style.display = 'block';
+  jaxpi.started().game("Prince of JS")
 
   // Iniciar Juego
   const game = new Game(config);
