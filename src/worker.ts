@@ -40,13 +40,20 @@ self.onmessage = async (event) => {
   }
 };
 
-async function sendRecordToServer(record: { type: string; data: string; id: string }, token: string, serverUrl: string) {
+async function sendRecordToServer(record: { type: string; data: string; id: string }, token: string | { [key: string]: string }, serverUrl: string) {
   console.log(`Enviando traza ${record.type} al servidor...`);
+  let headersJaxpi: { [key: string]: string } = {};
+
+  if (serverUrl === "http://localhost:3000/records") {
+    headersJaxpi["Content-Type"] = "application/json";
+    if (typeof token === "string") headersJaxpi["x-authentication"] = token;
+  } else {
+    if (typeof token !== "string") headersJaxpi = token;
+  }
+
+
   const response = await axios.post(serverUrl, record.data, {
-    headers: {
-      'Content-Type': 'application/json',
-      'x-authentication': token,
-    },
+    headers: headersJaxpi,
   });
 
   console.log(`Trazas ${record.type} enviada`);

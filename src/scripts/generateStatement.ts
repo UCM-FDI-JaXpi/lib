@@ -3,7 +3,6 @@ import { XAPIStatement } from '../schema/xAPIschema.js';
 export interface Player {
     name: string;
     mail: string;
-    //password: string;
 }
 
 
@@ -60,7 +59,7 @@ export function generateStatementFromZero(verbId: string | any, objectId: string
 
 export function generateStatement(player: Player, verb: { id: any; display: any; objects?: string[]; description?: string; extensions?: object | undefined; }, object: { id: any; definition: { type: any; name: any; description: any; extensions?: object | undefined; }; }, sessionKey: string, result?: any, context?: any, authority?: any, ): XAPIStatement {
 
-    const statement: XAPIStatement = {
+    let statement: XAPIStatement = {
         actor: {
         mbox: "mailto:" + player.mail,
         name: player.name,
@@ -78,21 +77,6 @@ export function generateStatement(player: Player, verb: { id: any; display: any;
         }
         },
         timestamp: new Date().toISOString(),
-        context: {
-            instructor: {
-                name: "",
-                mbox: ""
-            },
-            contextActivities: {
-                parent: {
-                    id: ""
-                },
-                grouping: {
-                    id: ""
-                }
-            },
-            extensions: {}
-        },
     };
 
     if (object.definition.extensions !== undefined) statement.object.definition.extensions = object.definition.extensions;
@@ -100,13 +84,30 @@ export function generateStatement(player: Player, verb: { id: any; display: any;
     if (context !== undefined) statement.context = context;
     if (authority !== undefined) statement.authority = authority;
 
-    // Ensure context.extensions is defined
-    if (!statement.context!.extensions) {
-        statement.context!.extensions = {};
-    }
 
-    // Add idUser to context.extensions if sessionKey is provided
     if (sessionKey !== "") {
+        const aux: XAPIStatement = {
+            actor: statement.actor,
+            verb: statement.verb,
+            object: statement.object,
+            timestamp: statement.timestamp,
+            context: {
+                instructor: {
+                    name: "",
+                    mbox: ""
+                },
+                contextActivities: {
+                    parent: {
+                        id: ""
+                    },
+                    grouping: {
+                        id: ""
+                    }
+                },
+                extensions: {}
+            },
+        };
+        statement = aux;
         statement.context!.extensions["https://www.jaxpi.com/sessionKey"] = sessionKey;
     }
 
@@ -128,7 +129,6 @@ export function generateObject(objectJson: any, name?: string, description?: str
 
     if (name)
         object.definition.name["en-US"] = name
-        // object.id = object.id.substring(0, object.id.lastIndexOf("/") - 1) + name
     if (description)
         object.definition.description["en-US"] = description
     

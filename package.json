@@ -4,6 +4,8 @@
     "version": "1.0.0",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "author": "Sergio Gomez, Marcos Colombas, Miriam Cabana",
+    "license": "Apache-2.0",
     "scripts": {
         "generate": "tsc && node ./dist/scripts/scriptGenerator.js && tsc"
     },

@@ -1,37 +1,9 @@
-// script-generate-code.ts
-// import a library for file writing
-//import * as fs from 'fs';
-//const fs = require ('fs');
-//const path = require ('fs');
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path'
-
-//const postAxios = require ('../../src/worker.ts')
-//import axios from 'axios';
-//import axios from "../../node_modules/axios/index";
-//const axios = require ('axios');
-//const { checkVerb, checkObject } = require('./validateStatement');
 import {checkVerb,checkObject} from './validateStatement.js';
 
-
-async function getDataFromURL(url: string) {
-  try {
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-          throw new Error('No se pudo obtener el archivo JSON');
-      }
-
-      const data = await response.json();
-      
-      return data;
-  } catch (error) {
-      console.error('Error al obtener datos de la url:', error);
-      return null;
-  }
-}
 
 function setStatement(parameters: string): string {
   try {
@@ -59,7 +31,7 @@ function getExtensionName(extension: string) : string{
 
 
 // This function returns a string with the class with a method for each xapi trace 
-async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<string,any>): Promise<string> {
+async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<string,any>): Promise<[string, string]> {
   try{
     const methodPromises = [...verbs.entries()].map(async ([key, value]) => {    //Necesita esperar a las Promise de todos las funciones o las escribe mal al generar el codigo
                                                                                 // [...verbs.entries()] Porque es una estructura map y eso lo convierte a un array para posible uso, tambien seria valido Map.prototype.entries() sin cambiar el map
@@ -73,12 +45,9 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
         }
       }
 
-      //const object = await getObjectRelatedToVerb(key);
-      //const parameters = await getParameters(value,object);
       const parametersUpdate = setStatement(parameters);
       let params = [];
 
-      //console.log(parameters + "\n" + parametersUpdate);
       for (const extension in value.extensions) {
         const description = value["extensions-doc"][extension];
         if (description) {
@@ -87,6 +56,7 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
       }
 
       let object: string[] = [];
+      let object2: string[] = [];
       if (value.objects)
         value.objects.forEach((element: string) => {
           object.push(`
@@ -126,7 +96,8 @@ async function generateClassWithFunctions(verbs: Map<string,any>, objects: Map<s
         
       
       }
-          `)
+          `);
+          
         });
 
 
@@ -154,7 +125,6 @@ ${key}(${parameters}) {
     });
     const [resolvedVerbsMap, resolvedObjectsMap] = await Promise.all([Promise.all(verbsMap), Promise.all(objectsMap)]);
 
-    //private objectMap = new Map([${resolvedObjectsMap.join(',\n')}])\n
     let codeBody = `// index.ts
 import './worker.js';
 import { Queue } from './queue.js';
@@ -179,11 +149,8 @@ private max_queue_length: number;
 private record_id: number = 1;
 private promises: Promise<void>[];
 private recordsInterval: NodeJS.Timeout | undefined;
-// Objeto para realizar el seguimiento de las promesas y sus funciones resolve y reject
 private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
-// private token: string = "-1";
 private session_key: string = "";
-  
   
   
   
@@ -191,34 +158,27 @@ public verbs = {
   ${resolvedVerbsMap.join(',\n  ')}
 }
 
-
 public objects = {
   ${resolvedObjectsMap.join(',\n  ')}
 }
   
-  
-  // @param {string} logInURL - The url of the server to log in.
-  // @param {string} player.password - The password of the player.
-  // constructor(player: generate.Player, private serverUrl: string, private loginUrl: string, private time_interval?: number, private max_queue?: number) {
-
 
 /**
  * @param {Object} player - Structure that contains player data.
  * @param {string} player.name - The name of the player.
  * @param {string} player.mail - The mail of the player.
  * @param {string} serverURL - The url of the server where statements will be sent.
- * @param {string} token - The token of authentication the server will use to send the statements.
+ * @param {string | { [key: string]: string }} token - The headers for the LRS or the auth for Jaxpi server.
  * @param {string} [time_interval=undefined] - Number of seconds an interval will try to send the statements to the server. 
  * @param {string} [max_queue=MAX_QUEUE_LENGTH] - Maximum number of statement per queue before sending. 
  */
-constructor(player: generate.Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
+constructor(player: generate.Player, private serverUrl: string, private token: string | { [key: string]: string }, private time_interval?: number, private max_queue?: number) {
   this.context = undefined;
   this.player = player;
   this.worker = new Worker(new URL('./worker.js', import.meta.url));
 
   
 
-  // Dentro del evento 'message', recuperamos el ID de la promesa y llamamos a la función resolve o reject correspondiente
   this.worker.addEventListener('message', (event: any) => {
     const data = event.data;
     if (data.type === 'RESPONSE') {
@@ -226,13 +186,12 @@ constructor(player: generate.Player, private serverUrl: string, private token: s
       const promiseFunctions = this.promisesMap.get(promiseId);
       if (promiseFunctions) {
         promiseFunctions.resolve();
-        this.promisesMap.delete(promiseId); // Limpiamos el mapa después de resolver la promesa
+        this.promisesMap.delete(promiseId); 
       }
     } else if (data.type === 'ERROR') {
-      // Actualiza los campos de record en localStorage para controlar el nº de intentos fallidos de envio
       const recordData = JSON.parse(localStorage.getItem(data.record_id)!);
       recordData.attempts += 1;
-      recordData.lastAttempt = new Date().toISOString(); // Si la traza se encolo hace mas de 24 horas se borra
+      recordData.lastAttempt = new Date().toISOString(); 
       localStorage.setItem(data.record_id, JSON.stringify(recordData));
       console.warn(\`Ultimo intento \${recordData.lastAttempt},  Nº de intentos \${recordData.attempts},  Nº max de intentos 5\`)
 
@@ -240,33 +199,23 @@ constructor(player: generate.Player, private serverUrl: string, private token: s
       const promiseFunctions = this.promisesMap.get(promiseId);
       if (promiseFunctions) {
         promiseFunctions.reject(data.error);
-        this.promisesMap.delete(promiseId); // Limpiamos el mapa después de rechazar la promesa
+        this.promisesMap.delete(promiseId); 
       }
     } else if (data.type === 'DEQUEUE') {
-      // Quitar de localStorage la traza enviada
       localStorage.removeItem(data.record_id)
     } 
-    // else if (data.type === 'LOGIN') {
-    //   this.token = data.token;
-    // }
+
   });
   this.promises = [];
-  // Inicia el tamaño de la cola de trazas. Por defecto MAX_QUEUE_LENGTH
   if (this.max_queue) this.max_queue_length = this.max_queue
   else this.max_queue_length = MAX_QUEUE_LENGTH;
-  // Inicia el intervalo de envios de traza. Pod defecto TIME_INTERVAL_SEND
   if (this.time_interval)
     this.recordsInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval);
 
-  const self = this;
+  //const self = this;
 
 
-  // LogIn con el server para generar el token
-  //  this.worker.postMessage({ type: 'LOGIN', credentials:{email: this.player.mail, password: this.player.password}, serverUrl: this.loginUrl });
-
-  // Si quedaron trazas por enviar en caso de error o cierre, se encolan para ser enviadas -> Se encolan cuando se procesan nuevas trazas
-  // this.checkLocalStorage()
-
+/*
   if (typeof window !== undefined){
   let isListening = false;
   
@@ -276,8 +225,8 @@ constructor(player: generate.Player, private serverUrl: string, private token: s
         await Promise.all(self.promises)
     .then(() => {
       console.log('Promesas resueltas, cerrando la ventana...');
-      window.close();  // Cierra la ventana del navegador
-      return;  // Detiene la ejecución del script
+      window.close();
+      return;
     })
     .catch((error) => {
       console.error("Se produjo un error al resolver las promesas:", error);
@@ -298,10 +247,9 @@ constructor(player: generate.Player, private serverUrl: string, private token: s
     }
   }
   
-  // Iniciar la escucha
   startListening();
   }
-
+*/
   if (instance) {
     return instance;
   }
@@ -318,13 +266,10 @@ async flush() {
   console.log(records)
   if (records.length > 0) {
     const promise = this.sendRecords(records);
-    this.records_queue = new Queue(); // Limpiar la cola después de enviar
+    this.records_queue = new Queue(); 
     this.promises.push(promise);
     try {
       await promise;
-
-      //await this.promises.push(this.sendTraces(traces));
-      
     } catch (error) {
       console.error('Error al enviar trazas:', error);
     }
@@ -333,9 +278,7 @@ async flush() {
 
 private async sendRecords(records: { type: string; data: string }[]) {
   return new Promise<void>((resolve, reject) => {
-    // Generamos un ID único para esta promesa
     const promiseId = this.generateUniquePromiseId();
-    // Guardamos las funciones resolve y reject en el mapa
     this.promisesMap.set(promiseId, { resolve, reject });
 
     this.worker.postMessage({ type: 'SEND_RECORDS', records, token: this.token, serverUrl: this.serverUrl, promiseId });
@@ -349,21 +292,20 @@ private generateUniquePromiseId(): string {
 
 private checkLocalStorage(){
   const maxAttempts = 5;
-  const maxAgeMs = 24 * 60 * 60 * 1000; // 24 horas
+  const maxAgeMs = 24 * 60 * 60 * 1000; // 24 hours
 
   if (localStorage.length) {
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      //console.log(/^stat\\d+$/.test(key!))
       console.log(key)
       if (/^stat\\d+$/.test(key!) && !this.records_queue.toArray().some(item => item.id === key)) {
         const value = JSON.parse(localStorage.getItem(key!)!);
 
-        let {record, attempts, lastAttempt} = value // Si supera los intentos permitidos tambien se borra
+        let {record, attempts, lastAttempt} = value 
         record = JSON.parse(record)
         const lastAttemptDate = new Date(lastAttempt);
         const now = new Date();
-        const age = now.getTime() - lastAttemptDate.getTime(); // Si la traza se encolo por ultima vez hace mas de 24 horas se borra
+        const age = now.getTime() - lastAttemptDate.getTime(); 
 
         console.log(value)
         console.log(record.verb.display["en-US"])
@@ -372,20 +314,16 @@ private checkLocalStorage(){
 
         if (attempts < maxAttempts && age < maxAgeMs) {
           this.records_queue.enqueue({type: \`\${record.verb.display["en-US"]}/\${record.object.definition.name["en-US"]}\`, data: record, id: key!})
-      } else {
-          // Decidir si eliminar la traza
+        } else {
           console.log(\`Eliminando traza \${key} después de \${attempts} intentos o por exceder el tiempo permitido de 24 horas.\`);
           localStorage.removeItem(key!);
-      }
-
-        
-        
+        }
       }
     }
   }
 }
 
-// Función para generar un id unico para cada traza <-----------------------------------------------------------------------------------------------------------------------------------------
+// Función para generar un id unico para cada traza 
 private statementIdCalc(): string{
   while (localStorage.getItem(\`stat\${this.record_id}\`) !== null) this.record_id++;
   
@@ -405,7 +343,7 @@ public stopStatementInterval() {
 public startSendingInterval(seconds: number) {
   if (this.recordsInterval)
     clearInterval(this.recordsInterval);
-  this.recordsInterval = setInterval(this.flush.bind(this), seconds * 1000); //Crea un intervalo cada 'seconds' segundos
+  this.recordsInterval = setInterval(this.flush.bind(this), seconds * 1000); 
 }
 
 /**
@@ -429,13 +367,10 @@ public async validateKey(sessionKey: string): Promise<boolean> {
   }catch (error){
     if (axios.isAxiosError(error)) {
       if (error.response) {
-        // El servidor respondió con un estado diferente de 2xx
         console.error('Error:', error.response.status, error.response.data);
       } else if (error.request) {
-        // La solicitud fue hecha pero no hubo respuesta
         console.error('Error:', error.request);
       } else {
-        // Algo pasó al configurar la solicitud
         console.error('Error:', error.message);
       }
     } else {
@@ -469,7 +404,7 @@ public setContext(name: string, mbox: string, sessionId: string, groupId: string
     for (let [key, value] of parameters) {
       if (this.context.extensions !== undefined) {
         let parameter = "http://example.com/activities/" + key;
-        (this.context.extensions as { [key: string]: any })[parameter] = value; // Aseguramos a typescript que extensions es del tipo {string : any,...}
+        (this.context.extensions as { [key: string]: any })[parameter] = value; 
       }
     }
   }
@@ -490,13 +425,11 @@ customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x:
     if (checkVerb(verb) || typeof verb === "string") {
       const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
 
-      //this.statementQueue.enqueue({ user_id: this.player.userId, session_id: this.player.sessionId, statement: generate.generateStatement(this.player, verbJson, objectJson) });
       let statement = generate.generateStatement(this.player, verbJson, objectJson, this.session_key, undefined, this.context, undefined)
       let id = this.statementIdCalc()
   
       localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
       this.records_queue.enqueue({type: 'custom', data: statement, id: id});
-      //this.statementQueue.enqueue({type: 'custom', data: statement});
       if (this.records_queue.length >= this.max_queue_length) this.flush();
     }
     else
@@ -510,18 +443,654 @@ customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x:
 ${methods.join('\n')}\n
 }`;
 
-    return codeBody;
+
+    let minBody = `
+class Queue<T> {
+  private items: T[] = [];
+
+  enqueue(item: T): void {
+    this.items.push(item);
+  }
+
+  dequeue(): T | undefined {
+    return this.items.shift();
+  }
+
+  peek(): T | undefined {
+    return this.items[0];
+  }
+
+  removeHead(): void {
+    if (!this.isEmpty()) {
+      this.items.shift();
+    }
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+
+  toArray(): T[] {
+    return [...this.items];
+  }
+
+  get length(): number {
+    return this.items.length;
+  }
+
+  get head(): T | undefined {
+    return this.items[0];
+  }
+}
+
+interface ContextExtensions {
+  session?: string;
+  [key: string]: any; 
+}
+
+interface XAPIStatement {
+  actor: {
+    name: string;
+    mbox: string;
+  };
+  verb: {
+    id: string;
+    display: object;
+  };
+  object: {
+    id: string;
+    definition: {
+      type: string;
+      name: object;
+      description: object;
+      extensions?: object;
+    };
+  };
+  result?: {
+    completion: boolean;
+    success: boolean;
+    score: {
+      scaled: number;
+    };
+    extensions: object;
+  };
+  context?: {
+    instructor: {
+      name: string;
+      mbox: string;
+    };
+    contextActivities: {
+      parent: {
+        id: string;
+      };
+      grouping: {
+        id: string;
+      };
+    };
+    extensions: ContextExtensions;
+  };
+  timestamp: string;
+  authority?: {
+    name: string;
+    mbox: string;
+  }
+}
+
+interface Player {
+  name: string;
+  mail: string;
+}
+
+function generateStatementFromZero(verbId: string | any, objectId: string | any, parameters?: Array<[string, any]>): [any, any] {
+
+  let parameter = "";
+  const header = "http://example.com/";
+  let verb;
+  let object;
+
+  if (typeof verbId === "string")
+    verb = {
+      id: header + verbId,
+      display: {},
+    }
+  else
+    if (verbId.id)
+      verb = {
+        id: verbId.id,
+        display: verbId.display,
+      }
+
+  if (typeof objectId === "string")
+    object = {
+      id: header + objectId,
+      definition: {
+        type: "custom",
+        name: {},
+        description: {},
+        extensions: {}
+      }
+    }
+  else
+    object = {
+      id: objectId.id,
+      definition: objectId.definition
+    }
+
+  if (parameters) {
+    if (object.definition.extensions !== undefined)
+      object.definition.extensions = {}
+
+    for (let [key, value] of parameters) {
+      parameter = header + verbId + "_" + key;
+      (object.definition.extensions as { [key: string]: any })[parameter] = value; 
+    }
+  }
+
+  return [verb, object];
+}
+
+function generateStatement(player: Player, verb: { id: any; display: any; objects?: string[]; description?: string; extensions?: object | undefined; }, object: { id: any; definition: { type: any; name: any; description: any; extensions?: object | undefined; }; }, sessionKey: string, result?: any, context?: any, authority?: any, ): XAPIStatement {
+
+  let statement: XAPIStatement = {
+      actor: {
+      mbox: "mailto:" + player.mail,
+      name: player.name,
+      },
+      verb: {
+      id: verb.id,
+      display: verb.display,
+      },
+      object: {
+      id: object.id,
+      definition: {
+          type: object.definition.type,
+          name: object.definition.name,
+          description: object.definition.description,
+      }
+      },
+      timestamp: new Date().toISOString(),
+  };
+
+  if (object.definition.extensions !== undefined) statement.object.definition.extensions = object.definition.extensions;
+  if (result !== undefined) statement.result = result;
+  if (context !== undefined) statement.context = context;
+  if (authority !== undefined) statement.authority = authority;
+
+
+  if (sessionKey !== "") {
+      const aux: XAPIStatement = {
+          actor: statement.actor,
+          verb: statement.verb,
+          object: statement.object,
+          timestamp: statement.timestamp,
+          context: {
+              instructor: {
+                  name: "",
+                  mbox: ""
+              },
+              contextActivities: {
+                  parent: {
+                      id: ""
+                  },
+                  grouping: {
+                      id: ""
+                  }
+              },
+              extensions: {}
+          },
+      };
+      statement = aux;
+      statement.context!.extensions["https://www.jaxpi.com/sessionKey"] = sessionKey;
+  }
+
+  return statement;
+}
+
+function generateObject(objectJson: any, name?: string, description?: string): any {
+
+  const object: { id: string, definition: any } = {
+    id: objectJson.id,
+    definition: {
+      type: objectJson.definition.type,
+      name: { ...objectJson.definition.name }, // Clono el campo de objectJason para evitar que me sobreescriba con una referencia
+      description: { ...objectJson.definition.description },
+      extensions: {}
+    }
+
+  };
+
+  if (name)
+    object.definition.name["en-US"] = name
+  if (description)
+    object.definition.description["en-US"] = description
+
+  return object;
+}
+
+function checkVerb(json: { [x: string]: any; id: any; } | string) {
+  if (typeof json === 'string') return false;
+
+  const expectedFieldsInVerb = ["id", "display", "objects", "extensions", "extensions-doc", "description"];
+  const requiredFieldsInVerb = ["id", "display"];
+
+  for (const field in json) {
+    if (expectedFieldsInVerb.indexOf(field) === -1) {
+      return false;
+    }
+  }
+
+  for (const field of requiredFieldsInVerb) {
+    if (!json[field]) {
+      return false;
+    }
+  }
+
+  if (typeof json.id !== 'string') return false;
+
+  return true;
+}
+
+function checkObject(json: { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; } | string) {
+  if (typeof json === 'string') return false;
+
+  const expectedFieldsInDefinition = ["type", "name", "description"];
+  const expectedFieldsInObject = ["id", "definition"];
+
+  for (const field in json) {
+    if (expectedFieldsInObject.indexOf(field) === -1) {
+        return false;
+    }
+}
+  for (const field in json.definition) {
+    if (expectedFieldsInDefinition.indexOf(field) === -1 && field !== "extensions") {
+      return false;
+    }
+  }
+
+  for (const field of expectedFieldsInObject) {
+    if (!json[field]) {
+      return false;
+    }
+  }
+  for (const field of expectedFieldsInDefinition) {
+    if (!json.definition[field]) {
+      return false;
+    }
+  }
+
+  if (typeof json.id !== 'string' || typeof json.definition.type !== 'string') return false;
+
+  return true;
+}
+
+// Cuerpo Principal
+const MAX_QUEUE_LENGTH = 5;
+let instance: Jaxpi | null = null;
+
+
+class Jaxpi {
+  private records_queue: Queue<{ type: string; data: any, id: string }> = new Queue();
+  private player: Player;
+  private context: any;
+  private max_queue_length: number;
+  private record_id: number = 1;
+  private promises: Promise<void>[];
+  private recordsInterval: number | undefined;
+  private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
+  private session_key: string = "";
+  private worker: Worker;
+
+  public verbs = {
+    ${resolvedVerbsMap.join(',\n  ')}
+  }
+
+  public objects = {
+    ${resolvedObjectsMap.join(',\n  ')}
+  }
+
+  /**
+   * @param {Object} player - Structure that contains player data.
+   * @param {string} player.name - The name of the player.
+   * @param {string} player.mail - The mail of the player.
+   * @param {string} serverURL - The url of the server where statements will be sent.
+   * @param {string} token - The token of authentication the server will use to send the statements.
+   * @param {string} [time_interval=undefined] - Number of seconds an interval will try to send the statements to the server. 
+   * @param {string} [max_queue=MAX_QUEUE_LENGTH] - Maximum number of statement per queue before sending. 
+   */
+  constructor(player: Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
+    this.context = undefined;
+    this.player = player;
+
+    const workerCode = \`
+        self.onmessage = async (event) => {
+            const data = event.data;
+
+            if (data.type === 'SEND_RECORDS') {
+                const { records, token, serverUrl, promiseId } = data;
+
+                for (const record of records) {
+                    try {
+                        await sendRecordToServer(record, token, serverUrl);
+                    } catch (error) {
+                        if (error instanceof Error) {
+                            const simplifiedError = {
+                                message: error.message,
+                                traceId: record.id
+                            };
+                            console.error(\\\`Error al enviar traza \\\${record.type}:\\\`, simplifiedError);
+                            self.postMessage({ type: 'ERROR', error: simplifiedError, promiseId, record_id: record.id });
+                        } else {
+                            console.error('Error desconocido:', error);
+                            self.postMessage({ type: 'ERROR', error: { message: 'Error desconocido' }, promiseId });
+                        }
+                    }
+                }
+
+                self.postMessage({ type: 'RESPONSE', promiseId: promiseId });
+            }
+        };
+
+        async function sendRecordToServer(record, token, serverUrl) {
+            console.log(\\\`Enviando traza \\\${record.type} al servidor...\\\`);
+            let headersJaxpi = {};
+
+            if (serverUrl === "http://localhost:3000/records") {
+              headersJaxpi["Content-Type"] = "application/json";
+              headersJaxpi["x-authentication"] = token;
+            } else {
+              headersJaxpi = token;
+            }
+            const response = await fetch(serverUrl, {
+                method: 'POST',
+                headers: headersJaxpi,
+                body: JSON.stringify(record.data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(\\\`HTTP error! status: \\\${response.status} - \\\${errorData.message}\\\`);
+            }
+
+            const responseData = await response.json();
+            console.log(\\\`Trazas \\\${record.type} enviada\\\`);
+            console.log(\\\`Respuesta del servidor: \\\${responseData}\\\`);
+            self.postMessage({ type: 'DEQUEUE', record_id: record.id });
+        }
+        \`;
+
+    const blob = new Blob([workerCode], { type: "application/javascript" });
+    const workerBlobURL = URL.createObjectURL(blob);
+    this.worker = new Worker(workerBlobURL);
+
+
+
+    this.worker.onmessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (data.type === 'RESPONSE') {
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.resolve();
+          this.promisesMap.delete(promiseId); 
+        }
+      } else if (data.type === 'ERROR') {
+        const recordData = JSON.parse(localStorage.getItem(data.record_id)!);
+        recordData.attempts += 1;
+        recordData.lastAttempt = new Date().toISOString(); 
+        localStorage.setItem(data.record_id, JSON.stringify(recordData));
+        console.warn(\`Ultimo intento \${recordData.lastAttempt},  Nº de intentos \${recordData.attempts},  Nº max de intentos 5\`)
+
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.reject(data.error);
+          this.promisesMap.delete(promiseId); 
+        }
+      } else if (data.type === 'DEQUEUE') {
+        localStorage.removeItem(data.record_id)
+      }
+
+    };
+    this.promises = [];
+    if (this.max_queue) this.max_queue_length = this.max_queue
+    else this.max_queue_length = MAX_QUEUE_LENGTH;
+    if (this.time_interval)
+      this.recordsInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval) as unknown as number;
+
+    const self = this;
+
+    if (typeof window !== undefined) {
+      let isListening = false;
+
+      async function handleSIGINT() {
+        console.log('SIGINT received');
+        self.flush()
+        await Promise.all(self.promises)
+          .then(() => {
+            console.log('Promesas resueltas, cerrando la ventana...');
+            window.close();  
+            return;  
+          })
+          .catch((error) => {
+            console.error("Se produjo un error al resolver las promesas:", error);
+          });
+      }
+
+      function startListening() {
+        if (!isListening) {
+          isListening = true;
+          window.addEventListener('beforeunload', handleSIGINT);
+        }
+      }
+
+      function stopListening() {
+        if (isListening) {
+          isListening = false;
+          window.removeEventListener('beforeunload', handleSIGINT);
+        }
+      }
+
+      startListening();
+    }
+
+    if (instance) {
+      return instance;
+    }
+    instance = this;
+  }
+
+  /**
+   * Function to send the statements queue to the server, it also creates a backup if the sending fails
+   */
+  async flush() {
+    this.checkLocalStorage()
+    const records = this.records_queue.toArray();
+    console.log(records)
+    if (records.length > 0) {
+      const promise = this.sendRecords(records);
+      this.records_queue = new Queue(); 
+      this.promises.push(promise);
+      try {
+        await promise;
+      } catch (error) {
+        console.error('Error al enviar trazas:', error);
+      }
+    }
+  }
+
+  private async sendRecords(records: { type: string; data: string }[]) {
+    return new Promise<void>((resolve, reject) => {
+      const promiseId = this.generateUniquePromiseId();
+      this.promisesMap.set(promiseId, { resolve, reject });
+
+      this.worker.postMessage({ type: 'SEND_RECORDS', records, token: this.token, serverUrl: this.serverUrl, promiseId });
+    });
+  }
+
+  // Función para generar un ID único para cada promesa
+  private generateUniquePromiseId(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
+
+  private checkLocalStorage() {
+    const maxAttempts = 5;
+    const maxAgeMs = 24 * 60 * 60 * 1000; // 24 horas
+
+    if (localStorage.length) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        console.log(key)
+        if (/^stat\\d+$/.test(key!) && !this.records_queue.toArray().some(item => item.id === key)) {
+          const value = JSON.parse(localStorage.getItem(key!)!);
+
+          let { record, attempts, lastAttempt } = value // Si supera los intentos permitidos tambien se borra
+          record = JSON.parse(record)
+          const lastAttemptDate = new Date(lastAttempt);
+          const now = new Date();
+          const age = now.getTime() - lastAttemptDate.getTime(); 
+
+          console.log(value)
+          console.log(record.verb.display["en-US"])
+          console.log(attempts)
+          console.log(lastAttempt)
+
+          if (attempts < maxAttempts && age < maxAgeMs) {
+            this.records_queue.enqueue({ type: \`\${record.verb.display["en-US"]}/\${record.object.definition.name["en-US"]}\`, data: record, id: key! })
+          } else {
+            console.log(\`Eliminando traza \${key} después de \${attempts} intentos o por exceder el tiempo permitido de 24 horas.\`);
+            localStorage.removeItem(key!);
+          }
+
+        }
+      }
+    }
+  }
+
+  // Función para generar un id unico para cada traza 
+  private statementIdCalc(): string {
+    while (localStorage.getItem(\`stat\${this.record_id}\`) !== null) this.record_id++;
+
+    return \`stat\${this.record_id}\`;
+  }
+
+  /**
+   * Function to stop the interval to send the statements queue to the server
+   */
+  public stopStatementInterval() {
+    if (this.recordsInterval)
+      clearInterval(this.recordsInterval); 
+  }
+  /**
+   * Function to start the interval to send the statements queue to the server
+   */
+  public startSendingInterval(seconds: number) {
+    if (this.recordsInterval)
+      clearInterval(this.recordsInterval);
+    this.recordsInterval = setInterval(this.flush.bind(this), seconds * 1000) as unknown as number; 
+  }
+
+  /**
+   * Function to set the session key of an user
+   * @param {string} session_key - Key of 6 values that identifies the user
+   */
+  public setKey(session_key: string) {
+    this.session_key = session_key
+  }
+
+  /**
+   * Async function to validate the session key of a user
+   * @param {string} sessionKey - Key of 6 values that identifies the user
+   * @returns {Promise<boolean>} A promise with the boolean result of the validation
+   */
+  public async validateKey(sessionKey: string): Promise<boolean> {
+    try {
+      const response = await fetch(\`http://localhost:3000/publicAPI/key/\${sessionKey}\`);
+
+      if (response.ok) {
+        return true;
+      } else {
+        const errorData = await response.json();
+        console.error('Error:', response.status, errorData);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Function to set the context field of the statement (class / association where it takes places)
+   * @param {string} name - Name of the instructor
+   * @param {string} mbox - Mail of the instructor
+   * @param {string} sessionId - Unique id of the session (class URI)
+   * @param {string} groupId - Unique id of the association (college URI)
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
+   */
+  public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string, any]>) {
+    this.context = {
+      instructor: {
+        name: name,
+        mbox: "mailto:" + mbox
+      },
+      contextActivities: {
+        parent: { id: "http://example.com/activities/" + sessionId },
+        grouping: { id: 'http://example.com/activities/' + groupId }
+      },
+      extensions: {}
+    }
+    if (parameters) {
+      for (let [key, value] of parameters) {
+        if (this.context.extensions !== undefined) {
+          let parameter = "http://example.com/activities/" + key;
+          (this.context.extensions as { [key: string]: any })[parameter] = value;
+        }
+      }
+    }
+  }
+
+  /**
+   * Function to accept verbs / objects not contemplated in the library
+   * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
+   * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
+   * @param {any} [context] - Adds a field context for the statement
+   * @param {any} [result] - Adds a field result for the statement
+   * @param {any} [authority] - Adds a field authority for the statement
+   */
+  customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; }, parameters?: Array<[string, any]>, result?: any, context?: any, authority?: any) {
+
+    if (checkObject(object) || typeof object === "string") {
+      if (checkVerb(verb) || typeof verb === "string") {
+        const [verbJson, objectJson] = generateStatementFromZero(verb, object, parameters);
+        let statement = generateStatement(this.player, verbJson, objectJson, this.session_key, undefined, this.context, undefined)
+        let id = this.statementIdCalc()
+
+        localStorage.setItem(id, JSON.stringify({ record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString() }))
+        this.records_queue.enqueue({ type: 'accepted/achievement', data: statement, id: id });
+        if (this.records_queue.length >= this.max_queue_length) this.flush();
+      }
+      else
+        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
+    }
+    else
+      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
+
+  }
+
+\n
+  ${methods.join('\n').replace(/generate\./g, '')}\n
+}`;
+
+    return [codeBody, minBody];
   } catch (error) {
     console.error('Error al generar el código de la clase:', error);
-    throw error; // Propaga el error para que sea manejado externamente
+    throw error;
   }
 }
 
 
-//const currentDir = path.dirname(new URL(import.meta.url).pathname);
 const verbsFolderPath = path.join(dirname(fileURLToPath(import.meta.url)), '../../verbs');
-//const verbsFolderPath = './verbs';
-//const objectsFolderPath = path.join(currentDir, '../../objects');
 const objectsFolderPath = path.join(dirname(fileURLToPath(import.meta.url)), '../../objects');
 
 async function generateMap(): Promise<{ verbJsonMap: Map<string, any>, objectJsonMap: Map<string, any> }> {
@@ -568,8 +1137,9 @@ async function generateMap(): Promise<{ verbJsonMap: Map<string, any>, objectJso
 // Llama a la función para generar dinámicamente el mapa de verbos
 generateMap()
   .then(async (mapaGenerado) => {
-    let generatedCode = await generateClassWithFunctions(mapaGenerado.verbJsonMap,mapaGenerado.objectJsonMap);
+    let [generatedCode, genCodeMin] = await generateClassWithFunctions(mapaGenerado.verbJsonMap,mapaGenerado.objectJsonMap);
     fs.writeFileSync('./src/index.ts', generatedCode);  //JaxPiLib
+    fs.writeFileSync('./src/jaxpi.ts', genCodeMin);  //JaxPiLib.min
   })
   .catch((error) => {
     console.error('Error al generar el mapa:', error);

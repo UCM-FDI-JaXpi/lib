@@ -15,6 +15,13 @@ export const KID_INMORTAL = false;
 
 
 export const SERVER_URL = 'http://localhost:3000/records'
+//export const SERVER_URL = 'https://lrs.adlnet.gov/xapi/statements'
 export const ACTOR_NAME = 'Super Mario'
 export const ACTOR_MAIL = 'student1@example.com'
 export const GAME_TOKEN_POP = 'cEPTx-GsXov-dJBXe-pY7jc-NPyQ9'
+// let headers = {
+//     "Content-Type": "application/json",
+//     "Authorization": `Basic ${btoa('xapi-tools:xapi-tools')}`, // Si usas autenticación básica
+//     "X-Experience-API-Version": "1.0.3", // Necesario para xAPI
+// };
+// export const GAME_TOKEN_POP = headers;

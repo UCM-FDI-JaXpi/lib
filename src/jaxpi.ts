@@ -1,34 +1,301 @@
-// index.ts
-import './worker.js';
-import { Queue } from './queue.js';
 
-import * as generate from './scripts/generateStatement.js';
-import { checkObject, checkVerb } from './scripts/validateStatement.js';
+class Queue<T> {
+  private items: T[] = [];
 
-import axios, { AxiosError } from 'axios';
+  enqueue(item: T): void {
+    this.items.push(item);
+  }
+
+  dequeue(): T | undefined {
+    return this.items.shift();
+  }
+
+  peek(): T | undefined {
+    return this.items[0];
+  }
+
+  removeHead(): void {
+    if (!this.isEmpty()) {
+      this.items.shift();
+    }
+  }
+
+  isEmpty(): boolean {
+    return this.items.length === 0;
+  }
+
+  toArray(): T[] {
+    return [...this.items];
+  }
+
+  get length(): number {
+    return this.items.length;
+  }
+
+  get head(): T | undefined {
+    return this.items[0];
+  }
+}
+
+interface ContextExtensions {
+  session?: string;
+  [key: string]: any; 
+}
+
+interface XAPIStatement {
+  actor: {
+    name: string;
+    mbox: string;
+  };
+  verb: {
+    id: string;
+    display: object;
+  };
+  object: {
+    id: string;
+    definition: {
+      type: string;
+      name: object;
+      description: object;
+      extensions?: object;
+    };
+  };
+  result?: {
+    completion: boolean;
+    success: boolean;
+    score: {
+      scaled: number;
+    };
+    extensions: object;
+  };
+  context?: {
+    instructor: {
+      name: string;
+      mbox: string;
+    };
+    contextActivities: {
+      parent: {
+        id: string;
+      };
+      grouping: {
+        id: string;
+      };
+    };
+    extensions: ContextExtensions;
+  };
+  timestamp: string;
+  authority?: {
+    name: string;
+    mbox: string;
+  }
+}
+
+interface Player {
+  name: string;
+  mail: string;
+}
+
+function generateStatementFromZero(verbId: string | any, objectId: string | any, parameters?: Array<[string, any]>): [any, any] {
+
+  let parameter = "";
+  const header = "http://example.com/";
+  let verb;
+  let object;
+
+  if (typeof verbId === "string")
+    verb = {
+      id: header + verbId,
+      display: {},
+    }
+  else
+    if (verbId.id)
+      verb = {
+        id: verbId.id,
+        display: verbId.display,
+      }
+
+  if (typeof objectId === "string")
+    object = {
+      id: header + objectId,
+      definition: {
+        type: "custom",
+        name: {},
+        description: {},
+        extensions: {}
+      }
+    }
+  else
+    object = {
+      id: objectId.id,
+      definition: objectId.definition
+    }
+
+  if (parameters) {
+    if (object.definition.extensions !== undefined)
+      object.definition.extensions = {}
+
+    for (let [key, value] of parameters) {
+      parameter = header + verbId + "_" + key;
+      (object.definition.extensions as { [key: string]: any })[parameter] = value; 
+    }
+  }
+
+  return [verb, object];
+}
+
+function generateStatement(player: Player, verb: { id: any; display: any; objects?: string[]; description?: string; extensions?: object | undefined; }, object: { id: any; definition: { type: any; name: any; description: any; extensions?: object | undefined; }; }, sessionKey: string, result?: any, context?: any, authority?: any, ): XAPIStatement {
+
+  let statement: XAPIStatement = {
+      actor: {
+      mbox: "mailto:" + player.mail,
+      name: player.name,
+      },
+      verb: {
+      id: verb.id,
+      display: verb.display,
+      },
+      object: {
+      id: object.id,
+      definition: {
+          type: object.definition.type,
+          name: object.definition.name,
+          description: object.definition.description,
+      }
+      },
+      timestamp: new Date().toISOString(),
+  };
+
+  if (object.definition.extensions !== undefined) statement.object.definition.extensions = object.definition.extensions;
+  if (result !== undefined) statement.result = result;
+  if (context !== undefined) statement.context = context;
+  if (authority !== undefined) statement.authority = authority;
 
 
-const TIME_INTERVAL_SEND = 5;
+  if (sessionKey !== "") {
+      const aux: XAPIStatement = {
+          actor: statement.actor,
+          verb: statement.verb,
+          object: statement.object,
+          timestamp: statement.timestamp,
+          context: {
+              instructor: {
+                  name: "",
+                  mbox: ""
+              },
+              contextActivities: {
+                  parent: {
+                      id: ""
+                  },
+                  grouping: {
+                      id: ""
+                  }
+              },
+              extensions: {}
+          },
+      };
+      statement = aux;
+      statement.context!.extensions["https://www.jaxpi.com/sessionKey"] = sessionKey;
+  }
+
+  return statement;
+}
+
+function generateObject(objectJson: any, name?: string, description?: string): any {
+
+  const object: { id: string, definition: any } = {
+    id: objectJson.id,
+    definition: {
+      type: objectJson.definition.type,
+      name: { ...objectJson.definition.name }, // Clono el campo de objectJason para evitar que me sobreescriba con una referencia
+      description: { ...objectJson.definition.description },
+      extensions: {}
+    }
+
+  };
+
+  if (name)
+    object.definition.name["en-US"] = name
+  if (description)
+    object.definition.description["en-US"] = description
+
+  return object;
+}
+
+function checkVerb(json: { [x: string]: any; id: any; } | string) {
+  if (typeof json === 'string') return false;
+
+  const expectedFieldsInVerb = ["id", "display", "objects", "extensions", "extensions-doc", "description"];
+  const requiredFieldsInVerb = ["id", "display"];
+
+  for (const field in json) {
+    if (expectedFieldsInVerb.indexOf(field) === -1) {
+      return false;
+    }
+  }
+
+  for (const field of requiredFieldsInVerb) {
+    if (!json[field]) {
+      return false;
+    }
+  }
+
+  if (typeof json.id !== 'string') return false;
+
+  return true;
+}
+
+function checkObject(json: { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; } | string) {
+  if (typeof json === 'string') return false;
+
+  const expectedFieldsInDefinition = ["type", "name", "description"];
+  const expectedFieldsInObject = ["id", "definition"];
+
+  for (const field in json) {
+    if (expectedFieldsInObject.indexOf(field) === -1) {
+        return false;
+    }
+}
+  for (const field in json.definition) {
+    if (expectedFieldsInDefinition.indexOf(field) === -1 && field !== "extensions") {
+      return false;
+    }
+  }
+
+  for (const field of expectedFieldsInObject) {
+    if (!json[field]) {
+      return false;
+    }
+  }
+  for (const field of expectedFieldsInDefinition) {
+    if (!json.definition[field]) {
+      return false;
+    }
+  }
+
+  if (typeof json.id !== 'string' || typeof json.definition.type !== 'string') return false;
+
+  return true;
+}
+
+// Cuerpo Principal
 const MAX_QUEUE_LENGTH = 5;
 let instance: Jaxpi | null = null;
 
 
-export default class Jaxpi {
-private worker: Worker;
-private records_queue: Queue<{ type: string; data: any, id: string }> = new Queue();
-private player: generate.Player;
-private context: any;
-private max_queue_length: number;
-private record_id: number = 1;
-private promises: Promise<void>[];
-private recordsInterval: NodeJS.Timeout | undefined;
-private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
-private session_key: string = "";
-  
-  
-  
-public verbs = {
-  "accepted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-US":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"],"description":"The player accepts an object like a task or a reward"},
+class Jaxpi {
+  private records_queue: Queue<{ type: string; data: any, id: string }> = new Queue();
+  private player: Player;
+  private context: any;
+  private max_queue_length: number;
+  private record_id: number = 1;
+  private promises: Promise<void>[];
+  private recordsInterval: number | undefined;
+  private promisesMap: Map<string, { resolve: () => void, reject: (reason?: any) => void }> = new Map();
+  private session_key: string = "";
+  private worker: Worker;
+
+  public verbs = {
+    "accepted":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accepted","display":{"en-US":"accepted","es":"aceptado"},"objects":["achievement","award","mission","reward","task"],"description":"The player accepts an object like a task or a reward"},
   "accessed":{"id":"https://github.com/UCM-FDI-JaXpi/lib/accessed","display":{"en-US":"accessed","es":"accedido"},"objects":["chest","door","room","location"],"description":"The player access an object like a room or a new area","extensions":{"https://example.com/game/visited_times":3},"extensions-doc":{"https://example.com/game/visited_times":"Number of times the object has been accessed"}},
   "achieved":{"id":"https://github.com/UCM-FDI-JaXpi/lib/achieved","display":{"en-US":"achieved","es":"logrado"},"objects":["achievement","award","game","goal","level","reward"],"description":"The player achieves something like a level up"},
   "cancelled":{"id":"https://github.com/UCM-FDI-JaXpi/lib/cancelled","display":{"en-US":"cancelled","es":"cancelado"},"objects":["mission","task"],"description":"The player cancels an object like a mission","extensions":{"https://example.com/game/reason":"Obstacle ahead"},"extensions-doc":{"https://example.com/game/reason":"Reason of the cancelation"}},
@@ -76,10 +343,10 @@ public verbs = {
   "upgraded":{"id":"https://github.com/UCM-FDI-JaXpi/lib/upgraded","display":{"en-US":"upgraded","es":"mejorado"},"objects":["item"],"description":"The player upgrades an item"},
   "used":{"id":"https://github.com/UCM-FDI-JaXpi/lib/used","display":{"en-US":"used","es":"utilizado"},"objects":["item"],"description":"The player uses an item","extensions":{"https://github.com/UCM-FDI-JaXpi/consumed":false},"extensions-doc":{"https://github.com/UCM-FDI-JaXpi/consumed":"The item is consumed with the use or not"}},
   "watched":{"id":"https://github.com/UCM-FDI-JaXpi/lib/watched","display":{"en-US":"watched","es":"visto"}}
-}
+  }
 
-public objects = {
-  "achievement":{"id":"https://github.com/UCM-FDI-JaXpi/objects/achievement","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default achievement","es":"Logro por defecto"},"description":{"en-US":"A recognition or accomplishment gained by meeting certain criteria","es":"Un reconocimiento o logro obtenido al cumplir ciertos criterios"}}},
+  public objects = {
+    "achievement":{"id":"https://github.com/UCM-FDI-JaXpi/objects/achievement","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default achievement","es":"Logro por defecto"},"description":{"en-US":"A recognition or accomplishment gained by meeting certain criteria","es":"Un reconocimiento o logro obtenido al cumplir ciertos criterios"}}},
   "award":{"id":"https://github.com/UCM-FDI-JaXpi/objects/award","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default award","es":"Premio por defecto"},"description":{"en-US":"A prize or honor given to the player for an achievement","es":"Un premio u honor otorgado al jugador por un logro"}}},
   "character":{"id":"https://github.com/UCM-FDI-JaXpi/objects/character","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default character","es":"Personaje por defecto"},"description":{"en-US":"A persona or figure in the game","es":"Una persona o figura en el juego"}}},
   "chest":{"id":"https://github.com/UCM-FDI-JaXpi/objects/chest","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default chest","es":"Cofre por defecto"},"description":{"en-US":"A storage container, often used to hold items or rewards, it can require a key or mechanism to unlock","es":"Un contenedor de almacenamiento, que a menudo se usa para guardar artículos o recompensas, puede requerir una llave o mecanismo para desbloquearlo"}}},
@@ -97,290 +364,341 @@ public objects = {
   "room":{"id":"https://github.com/UCM-FDI-JaXpi/objects/room","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default room","es":"Habitación por defecto"},"description":{"en-US":"A space within a building or structure like a house or a cave","es":"Un espacio dentro de un edificio o estructura como una casa o una cueva"}}},
   "skill":{"id":"https://github.com/UCM-FDI-JaXpi/objects/skill","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default skill","es":"Habilidad por defecto"},"description":{"en-US":"A player's capability or expertise in executing particular actions, or a distinct move they can use in combat that either enhances their combat abilities or unlocks advancements in the game","es":"La capacidad o experiencia de un jugador para ejecutar acciones particulares, o un movimiento distinto que puede usar en combate y que mejora sus habilidades de combate o desbloquea avances en el juego"}}},
   "task":{"id":"https://github.com/UCM-FDI-JaXpi/objects/task","definition":{"type":"https://github.com/UCM-FDI-JaXpi/object","name":{"en-US":"Default task","es":"Tarea por defecto"},"description":{"en-US":"A piece of work to be done or undertaken, often part of a larger goal for the player","es":"Un trabajo por hacer o emprender, a menudo parte de un objetivo más amplio para el jugador"}}}
-}
-  
+  }
 
-/**
- * @param {Object} player - Structure that contains player data.
- * @param {string} player.name - The name of the player.
- * @param {string} player.mail - The mail of the player.
- * @param {string} serverURL - The url of the server where statements will be sent.
- * @param {string | { [key: string]: string }} token - The headers for the LRS or the auth for Jaxpi server.
- * @param {string} [time_interval=undefined] - Number of seconds an interval will try to send the statements to the server. 
- * @param {string} [max_queue=MAX_QUEUE_LENGTH] - Maximum number of statement per queue before sending. 
- */
-constructor(player: generate.Player, private serverUrl: string, private token: string | { [key: string]: string }, private time_interval?: number, private max_queue?: number) {
-  this.context = undefined;
-  this.player = player;
-  this.worker = new Worker(new URL('./worker.js', import.meta.url));
+  /**
+   * @param {Object} player - Structure that contains player data.
+   * @param {string} player.name - The name of the player.
+   * @param {string} player.mail - The mail of the player.
+   * @param {string} serverURL - The url of the server where statements will be sent.
+   * @param {string} token - The token of authentication the server will use to send the statements.
+   * @param {string} [time_interval=undefined] - Number of seconds an interval will try to send the statements to the server. 
+   * @param {string} [max_queue=MAX_QUEUE_LENGTH] - Maximum number of statement per queue before sending. 
+   */
+  constructor(player: Player, private serverUrl: string, private token: string, private time_interval?: number, private max_queue?: number) {
+    this.context = undefined;
+    this.player = player;
 
-  
+    const workerCode = `
+        self.onmessage = async (event) => {
+            const data = event.data;
 
-  this.worker.addEventListener('message', (event: any) => {
-    const data = event.data;
-    if (data.type === 'RESPONSE') {
-      const promiseId = data.promiseId;
-      const promiseFunctions = this.promisesMap.get(promiseId);
-      if (promiseFunctions) {
-        promiseFunctions.resolve();
-        this.promisesMap.delete(promiseId); 
+            if (data.type === 'SEND_RECORDS') {
+                const { records, token, serverUrl, promiseId } = data;
+
+                for (const record of records) {
+                    try {
+                        await sendRecordToServer(record, token, serverUrl);
+                    } catch (error) {
+                        if (error instanceof Error) {
+                            const simplifiedError = {
+                                message: error.message,
+                                traceId: record.id
+                            };
+                            console.error(\`Error al enviar traza \${record.type}:\`, simplifiedError);
+                            self.postMessage({ type: 'ERROR', error: simplifiedError, promiseId, record_id: record.id });
+                        } else {
+                            console.error('Error desconocido:', error);
+                            self.postMessage({ type: 'ERROR', error: { message: 'Error desconocido' }, promiseId });
+                        }
+                    }
+                }
+
+                self.postMessage({ type: 'RESPONSE', promiseId: promiseId });
+            }
+        };
+
+        async function sendRecordToServer(record, token, serverUrl) {
+            console.log(\`Enviando traza \${record.type} al servidor...\`);
+            let headersJaxpi = {};
+
+            if (serverUrl === "http://localhost:3000/records") {
+              headersJaxpi["Content-Type"] = "application/json";
+              headersJaxpi["x-authentication"] = token;
+            } else {
+              headersJaxpi = token;
+            }
+            const response = await fetch(serverUrl, {
+                method: 'POST',
+                headers: headersJaxpi,
+                body: JSON.stringify(record.data),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(\`HTTP error! status: \${response.status} - \${errorData.message}\`);
+            }
+
+            const responseData = await response.json();
+            console.log(\`Trazas \${record.type} enviada\`);
+            console.log(\`Respuesta del servidor: \${responseData}\`);
+            self.postMessage({ type: 'DEQUEUE', record_id: record.id });
+        }
+        `;
+
+    const blob = new Blob([workerCode], { type: "application/javascript" });
+    const workerBlobURL = URL.createObjectURL(blob);
+    this.worker = new Worker(workerBlobURL);
+
+
+
+    this.worker.onmessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (data.type === 'RESPONSE') {
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.resolve();
+          this.promisesMap.delete(promiseId); 
+        }
+      } else if (data.type === 'ERROR') {
+        const recordData = JSON.parse(localStorage.getItem(data.record_id)!);
+        recordData.attempts += 1;
+        recordData.lastAttempt = new Date().toISOString(); 
+        localStorage.setItem(data.record_id, JSON.stringify(recordData));
+        console.warn(`Ultimo intento ${recordData.lastAttempt},  Nº de intentos ${recordData.attempts},  Nº max de intentos 5`)
+
+        const promiseId = data.promiseId;
+        const promiseFunctions = this.promisesMap.get(promiseId);
+        if (promiseFunctions) {
+          promiseFunctions.reject(data.error);
+          this.promisesMap.delete(promiseId); 
+        }
+      } else if (data.type === 'DEQUEUE') {
+        localStorage.removeItem(data.record_id)
       }
-    } else if (data.type === 'ERROR') {
-      const recordData = JSON.parse(localStorage.getItem(data.record_id)!);
-      recordData.attempts += 1;
-      recordData.lastAttempt = new Date().toISOString(); 
-      localStorage.setItem(data.record_id, JSON.stringify(recordData));
-      console.warn(`Ultimo intento ${recordData.lastAttempt},  Nº de intentos ${recordData.attempts},  Nº max de intentos 5`)
 
-      const promiseId = data.promiseId;
-      const promiseFunctions = this.promisesMap.get(promiseId);
-      if (promiseFunctions) {
-        promiseFunctions.reject(data.error);
-        this.promisesMap.delete(promiseId); 
-      }
-    } else if (data.type === 'DEQUEUE') {
-      localStorage.removeItem(data.record_id)
-    } 
+    };
+    this.promises = [];
+    if (this.max_queue) this.max_queue_length = this.max_queue
+    else this.max_queue_length = MAX_QUEUE_LENGTH;
+    if (this.time_interval)
+      this.recordsInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval) as unknown as number;
 
-  });
-  this.promises = [];
-  if (this.max_queue) this.max_queue_length = this.max_queue
-  else this.max_queue_length = MAX_QUEUE_LENGTH;
-  if (this.time_interval)
-    this.recordsInterval = setInterval(this.flush.bind(this), 1000 * this.time_interval);
+    const self = this;
 
-  //const self = this;
+    if (typeof window !== undefined) {
+      let isListening = false;
 
-
-/*
-  if (typeof window !== undefined){
-  let isListening = false;
-  
-  async function handleSIGINT() {
-    console.log('SIGINT received');
-    self.flush()
+      async function handleSIGINT() {
+        console.log('SIGINT received');
+        self.flush()
         await Promise.all(self.promises)
-    .then(() => {
-      console.log('Promesas resueltas, cerrando la ventana...');
-      window.close();
-      return;
-    })
-    .catch((error) => {
-      console.error("Se produjo un error al resolver las promesas:", error);
+          .then(() => {
+            console.log('Promesas resueltas, cerrando la ventana...');
+            window.close();  
+            return;  
+          })
+          .catch((error) => {
+            console.error("Se produjo un error al resolver las promesas:", error);
+          });
+      }
+
+      function startListening() {
+        if (!isListening) {
+          isListening = true;
+          window.addEventListener('beforeunload', handleSIGINT);
+        }
+      }
+
+      function stopListening() {
+        if (isListening) {
+          isListening = false;
+          window.removeEventListener('beforeunload', handleSIGINT);
+        }
+      }
+
+      startListening();
+    }
+
+    if (instance) {
+      return instance;
+    }
+    instance = this;
+  }
+
+  /**
+   * Function to send the statements queue to the server, it also creates a backup if the sending fails
+   */
+  async flush() {
+    this.checkLocalStorage()
+    const records = this.records_queue.toArray();
+    console.log(records)
+    if (records.length > 0) {
+      const promise = this.sendRecords(records);
+      this.records_queue = new Queue(); 
+      this.promises.push(promise);
+      try {
+        await promise;
+      } catch (error) {
+        console.error('Error al enviar trazas:', error);
+      }
+    }
+  }
+
+  private async sendRecords(records: { type: string; data: string }[]) {
+    return new Promise<void>((resolve, reject) => {
+      const promiseId = this.generateUniquePromiseId();
+      this.promisesMap.set(promiseId, { resolve, reject });
+
+      this.worker.postMessage({ type: 'SEND_RECORDS', records, token: this.token, serverUrl: this.serverUrl, promiseId });
     });
   }
 
-  function startListening() {
-    if (!isListening) {
-    isListening = true;
-    window.addEventListener('beforeunload', handleSIGINT);
-    }
+  // Función para generar un ID único para cada promesa
+  private generateUniquePromiseId(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
-  
-  function stopListening() {
-    if (isListening) {
-    isListening = false;
-    window.removeEventListener('beforeunload', handleSIGINT);
-    }
-  }
-  
-  startListening();
-  }
-*/
-  if (instance) {
-    return instance;
-  }
-  instance = this;
-}
 
+  private checkLocalStorage() {
+    const maxAttempts = 5;
+    const maxAgeMs = 24 * 60 * 60 * 1000; // 24 horas
 
-/**
- * Function to send the statements queue to the server, it also creates a backup if the sending fails
- */
-async flush() {
-  this.checkLocalStorage()
-  const records = this.records_queue.toArray();
-  console.log(records)
-  if (records.length > 0) {
-    const promise = this.sendRecords(records);
-    this.records_queue = new Queue(); 
-    this.promises.push(promise);
-    try {
-      await promise;
-    } catch (error) {
-      console.error('Error al enviar trazas:', error);
-    }
-  }
-}
+    if (localStorage.length) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        console.log(key)
+        if (/^stat\d+$/.test(key!) && !this.records_queue.toArray().some(item => item.id === key)) {
+          const value = JSON.parse(localStorage.getItem(key!)!);
 
-private async sendRecords(records: { type: string; data: string }[]) {
-  return new Promise<void>((resolve, reject) => {
-    const promiseId = this.generateUniquePromiseId();
-    this.promisesMap.set(promiseId, { resolve, reject });
+          let { record, attempts, lastAttempt } = value // Si supera los intentos permitidos tambien se borra
+          record = JSON.parse(record)
+          const lastAttemptDate = new Date(lastAttempt);
+          const now = new Date();
+          const age = now.getTime() - lastAttemptDate.getTime(); 
 
-    this.worker.postMessage({ type: 'SEND_RECORDS', records, token: this.token, serverUrl: this.serverUrl, promiseId });
-  });
-}
+          console.log(value)
+          console.log(record.verb.display["en-US"])
+          console.log(attempts)
+          console.log(lastAttempt)
 
-// Función para generar un ID único para cada promesa
-private generateUniquePromiseId(): string {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
+          if (attempts < maxAttempts && age < maxAgeMs) {
+            this.records_queue.enqueue({ type: `${record.verb.display["en-US"]}/${record.object.definition.name["en-US"]}`, data: record, id: key! })
+          } else {
+            console.log(`Eliminando traza ${key} después de ${attempts} intentos o por exceder el tiempo permitido de 24 horas.`);
+            localStorage.removeItem(key!);
+          }
 
-private checkLocalStorage(){
-  const maxAttempts = 5;
-  const maxAgeMs = 24 * 60 * 60 * 1000; // 24 hours
-
-  if (localStorage.length) {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      console.log(key)
-      if (/^stat\d+$/.test(key!) && !this.records_queue.toArray().some(item => item.id === key)) {
-        const value = JSON.parse(localStorage.getItem(key!)!);
-
-        let {record, attempts, lastAttempt} = value 
-        record = JSON.parse(record)
-        const lastAttemptDate = new Date(lastAttempt);
-        const now = new Date();
-        const age = now.getTime() - lastAttemptDate.getTime(); 
-
-        console.log(value)
-        console.log(record.verb.display["en-US"])
-        console.log(attempts)
-        console.log(lastAttempt)
-
-        if (attempts < maxAttempts && age < maxAgeMs) {
-          this.records_queue.enqueue({type: `${record.verb.display["en-US"]}/${record.object.definition.name["en-US"]}`, data: record, id: key!})
-        } else {
-          console.log(`Eliminando traza ${key} después de ${attempts} intentos o por exceder el tiempo permitido de 24 horas.`);
-          localStorage.removeItem(key!);
         }
       }
     }
   }
-}
 
-// Función para generar un id unico para cada traza 
-private statementIdCalc(): string{
-  while (localStorage.getItem(`stat${this.record_id}`) !== null) this.record_id++;
-  
-  return `stat${this.record_id}`;
-}
+  // Función para generar un id unico para cada traza 
+  private statementIdCalc(): string {
+    while (localStorage.getItem(`stat${this.record_id}`) !== null) this.record_id++;
 
-/**
- * Function to stop the interval to send the statements queue to the server
- */
-public stopStatementInterval() {
-  if (this.recordsInterval)
-    clearInterval(this.recordsInterval); // Detiene el temporizador
-}
-/**
- * Function to start the interval to send the statements queue to the server
- */
-public startSendingInterval(seconds: number) {
-  if (this.recordsInterval)
-    clearInterval(this.recordsInterval);
-  this.recordsInterval = setInterval(this.flush.bind(this), seconds * 1000); 
-}
+    return `stat${this.record_id}`;
+  }
 
-/**
- * Function to set the session key of an user
- * @param {string} session_key - Key of 6 values that identifies the user
- */
-public setKey(session_key: string){
-  this.session_key = session_key
-}
+  /**
+   * Function to stop the interval to send the statements queue to the server
+   */
+  public stopStatementInterval() {
+    if (this.recordsInterval)
+      clearInterval(this.recordsInterval); 
+  }
+  /**
+   * Function to start the interval to send the statements queue to the server
+   */
+  public startSendingInterval(seconds: number) {
+    if (this.recordsInterval)
+      clearInterval(this.recordsInterval);
+    this.recordsInterval = setInterval(this.flush.bind(this), seconds * 1000) as unknown as number; 
+  }
 
-/**
- * Async function to validate the session key of an user
- * @param {string} sessionKey - Key of 6 values that identifies the user
- * @returns {Promise<boolean>} A promise with the boolean result of the validation
- */
-public async validateKey(sessionKey: string): Promise<boolean> {
-  try{
-    const response = await axios.get(`http://localhost:3000/publicAPI/key/${sessionKey}`)
-    return response.status === 200;
+  /**
+   * Function to set the session key of an user
+   * @param {string} session_key - Key of 6 values that identifies the user
+   */
+  public setKey(session_key: string) {
+    this.session_key = session_key
+  }
 
-  }catch (error){
-    if (axios.isAxiosError(error)) {
-      if (error.response) {
-        console.error('Error:', error.response.status, error.response.data);
-      } else if (error.request) {
-        console.error('Error:', error.request);
+  /**
+   * Async function to validate the session key of a user
+   * @param {string} sessionKey - Key of 6 values that identifies the user
+   * @returns {Promise<boolean>} A promise with the boolean result of the validation
+   */
+  public async validateKey(sessionKey: string): Promise<boolean> {
+    try {
+      const response = await fetch(`http://localhost:3000/publicAPI/key/${sessionKey}`);
+
+      if (response.ok) {
+        return true;
       } else {
-        console.error('Error:', error.message);
+        const errorData = await response.json();
+        console.error('Error:', response.status, errorData);
+        return false;
       }
-    } else {
+    } catch (error) {
       console.error('Error:', error);
+      return false;
     }
-    return false
   }
-}
-  
-/**
- * Function to set the context field of the statement (class / association where it takes places)
- * @param {string} name - Name of the instructor
- * @param {string} mbox - Mail of the instructor
- * @param {string} sessionId - Unique id of the session (class URI)
- * @param {string} groupId - Unique id of the association (college URI)
- * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
- */
-public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string, any]>) {
-  this.context = {
-    instructor: {
-      name: name,
-      mbox: "mailto:" + mbox
-    },
-    contextActivities: {
-      parent: { id: "http://example.com/activities/" + sessionId },
-      grouping: { id: 'http://example.com/activities/' + groupId }
-    },
-    extensions: {}
-  }
-  if (parameters) {
-    for (let [key, value] of parameters) {
-      if (this.context.extensions !== undefined) {
-        let parameter = "http://example.com/activities/" + key;
-        (this.context.extensions as { [key: string]: any })[parameter] = value; 
+
+  /**
+   * Function to set the context field of the statement (class / association where it takes places)
+   * @param {string} name - Name of the instructor
+   * @param {string} mbox - Mail of the instructor
+   * @param {string} sessionId - Unique id of the session (class URI)
+   * @param {string} groupId - Unique id of the association (college URI)
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in context.extensions field
+   */
+  public setContext(name: string, mbox: string, sessionId: string, groupId: string, parameters?: Array<[string, any]>) {
+    this.context = {
+      instructor: {
+        name: name,
+        mbox: "mailto:" + mbox
+      },
+      contextActivities: {
+        parent: { id: "http://example.com/activities/" + sessionId },
+        grouping: { id: 'http://example.com/activities/' + groupId }
+      },
+      extensions: {}
+    }
+    if (parameters) {
+      for (let [key, value] of parameters) {
+        if (this.context.extensions !== undefined) {
+          let parameter = "http://example.com/activities/" + key;
+          (this.context.extensions as { [key: string]: any })[parameter] = value;
+        }
       }
     }
   }
-}
-  
-/**
- * Function to accept verbs / objects not contemplated in the library
- * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
- * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
- * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
- * @param {any} [context] - Adds a field context for the statement
- * @param {any} [result] - Adds a field result for the statement
- * @param {any} [authority] - Adds a field authority for the statement
- */
-customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; }, parameters?: Array<[string, any]>, result?: any, context?: any, authority?: any) {
 
-  if (checkObject(object) || typeof object === "string") {
-    if (checkVerb(verb) || typeof verb === "string") {
-      const [verbJson, objectJson] = generate.generateStatementFromZero(verb, object, parameters);
+  /**
+   * Function to accept verbs / objects not contemplated in the library
+   * @param {string | { [x: string]: any; id: any; }} verb - Verb to construct the statement, can be one from jaxpi.verbs list, a JSON with that structure or a simple string
+   * @param {string | { [x: string]: any; definition: { [x: string]: any; type: any; }} object - Object to construct the statement, can be one from jaxpi.objects list, a JSON with that structure or a simple string
+   * @param {Array<[string,any]>} [parameters] - Extra parameters to add to the statement in object.extensions field
+   * @param {any} [context] - Adds a field context for the statement
+   * @param {any} [result] - Adds a field result for the statement
+   * @param {any} [authority] - Adds a field authority for the statement
+   */
+  customVerb(verb: string | { [x: string]: any; id: any; }, object: string | { [x: string]: any; definition: { [x: string]: any; type: any; }; id: any; }, parameters?: Array<[string, any]>, result?: any, context?: any, authority?: any) {
 
-      let statement = generate.generateStatement(this.player, verbJson, objectJson, this.session_key, undefined, this.context, undefined)
-      let id = this.statementIdCalc()
-  
-      localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
-      this.records_queue.enqueue({type: 'custom', data: statement, id: id});
-      if (this.records_queue.length >= this.max_queue_length) this.flush();
+    if (checkObject(object) || typeof object === "string") {
+      if (checkVerb(verb) || typeof verb === "string") {
+        const [verbJson, objectJson] = generateStatementFromZero(verb, object, parameters);
+        let statement = generateStatement(this.player, verbJson, objectJson, this.session_key, undefined, this.context, undefined)
+        let id = this.statementIdCalc()
+
+        localStorage.setItem(id, JSON.stringify({ record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString() }))
+        this.records_queue.enqueue({ type: 'accepted/achievement', data: statement, id: id });
+        if (this.records_queue.length >= this.max_queue_length) this.flush();
+      }
+      else
+        console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
     }
     else
-      console.warn("Verb parameter type incorrect, please use an string for a verb dummy, choose one from jaxpi.verb list or maintain the structure of this last one")
+      console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
+
   }
-  else
-    console.warn("Object parameter type incorrect, please use an string for an object dummy, choose one from jaxpi.object list or maintain the structure of this last one")
-
-}
 
 
 
-
-
+  
 /**
  * The player accepts an object like a task or a reward
  * 
@@ -402,7 +720,7 @@ accepted() {
         */ 
       achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.achievement, name, description)
+        object = generateObject(this.objects.achievement, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -417,7 +735,7 @@ accepted() {
 		    console.log(`JaXpi accepted/achievement = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -440,7 +758,7 @@ accepted() {
         */ 
       award: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.award, name, description)
+        object = generateObject(this.objects.award, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -455,7 +773,7 @@ accepted() {
 		    console.log(`JaXpi accepted/award = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -478,7 +796,7 @@ accepted() {
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.mission, name, description)
+        object = generateObject(this.objects.mission, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -493,7 +811,7 @@ accepted() {
 		    console.log(`JaXpi accepted/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -516,7 +834,7 @@ accepted() {
         */ 
       reward: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.reward, name, description)
+        object = generateObject(this.objects.reward, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -531,7 +849,7 @@ accepted() {
 		    console.log(`JaXpi accepted/reward = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -554,7 +872,7 @@ accepted() {
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.task, name, description)
+        object = generateObject(this.objects.task, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -569,7 +887,7 @@ accepted() {
 		    console.log(`JaXpi accepted/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accepted, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -604,7 +922,7 @@ accessed(visited_times : number,) {
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.chest, name, description)
+        object = generateObject(this.objects.chest, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -620,7 +938,7 @@ accessed(visited_times : number,) {
 		    console.log(`JaXpi accessed/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -643,7 +961,7 @@ accessed(visited_times : number,) {
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.door, name, description)
+        object = generateObject(this.objects.door, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -659,7 +977,7 @@ accessed(visited_times : number,) {
 		    console.log(`JaXpi accessed/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -682,7 +1000,7 @@ accessed(visited_times : number,) {
         */ 
       room: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.room, name, description)
+        object = generateObject(this.objects.room, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -698,7 +1016,7 @@ accessed(visited_times : number,) {
 		    console.log(`JaXpi accessed/room = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -721,7 +1039,7 @@ accessed(visited_times : number,) {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -737,7 +1055,7 @@ accessed(visited_times : number,) {
 		    console.log(`JaXpi accessed/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.accessed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -772,7 +1090,7 @@ achieved() {
         */ 
       achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.achievement, name, description)
+        object = generateObject(this.objects.achievement, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -787,7 +1105,7 @@ achieved() {
 		    console.log(`JaXpi achieved/achievement = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -810,7 +1128,7 @@ achieved() {
         */ 
       award: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.award, name, description)
+        object = generateObject(this.objects.award, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -825,7 +1143,7 @@ achieved() {
 		    console.log(`JaXpi achieved/award = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -848,7 +1166,7 @@ achieved() {
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.game, name, description)
+        object = generateObject(this.objects.game, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -863,7 +1181,7 @@ achieved() {
 		    console.log(`JaXpi achieved/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -886,7 +1204,7 @@ achieved() {
         */ 
       goal: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.goal, name, description)
+        object = generateObject(this.objects.goal, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -901,7 +1219,7 @@ achieved() {
 		    console.log(`JaXpi achieved/goal = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -924,7 +1242,7 @@ achieved() {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -939,7 +1257,7 @@ achieved() {
 		    console.log(`JaXpi achieved/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -962,7 +1280,7 @@ achieved() {
         */ 
       reward: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.reward, name, description)
+        object = generateObject(this.objects.reward, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -977,7 +1295,7 @@ achieved() {
 		    console.log(`JaXpi achieved/reward = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.achieved, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1012,7 +1330,7 @@ cancelled(reason : string,) {
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.mission, name, description)
+        object = generateObject(this.objects.mission, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1028,7 +1346,7 @@ cancelled(reason : string,) {
 		    console.log(`JaXpi cancelled/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.cancelled, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1051,7 +1369,7 @@ cancelled(reason : string,) {
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.task, name, description)
+        object = generateObject(this.objects.task, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1067,7 +1385,7 @@ cancelled(reason : string,) {
 		    console.log(`JaXpi cancelled/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.cancelled, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.cancelled, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1102,7 +1420,7 @@ chatted() {
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.character, name, description)
+        object = generateObject(this.objects.character, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1117,7 +1435,7 @@ chatted() {
 		    console.log(`JaXpi chatted/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.chatted, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.chatted, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1152,7 +1470,7 @@ clicked() {
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.character, name, description)
+        object = generateObject(this.objects.character, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1167,7 +1485,7 @@ clicked() {
 		    console.log(`JaXpi clicked/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1190,7 +1508,7 @@ clicked() {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1205,7 +1523,7 @@ clicked() {
 		    console.log(`JaXpi clicked/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1228,7 +1546,7 @@ clicked() {
         */ 
       dialog: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.dialog, name, description)
+        object = generateObject(this.objects.dialog, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1243,7 +1561,7 @@ clicked() {
 		    console.log(`JaXpi clicked/dialog = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1266,7 +1584,7 @@ clicked() {
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.door, name, description)
+        object = generateObject(this.objects.door, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1281,7 +1599,7 @@ clicked() {
 		    console.log(`JaXpi clicked/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.clicked, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1316,7 +1634,7 @@ climbed() {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1331,7 +1649,7 @@ climbed() {
 		    console.log(`JaXpi climbed/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.climbed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.climbed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1366,7 +1684,7 @@ closed() {
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.chest, name, description)
+        object = generateObject(this.objects.chest, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1381,7 +1699,7 @@ closed() {
 		    console.log(`JaXpi closed/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.closed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.closed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1404,7 +1722,7 @@ closed() {
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.door, name, description)
+        object = generateObject(this.objects.door, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1419,7 +1737,7 @@ closed() {
 		    console.log(`JaXpi closed/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.closed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.closed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1454,7 +1772,7 @@ combined(target : string,) {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1470,7 +1788,7 @@ combined(target : string,) {
 		    console.log(`JaXpi combined/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.combined, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.combined, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1505,7 +1823,7 @@ completed(score : number,) {
         */ 
       achievement: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.achievement, name, description)
+        object = generateObject(this.objects.achievement, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1521,7 +1839,7 @@ completed(score : number,) {
 		    console.log(`JaXpi completed/achievement = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1544,7 +1862,7 @@ completed(score : number,) {
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.game, name, description)
+        object = generateObject(this.objects.game, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1560,7 +1878,7 @@ completed(score : number,) {
 		    console.log(`JaXpi completed/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1583,7 +1901,7 @@ completed(score : number,) {
         */ 
       goal: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.goal, name, description)
+        object = generateObject(this.objects.goal, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1599,7 +1917,7 @@ completed(score : number,) {
 		    console.log(`JaXpi completed/goal = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1622,7 +1940,7 @@ completed(score : number,) {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1638,7 +1956,7 @@ completed(score : number,) {
 		    console.log(`JaXpi completed/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1661,7 +1979,7 @@ completed(score : number,) {
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.mission, name, description)
+        object = generateObject(this.objects.mission, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1677,7 +1995,7 @@ completed(score : number,) {
 		    console.log(`JaXpi completed/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1700,7 +2018,7 @@ completed(score : number,) {
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.task, name, description)
+        object = generateObject(this.objects.task, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1716,7 +2034,7 @@ completed(score : number,) {
 		    console.log(`JaXpi completed/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.completed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1764,7 +2082,7 @@ crafted() {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1779,7 +2097,7 @@ crafted() {
 		    console.log(`JaXpi crafted/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.crafted, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.crafted, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1814,7 +2132,7 @@ dashed() {
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.character, name, description)
+        object = generateObject(this.objects.character, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1829,7 +2147,7 @@ dashed() {
 		    console.log(`JaXpi dashed/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.dashed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.dashed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1864,7 +2182,7 @@ defeated() {
         */ 
       enemy: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.enemy, name, description)
+        object = generateObject(this.objects.enemy, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1879,7 +2197,7 @@ defeated() {
 		    console.log(`JaXpi defeated/enemy = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.defeated, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.defeated, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1914,7 +2232,7 @@ destroyed() {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1929,7 +2247,7 @@ destroyed() {
 		    console.log(`JaXpi destroyed/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.destroyed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.destroyed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -1964,7 +2282,7 @@ died() {
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.character, name, description)
+        object = generateObject(this.objects.character, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -1979,7 +2297,7 @@ died() {
 		    console.log(`JaXpi died/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.died, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.died, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2002,7 +2320,7 @@ died() {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2017,7 +2335,7 @@ died() {
 		    console.log(`JaXpi died/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.died, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.died, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2052,7 +2370,7 @@ discovered() {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2067,7 +2385,7 @@ discovered() {
 		    console.log(`JaXpi discovered/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.discovered, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2090,7 +2408,7 @@ discovered() {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2105,7 +2423,7 @@ discovered() {
 		    console.log(`JaXpi discovered/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.discovered, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.discovered, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2153,7 +2471,7 @@ earned() {
         */ 
       reward: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.reward, name, description)
+        object = generateObject(this.objects.reward, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2168,7 +2486,7 @@ earned() {
 		    console.log(`JaXpi earned/reward = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.earned, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.earned, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2203,7 +2521,7 @@ equipped() {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2218,7 +2536,7 @@ equipped() {
 		    console.log(`JaXpi equipped/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.equipped, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.equipped, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2253,7 +2571,7 @@ examined() {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2268,7 +2586,7 @@ examined() {
 		    console.log(`JaXpi examined/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.examined, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.examined, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2291,7 +2609,7 @@ examined() {
         */ 
       room: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.room, name, description)
+        object = generateObject(this.objects.room, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2306,7 +2624,7 @@ examined() {
 		    console.log(`JaXpi examined/room = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.examined, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.examined, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2341,7 +2659,7 @@ exited() {
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.game, name, description)
+        object = generateObject(this.objects.game, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2356,7 +2674,7 @@ exited() {
 		    console.log(`JaXpi exited/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.exited, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.exited, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2379,7 +2697,7 @@ exited() {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2394,7 +2712,7 @@ exited() {
 		    console.log(`JaXpi exited/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.exited, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.exited, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2429,7 +2747,7 @@ explored() {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2444,7 +2762,7 @@ explored() {
 		    console.log(`JaXpi explored/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.explored, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.explored, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2479,7 +2797,7 @@ failed() {
         */ 
       mission: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.mission, name, description)
+        object = generateObject(this.objects.mission, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2494,7 +2812,7 @@ failed() {
 		    console.log(`JaXpi failed/mission = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.failed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.failed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2517,7 +2835,7 @@ failed() {
         */ 
       task: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.task, name, description)
+        object = generateObject(this.objects.task, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2532,7 +2850,7 @@ failed() {
 		    console.log(`JaXpi failed/task = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.failed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.failed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2555,7 +2873,7 @@ failed() {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2570,7 +2888,7 @@ failed() {
 		    console.log(`JaXpi failed/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.failed, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.failed, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2605,7 +2923,7 @@ fellIn() {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2620,7 +2938,7 @@ fellIn() {
 		    console.log(`JaXpi fellIn/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.fellIn, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.fellIn, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2656,7 +2974,7 @@ jumped(distance : number,units : string,) {
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.character, name, description)
+        object = generateObject(this.objects.character, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2673,7 +2991,7 @@ jumped(distance : number,units : string,) {
 		    console.log(`JaXpi jumped/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.jumped, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2696,7 +3014,7 @@ jumped(distance : number,units : string,) {
         */ 
       enemy: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.enemy, name, description)
+        object = generateObject(this.objects.enemy, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2713,7 +3031,7 @@ jumped(distance : number,units : string,) {
 		    console.log(`JaXpi jumped/enemy = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.jumped, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.jumped, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2761,7 +3079,7 @@ loaded(id_load : string,) {
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.game, name, description)
+        object = generateObject(this.objects.game, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2777,7 +3095,7 @@ loaded(id_load : string,) {
 		    console.log(`JaXpi loaded/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.loaded, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2800,7 +3118,7 @@ loaded(id_load : string,) {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2816,7 +3134,7 @@ loaded(id_load : string,) {
 		    console.log(`JaXpi loaded/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loaded, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.loaded, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2851,7 +3169,7 @@ loggedIn() {
         */ 
       player: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.player, name, description)
+        object = generateObject(this.objects.player, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2866,7 +3184,7 @@ loggedIn() {
 		    console.log(`JaXpi loggedIn/player = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loggedIn, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.loggedIn, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2901,7 +3219,7 @@ loggedOut() {
         */ 
       player: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.player, name, description)
+        object = generateObject(this.objects.player, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2916,7 +3234,7 @@ loggedOut() {
 		    console.log(`JaXpi loggedOut/player = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.loggedOut, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.loggedOut, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -2951,7 +3269,7 @@ moved() {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -2966,7 +3284,7 @@ moved() {
 		    console.log(`JaXpi moved/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.moved, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.moved, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3001,7 +3319,7 @@ navigated() {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3016,7 +3334,7 @@ navigated() {
 		    console.log(`JaXpi navigated/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.navigated, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.navigated, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3051,7 +3369,7 @@ opened() {
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.chest, name, description)
+        object = generateObject(this.objects.chest, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3066,7 +3384,7 @@ opened() {
 		    console.log(`JaXpi opened/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.opened, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.opened, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3089,7 +3407,7 @@ opened() {
         */ 
       door: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.door, name, description)
+        object = generateObject(this.objects.door, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3104,7 +3422,7 @@ opened() {
 		    console.log(`JaXpi opened/door = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.opened, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.opened, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3139,7 +3457,7 @@ overloaded(id_load : string,) {
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.game, name, description)
+        object = generateObject(this.objects.game, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3155,7 +3473,7 @@ overloaded(id_load : string,) {
 		    console.log(`JaXpi overloaded/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.overloaded, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3178,7 +3496,7 @@ overloaded(id_load : string,) {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3194,7 +3512,7 @@ overloaded(id_load : string,) {
 		    console.log(`JaXpi overloaded/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.overloaded, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.overloaded, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3229,7 +3547,7 @@ paused() {
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.game, name, description)
+        object = generateObject(this.objects.game, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3244,7 +3562,7 @@ paused() {
 		    console.log(`JaXpi paused/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.paused, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.paused, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3331,7 +3649,7 @@ skipped() {
         */ 
       dialog: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.dialog, name, description)
+        object = generateObject(this.objects.dialog, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3346,7 +3664,7 @@ skipped() {
 		    console.log(`JaXpi skipped/dialog = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.skipped, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.skipped, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3407,7 +3725,7 @@ started() {
         */ 
       level: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.level, name, description)
+        object = generateObject(this.objects.level, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3422,7 +3740,7 @@ started() {
 		    console.log(`JaXpi started/level = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.started, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.started, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3445,7 +3763,7 @@ started() {
         */ 
       game: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.game, name, description)
+        object = generateObject(this.objects.game, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3460,7 +3778,7 @@ started() {
 		    console.log(`JaXpi started/game = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.started, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.started, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3495,7 +3813,7 @@ teleported() {
         */ 
       location: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.location, name, description)
+        object = generateObject(this.objects.location, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3510,7 +3828,7 @@ teleported() {
 		    console.log(`JaXpi teleported/location = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.teleported, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3533,7 +3851,7 @@ teleported() {
         */ 
       character: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.character, name, description)
+        object = generateObject(this.objects.character, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3548,7 +3866,7 @@ teleported() {
 		    console.log(`JaXpi teleported/character = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.teleported, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.teleported, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3583,7 +3901,7 @@ unlocked() {
         */ 
       chest: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.chest, name, description)
+        object = generateObject(this.objects.chest, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3598,7 +3916,7 @@ unlocked() {
 		    console.log(`JaXpi unlocked/chest = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.unlocked, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3621,7 +3939,7 @@ unlocked() {
         */ 
       skill: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.skill, name, description)
+        object = generateObject(this.objects.skill, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3636,7 +3954,7 @@ unlocked() {
 		    console.log(`JaXpi unlocked/skill = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.unlocked, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.unlocked, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3671,7 +3989,7 @@ upgraded() {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3686,7 +4004,7 @@ upgraded() {
 		    console.log(`JaXpi upgraded/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.upgraded, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.upgraded, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
@@ -3721,7 +4039,7 @@ used(consumed : boolean,) {
         */ 
       item: (name:string, description?:string, extraParameters?: Array<[string,any]>, result?: any, context?: any, authority?: any) => {
 
-        object = generate.generateObject(this.objects.item, name, description)
+        object = generateObject(this.objects.item, name, description)
 		    let tcontext = this.context;
         if (context) tcontext = context
         
@@ -3737,7 +4055,7 @@ used(consumed : boolean,) {
 		    console.log(`JaXpi used/item = "${name}" statement enqueued`)
 
 
-        const statement = generate.generateStatement(this.player, this.verbs.used, object, this.session_key, result, tcontext, authority);
+        const statement = generateStatement(this.player, this.verbs.used, object, this.session_key, result, tcontext, authority);
 		    let id = this.statementIdCalc()
 
         localStorage.setItem(id,JSON.stringify({record: JSON.stringify(statement), attempts: 0, lastAttempt: new Date().toISOString()}))
